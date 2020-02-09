@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/src/Codx.Auth/bin/Debug/netcoreapp3.1
+/src/Codx.Auth/obj
+/src/Codx.Auth/appsettings.Development.json
