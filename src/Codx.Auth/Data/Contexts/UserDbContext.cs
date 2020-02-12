@@ -8,11 +8,16 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Data.Contexts
 {
-    public class UserDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
+    public class UserDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
         public UserDbContext(DbContextOptions<UserDbContext> options) : base(options)
         {
 
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
         }
     }
 }

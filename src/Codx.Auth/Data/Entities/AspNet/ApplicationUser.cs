@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Data.Entities.AspNet
 {
-    public class ApplicationUser : IdentityUser<string>
+    public class ApplicationUser : IdentityUser<Guid>
     {
     }
 }
