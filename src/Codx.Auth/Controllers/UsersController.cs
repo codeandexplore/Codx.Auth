@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels.UserViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Codx.Auth.Controllers
 {
+    [Authorize]
     public class UsersController : Controller
     {
         protected readonly UserManager<ApplicationUser> _userManager;
@@ -45,16 +47,19 @@ namespace Codx.Auth.Controllers
         {
             if (string.IsNullOrEmpty(model.Username))
             {
+                ModelState.AddModelError("Username", "Username is required.");
                 return View(model);
             }
 
             if (string.IsNullOrEmpty(model.Password))
             {
+                ModelState.AddModelError("Password", "Password is required.");
                 return View(model);
             }
 
             if (model.Password != model.ConfirmPassword)
             {
+                ModelState.AddModelError("Password", "Password did not match.");
                 return View(model);
             }
 
@@ -69,6 +74,11 @@ namespace Codx.Auth.Controllers
             if (result.Succeeded)
             {
                 return RedirectToAction(nameof(Index));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.ToString());
             }
 
             return View(model);
