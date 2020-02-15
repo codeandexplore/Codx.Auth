@@ -29,4 +29,15 @@ namespace Codx.Auth.ViewModels.UserViewModels
 
         public string ConfirmPassword { get; set; }
     }
+
+    public class UserEditViewModel
+    {
+
+        public Guid Id { get; set; }
+
+        public string Username { get; set; }
+
+        public string Email { get; set; }
+
+    }
 }

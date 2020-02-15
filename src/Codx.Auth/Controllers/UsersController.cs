@@ -43,6 +43,21 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(UserAddViewModel model)
         {
+            if (string.IsNullOrEmpty(model.Username))
+            {
+                return View(model);
+            }
+
+            if (string.IsNullOrEmpty(model.Password))
+            {
+                return View(model);
+            }
+
+            if (model.Password != model.ConfirmPassword)
+            {
+                return View(model);
+            }
+
             var record = new ApplicationUser
             {
                 UserName = model.Username,
@@ -52,17 +67,82 @@ namespace Codx.Auth.Controllers
             var result = await _userManager.CreateAsync(record, model.Password).ConfigureAwait(false);
 
             if (result.Succeeded)
-            { 
-                // Success
+            {
+                return RedirectToAction(nameof(Index));
             }
 
-            return View();
+            return View(model);
         }
 
 
         // Edit User
+        [HttpGet]
+        public async Task<IActionResult> Edit(string id)
+        {
+            var record = await _userManager.FindByIdAsync(id);
+
+            var viewmodel = new UserEditViewModel
+            {
+                Id = record.Id,
+                Username = record.UserName,
+                Email = record.Email
+            };
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(UserEditViewModel viewmodel)
+        {
+            var record = await _userManager.FindByIdAsync(viewmodel.Id.ToString());
+
+            if (ModelState.IsValid)
+            {
+                record.Email = viewmodel.Email;
+
+                var result = await _userManager.UpdateAsync(record);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            return View(viewmodel);
+        }
 
         // Delete User
+        [HttpGet]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var record = await _userManager.FindByIdAsync(id);
+
+            var viewmodel = new UserEditViewModel
+            {
+                Id = record.Id,
+                Username = record.UserName,
+                Email = record.Email
+            };
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(UserEditViewModel viewmodel)
+        {
+            var record = await _userManager.FindByIdAsync(viewmodel.Id.ToString());
+            
+            var result = await _userManager.DeleteAsync(record);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        
+            return View(viewmodel);
+        }
+
+
 
     }
 }
