@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Codx.Auth.Data.Entities.AspNet
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a href="#" class="nav-link text-dark" title="Manage">Hello @User.Identity.Name!</a>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-controller="Account" asp-action="Logoff" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    </ul>
