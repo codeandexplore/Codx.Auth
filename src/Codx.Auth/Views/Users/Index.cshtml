@@ -29,6 +29,7 @@
                     <td>@row.Email</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@row.Id">Edit</a>
+                        <a asp-controller="UserRoles" asp-action="UserRoles" asp-route-userid="@row.Id">Roles</a>
                         <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
                     </td>
                 </tr>

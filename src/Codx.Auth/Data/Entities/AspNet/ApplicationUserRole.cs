@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Data.Entities.AspNet
 {
-    public class ApplicationRole : IdentityRole<Guid>
+    public class ApplicationUserRole : IdentityUserRole<Guid>
     {
-        public virtual ICollection<ApplicationUserRole> UserRoles { get; set; }
+        public virtual ApplicationUser User { get; set; }
+        public virtual ApplicationRole Role { get; set; }
     }
 }
