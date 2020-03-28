@@ -1,0 +1,43 @@
+﻿
+@model Codx.Auth.ViewModels.UserClaimViewModels.UserClaimsDetailsViewModel
+
+@{
+    ViewData["Title"] = "User Claims";
+}
+
+<h1>User Claims</h1>
+
+<div class="row">
+    <div class="col-lg-12">
+        <input type="hidden" asp-for="UserId" />
+        <label>Username: </label> @Model.Username <br />
+        <label>Email: </label> @Model.Email <br />
+    </div>
+</div>
+
+<a asp-action="Add" asp-route-userid="@Model.UserId">Add</a>
+
+<div class="row">
+    <div class="col-lg-12">
+        <table class="table table-bordered">
+            <tr>
+                <th>Type</th>
+                <th>Value</th>
+                <th></th>
+            </tr>
+
+            @for (var i = 0; i < Model.Claims.Count; i++)
+            {
+                var row = Model.Claims[i];
+                <tr>
+                    <td>@row.ClaimType</td>
+                    <td>@row.ClaimValue</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-claimid="@row.ClaimId" asp-route-userid="@Model.UserId">Delete</a>
+                    </td>
+                </tr>
+            }
+
+        </table>
+    </div>
+</div>

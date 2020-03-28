@@ -10,5 +10,7 @@ namespace Codx.Auth.Data.Entities.AspNet
     {
 
         public virtual ICollection<ApplicationUserRole> UserRoles { get; set; }
+
+        public virtual ICollection<ApplicationUserClaim> UserClaims { get; set; }
     }
 }

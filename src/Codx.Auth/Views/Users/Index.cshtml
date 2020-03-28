@@ -30,6 +30,7 @@
                     <td>
                         <a asp-action="Edit" asp-route-id="@row.Id">Edit</a>
                         <a asp-controller="UserRoles" asp-action="UserRoles" asp-route-userid="@row.Id">Roles</a>
+                        <a asp-controller="UserClaims" asp-action="UserClaims" asp-route-userid="@row.Id">Claims</a>
                         <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
                     </td>
                 </tr>

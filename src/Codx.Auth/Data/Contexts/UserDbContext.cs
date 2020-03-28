@@ -13,7 +13,7 @@ namespace Codx.Auth.Data.Contexts
         <ApplicationUser, 
         ApplicationRole, 
         Guid,
-        IdentityUserClaim<Guid>,
+        ApplicationUserClaim,
         ApplicationUserRole,
         IdentityUserLogin<Guid>,
         IdentityRoleClaim<Guid>,
@@ -35,12 +35,21 @@ namespace Codx.Auth.Data.Contexts
                 .IsRequired();
             });
 
+            builder.Entity<ApplicationUser>(b => {
+                b.HasMany(e => e.UserClaims)
+                .WithOne(e => e.User)
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
+            });
+
             builder.Entity<ApplicationRole>(b => {
                 b.HasMany(e => e.UserRoles)
                 .WithOne(e => e.Role)
                 .HasForeignKey(ur => ur.RoleId)
                 .IsRequired();
             });
+                       
+
         }
     }
 }
