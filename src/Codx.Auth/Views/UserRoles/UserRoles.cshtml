@@ -32,7 +32,7 @@
                 <tr>                   
                     <td>@row.Name</td>
                     <td>
-                        <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
+                        <a asp-action="Delete" asp-route-roleid="@row.Id" asp-route-userid="@Model.UserId">Delete</a>
                     </td>
                 </tr>
             }

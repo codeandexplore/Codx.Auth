@@ -9,6 +9,7 @@ using Codx.Auth.ViewModels.UserRoleViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Codx.Auth.Controllers
@@ -29,7 +30,7 @@ namespace Codx.Auth.Controllers
 
         public async Task<IActionResult> UserRoles(string userid)
         {
-            var user = await _userdbcontext.Users.Include(i => i.UserRoles).FirstOrDefaultAsync(u => u.Id.ToString() == userid);
+            var user = await _userdbcontext.Users.Include(i => i.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id.ToString() == userid);
                        
             var viewmodel = new UserRolesDetailsViewModel();
 
@@ -48,7 +49,101 @@ namespace Codx.Auth.Controllers
             return View(viewmodel);
         }
 
-        
+        [HttpGet]
+        public async Task<IActionResult> Add(string userid)
+        {
+            var user = await _userdbcontext.Users.Include(i => i.UserRoles).FirstOrDefaultAsync(u => u.Id.ToString() == userid);
+
+            var viewmodel = new UserRoleAddViewModel();
+
+            viewmodel.UserId = user.Id;
+            viewmodel.Username = user.UserName;
+            viewmodel.Email = user.Email;
+
+            var roles = await _userdbcontext.Roles.ToListAsync().ConfigureAwait(false);
+                        
+            foreach (var role in roles)
+            {
+                viewmodel.Roles.Add(new SelectListItem
+                {
+                    Value = role.Id.ToString(),
+                    Text = role.Name,
+                });
+            }
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Add(UserRoleAddViewModel viewmodel)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userdbcontext.Users.Include(i => i.UserRoles).FirstOrDefaultAsync(u => u.Id == viewmodel.UserId);
+
+                var role = await _userdbcontext.Roles.FirstOrDefaultAsync(r => r.Id == viewmodel.RoleId).ConfigureAwait(false);
+
+                var result = await _userManager.AddToRoleAsync(user, role.Name).ConfigureAwait(false);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction(nameof(UserRoles), new { userid=viewmodel.UserId });
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.ToString());
+                }
+            }
+
+            var roles = await _userdbcontext.Roles.ToListAsync().ConfigureAwait(false);
+
+            foreach (var role in roles)
+            {
+                viewmodel.Roles.Add(new SelectListItem
+                {
+                    Value = role.Id.ToString(),
+                    Text = role.Name,
+                });
+            }
+
+            return View(viewmodel);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(string userid, string roleid)
+        {
+            var user = await _userdbcontext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userid);
+
+            var role = await _userdbcontext.Roles.FirstOrDefaultAsync(u => u.Id.ToString() == roleid);
+
+            var viewmodel = new UserRoleDeleteViewModel
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                RoleId = role.Id,
+                Rolename = role.Name,
+            };
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(UserRoleDeleteViewModel viewmodel)
+        {
+            var user = await _userdbcontext.Users.FirstOrDefaultAsync(u => u.Id == viewmodel.UserId);
+
+            var result = await _userManager.RemoveFromRoleAsync(user, viewmodel.Rolename).ConfigureAwait(false);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(UserRoles), new { userid = viewmodel.UserId });
+            }
+
+            return View(viewmodel);
+        }
+
 
     }
 }

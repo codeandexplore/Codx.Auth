@@ -1,0 +1,46 @@
+﻿@model Codx.Auth.ViewModels.UserRoleViewModels.UserRoleAddViewModel
+
+@{
+    ViewData["Title"] = "Add";
+}
+
+<h1>Add</h1>
+
+<div class="row">
+    <div class="col-lg-6">
+
+        <div class="row">
+            <div class="col-lg-12">
+
+                <partial name="_ValidationSummary" />
+
+            </div>
+        </div>
+
+
+        <form asp-action="Add">
+
+            <input type="hidden" asp-for="@Model.UserId" />
+            <input type="hidden" asp-for="@Model.Username" />
+
+            <div class="form-group">
+                <label>Username</label> 
+                <input asp-for="@Model.Username" class="form-control" readonly/>
+            </div>
+
+            <div class="form-group">
+                <label>Role</label>
+                <select asp-for="RoleId" asp-items="Model.Roles" class="form-control">                   
+                </select>
+            </div>
+
+
+
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Save" />
+            </div>
+
+        </form>
+
+    </div>
+</div>
