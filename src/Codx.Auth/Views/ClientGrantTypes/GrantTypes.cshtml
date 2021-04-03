@@ -1,11 +1,11 @@
 ﻿
-@model ClientClaimsDetailsViewModel
+@model ClientGrantTypesDetailsViewModel
 
 @{
-    ViewData["Title"] = "Client Claims";
+    ViewData["Title"] = "Client Grant Types";
 }
 
-<h1>Client Claims</h1>
+<h1>Client Grant Types</h1>
 
 <div class="row">
     <div class="col-lg-12">
@@ -21,8 +21,7 @@
     <div class="col-lg-12">
         <table class="table table-bordered">
             <tr>
-                <th>Type</th>
-                <th>Value</th>
+                <th>Grant Type</th>
                 <th></th>
             </tr>
 
@@ -30,10 +29,9 @@
             {
                 var row = Model.Claims[i];
                 <tr>
-                    <td>@row.ClaimType</td>
-                    <td>@row.ClaimValue</td>
+                    <td>@row.GrantType</td>
                     <td>
-                        <a asp-action="Delete" asp-route-claimid="@row.ClaimId" asp-route-clientid="@Model.ClientId">Delete</a>
+                        <a asp-action="Delete" asp-route-id="@row.Id" asp-route-clientid="@Model.ClientId">Delete</a>
                     </td>
                 </tr>
             }

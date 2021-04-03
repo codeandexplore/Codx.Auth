@@ -10,32 +10,31 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    public class ClientClaimsController : Controller
+    public class ClientGrantTypesController : Controller
     {
         protected readonly ConfigurationDbContext _dbContext;
-        public ClientClaimsController(ConfigurationDbContext dbContext)
+        public ClientGrantTypesController(ConfigurationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<IActionResult> Claims(int id)
+        public async Task<IActionResult> GrantTypes(int id)
         {
-            var client = await _dbContext.Clients.Include(i => i.Claims).FirstOrDefaultAsync(u => u.Id == id);
+            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == id);
 
-            var viewmodel = new ClientClaimsDetailsViewModel();
+            var viewmodel = new ClientGrantTypesDetailsViewModel();
 
             viewmodel.ClientId = client.Id;
             viewmodel.ClientIdString = client.ClientId;
             viewmodel.ClientName = client.ClientName;
             viewmodel.Description = client.Description;
 
-            foreach (var claim in client.Claims)
+            foreach (var claim in client.AllowedGrantTypes)
             {
-                viewmodel.Claims.Add(new ClientClaimDetailsViewModel
+                viewmodel.Claims.Add(new ClientGrantTypeDetailsViewModel
                 {
                     Id = claim.Id,
-                    ClaimType = claim.Type,
-                    ClaimValue = claim.Value,
+                    GrantType = claim.GrantType,
                 });
             }
 
@@ -46,9 +45,9 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Add(int clientid)
         {
-            var client = await _dbContext.Clients.Include(i => i.Claims).FirstOrDefaultAsync(u => u.Id == clientid);
+            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == clientid);
 
-            var viewmodel = new ClientClaimAddViewModel();
+            var viewmodel = new ClientGrantTypeAddViewModel();
 
             viewmodel.ClientId = client.Id;
             viewmodel.ClientIdString = client.ClientId;
@@ -58,24 +57,23 @@ namespace Codx.Auth.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(ClientClaimAddViewModel viewmodel)
+        public async Task<IActionResult> Add(ClientGrantTypeAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var client = await _dbContext.Clients.Include(i => i.Claims).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
+                var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
 
-                client.Claims.Add(new ClientClaim
+                client.AllowedGrantTypes.Add(new ClientGrantType
                 {
                     ClientId = viewmodel.ClientId,
-                    Type = viewmodel.ClaimType,
-                    Value = viewmodel.ClaimValue
+                    GrantType = viewmodel.GrantType,
                 });
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Claims), new { id = viewmodel.ClientId });
+                    return RedirectToAction(nameof(GrantTypes), new { id = viewmodel.ClientId });
                 }
 
                 ModelState.AddModelError("", "Failed");
@@ -83,6 +81,5 @@ namespace Codx.Auth.Controllers
 
             return View(viewmodel);
         }
-
     }
 }

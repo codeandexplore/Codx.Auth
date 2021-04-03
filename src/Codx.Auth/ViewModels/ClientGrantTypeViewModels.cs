@@ -6,58 +6,52 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class ClientClaimViewModels
+    public class ClientGrantTypeViewModels
     {
     }
 
-    public class ClientClaimDetailsViewModel 
+    public class ClientGrantTypeDetailsViewModel 
     {
         public int Id { get; set; }
-
-        public string ClaimType { get; set; }
-
-        public string ClaimValue { get; set; }
+        public string GrantType { get; set; }
     }
 
-    public class ClientClaimsDetailsViewModel
+    public class ClientGrantTypesDetailsViewModel
     {
-        public ClientClaimsDetailsViewModel()
+        public ClientGrantTypesDetailsViewModel()
         {
-            Claims = new List<ClientClaimDetailsViewModel>();
+            Claims = new List<ClientGrantTypeDetailsViewModel>();
         }
 
         public int ClientId { get; set; }
         public string ClientIdString { get; set; }
         public string ClientName { get; set; }
         public string Description { get; set; }
-        public List<ClientClaimDetailsViewModel> Claims { get; set; }
+        public List<ClientGrantTypeDetailsViewModel> Claims { get; set; }
     }
 
 
-    public class ClientClaimAddViewModel : BaseClientClaimViewModel
+    public class ClientGrantTypeAddViewModel : BaseGrantTypeClaimViewModel
     {
         public string ClientIdString { get; set; }
         public string ClientName { get; set; }
     }
 
-    public class ClientClaimEditViewModel : BaseClientClaimViewModel
+    public class ClientGrantTypeEditViewModel : BaseGrantTypeClaimViewModel
     {
         public string ClientIdString { get; set; }
         public string ClientName { get; set; }
     }
 
-    public class BaseClientClaimViewModel
+    public class BaseGrantTypeClaimViewModel
     {
         public int Id { get; set; }
         public int ClientId { get; set; }
 
         [Required]
         [StringLength(250)]
-        public string ClaimType { get; set; }
+        public string GrantType { get; set; }
 
-        [Required]
-        [StringLength(250)]
-        public string ClaimValue { get; set; }
     }
 
 
