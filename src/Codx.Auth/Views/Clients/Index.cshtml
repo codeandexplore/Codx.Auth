@@ -1,0 +1,43 @@
+﻿
+@model List<ClientDetailsViewModel>
+
+
+@{
+    ViewData["Title"] = "Clients";
+}
+
+<h1>Clients</h1>
+
+<a asp-action="Add">Add</a>
+
+<div class="row">
+
+    <div class="col-lg-12">
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Client ID</th>
+                <th>Client Name</th>
+                <th></th>
+            </tr>
+
+            @for (var i = 0; i < Model.Count; i++)
+            {
+                var row = Model[i];
+                <tr>
+                    <td>@row.ClientId</td>
+                    <td>@row.ClientName</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@row.Id">Edit</a>
+                        <a asp-controller="IdentityResourceClaims" asp-action="IdentityResourceClaims" asp-route-id="@row.Id">Claims</a>
+                        <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
+                    </td>
+                </tr>
+
+            }
+
+        </table>
+
+    </div>
+
+</div>
