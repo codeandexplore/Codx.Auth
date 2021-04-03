@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
@@ -29,44 +30,40 @@ namespace Codx.Auth
         {
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 
-            services.AddDbContext<UserDbContext>(options => options.UseSqlServer(connectionString))
-                .AddIdentity<ApplicationUser,ApplicationRole>()
-                .AddEntityFrameworkStores<UserDbContext>()
-                .AddDefaultTokenProviders();
-
-            services.Configure<IdentityOptions>(options =>
-            {
-                // Password settings.
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequiredUniqueChars = 1;
-
-                // Lockout settings.
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                options.Lockout.MaxFailedAccessAttempts = 5;
-                options.Lockout.AllowedForNewUsers = true;
-
-                // User settings.
-                options.User.AllowedUserNameCharacters =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-                options.User.RequireUniqueEmail = false;
-            });
-
-            services.ConfigureApplicationCookie(options =>
-            {
-                // Cookie settings
-                options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-
-                options.LoginPath = "/Account/Login";
-                options.AccessDeniedPath = "/Account/AccessDenied";
-                options.SlidingExpiration = true;
-            });
-
+            services.AddDbContext<UserDbContext>(options => options.UseSqlServer(connectionString));
+                
+            services.AddAspNetIdentity();
+                       
             services.AddControllersWithViews();
+
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            services.AddIdentityServer()
+                .AddConfigurationStore(options =>
+                {
+                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
+                .AddAspNetIdentity<ApplicationUser>()
+                .AddDeveloperSigningCredential();
+
+            services.AddAuthentication()
+                .AddCookie(options => {
+                    options.ExpireTimeSpan = new TimeSpan(0, 15, 0);
+                });
+
+            //services.ConfigureApplicationCookie(options =>
+            //{
+            //    // Cookie settings
+            //    options.Cookie.HttpOnly = true;
+            //    options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+
+            //    options.LoginPath = "/Account/Login";
+            //    options.AccessDeniedPath = "/Account/AccessDenied";
+            //    options.SlidingExpiration = true;
+            //});
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
