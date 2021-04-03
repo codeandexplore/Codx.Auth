@@ -1,6 +1,7 @@
 ﻿using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
+    [Authorize]
     public class ClientScopesController : Controller
     {
         protected readonly ConfigurationDbContext _dbContext;
