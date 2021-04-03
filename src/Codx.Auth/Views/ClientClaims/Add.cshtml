@@ -1,0 +1,51 @@
+﻿@model ClientClaimAddViewModel
+
+@{
+    ViewData["Title"] = "Add";
+}
+
+<h1>Add</h1>
+
+<div class="row">
+    <div class="col-lg-6">
+
+        <div class="row">
+            <div class="col-lg-12">
+
+                <partial name="_ValidationSummary" />
+
+            </div>
+        </div>
+
+        <form asp-action="Add">
+
+            <input type="hidden" asp-for="@Model.ClientId" />
+
+            <div class="form-group">
+                <label>ClientID</label>
+                <input asp-for="@Model.ClientIdString" class="form-control" readonly />
+            </div>
+            <div class="form-group">
+                <label>Client Name</label>
+                <input asp-for="@Model.ClientName" class="form-control" readonly />
+            </div>
+
+
+            <div class="form-group">
+                <label>Claim Type</label>
+                <input asp-for="ClaimType" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Claim Value</label>
+                <input asp-for="ClaimValue" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Save" />
+            </div>
+
+        </form>
+
+    </div>
+</div>
