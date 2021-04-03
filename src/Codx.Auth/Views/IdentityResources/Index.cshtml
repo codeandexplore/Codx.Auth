@@ -3,7 +3,7 @@
 
 
 @{
-    ViewData["Title"] = "Roles";
+    ViewData["Title"] = "Identity Resources";
 }
 
 <h1>Identity Resources</h1>
@@ -29,6 +29,7 @@
                     <td>@row.DisplayName</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@row.Id">Edit</a>
+                        <a asp-controller="IdentityResourceClaims" asp-action="IdentityResourceClaims" asp-route-id="@row.Id">Claims</a>
                         <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
                     </td>
                 </tr>

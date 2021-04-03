@@ -1,0 +1,41 @@
+﻿
+@model IdentityResourceDetailsViewModel
+
+@{
+    ViewData["Title"] = "Identity Resource Claims";
+}
+
+<h1>Identity Resource Claims</h1>
+
+<div class="row">
+    <div class="col-lg-12">
+        <input type="hidden" asp-for="@Model.Id" />
+        <label>Name: </label> @Model.Name <br />
+        <label>Display Name: </label> @Model.DisplayName <br />
+    </div>
+</div>
+
+<a asp-action="Add" asp-route-id="@Model.Id">Add</a>
+
+<div class="row">
+    <div class="col-lg-12">
+        <table class="table table-bordered">
+            <tr>
+                <th>Type</th>
+                <th></th>
+            </tr>
+
+            @for (var i = 0; i < Model.Claims.Count; i++)
+            {
+                var row = Model.Claims[i];
+                <tr>
+                    <td>@row.Type</td>
+                    <td>
+                        <a asp-action="Delete" asp-route-claimid="@row.Id" asp-route-identityresourceid="@Model.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+
+        </table>
+    </div>
+</div>

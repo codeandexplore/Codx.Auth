@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Codx.Auth.ViewModels
@@ -9,9 +10,16 @@ namespace Codx.Auth.ViewModels
 
     public class IdentityResourceDetailsViewModel
     {
+        public IdentityResourceDetailsViewModel()
+        {
+            Claims = new List<IdentityResourceClaimDetailsViewModel>();
+        }
+
         public int Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
+
+        public List<IdentityResourceClaimDetailsViewModel> Claims { get; set; }
     }
 
     public class IdentityResourceAddViewModel : BaseIdentityResourceViewModel
