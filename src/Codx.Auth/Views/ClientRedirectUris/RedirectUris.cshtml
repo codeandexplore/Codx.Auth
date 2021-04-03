@@ -1,11 +1,11 @@
 ﻿
-@model ClientGrantTypesDetailsViewModel
+@model ClientRedirectUrisDetailsViewModel
 
 @{
-    ViewData["Title"] = "Client Grant Types";
+    ViewData["Title"] = "Client Redirect URIs";
 }
 
-<h1>Client Grant Types</h1>
+<h1>Client Redirect URIs</h1>
 
 <div class="row">
     <div class="col-lg-12">
@@ -21,15 +21,15 @@
     <div class="col-lg-12">
         <table class="table table-bordered">
             <tr>
-                <th>Grant Type</th>
+                <th>Redirect URI</th>
                 <th></th>
             </tr>
 
-            @for (var i = 0; i < Model.GrantTypes.Count; i++)
+            @for (var i = 0; i < Model.RedirectUris.Count; i++)
             {
-                var row = Model.GrantTypes[i];
+                var row = Model.RedirectUris[i];
                 <tr>
-                    <td>@row.GrantType</td>
+                    <td>@row.RedirectUri</td>
                     <td>
                         <a asp-action="Delete" asp-route-id="@row.Id" asp-route-clientid="@Model.ClientId">Delete</a>
                     </td>

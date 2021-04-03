@@ -10,31 +10,31 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    public class ClientGrantTypesController : Controller
+    public class ClientPostLogoutRedirectUrisController : Controller
     {
         protected readonly ConfigurationDbContext _dbContext;
-        public ClientGrantTypesController(ConfigurationDbContext dbContext)
+        public ClientPostLogoutRedirectUrisController(ConfigurationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<IActionResult> GrantTypes(int id)
+        public async Task<IActionResult> PostLogoutRedirectUris(int id)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == id);
+            var client = await _dbContext.Clients.Include(i => i.PostLogoutRedirectUris).FirstOrDefaultAsync(u => u.Id == id);
 
-            var viewmodel = new ClientGrantTypesDetailsViewModel();
+            var viewmodel = new ClientPostLogoutRedirectUrisDetailsViewModel();
 
             viewmodel.ClientId = client.Id;
             viewmodel.ClientIdString = client.ClientId;
             viewmodel.ClientName = client.ClientName;
             viewmodel.Description = client.Description;
 
-            foreach (var granttype in client.AllowedGrantTypes)
+            foreach (var redirecturi in client.PostLogoutRedirectUris)
             {
-                viewmodel.GrantTypes.Add(new ClientGrantTypeDetailsViewModel
+                viewmodel.PostLogoutRedirectUris.Add(new ClientPostLogoutRedirectUriDetailsViewModel
                 {
-                    Id = granttype.Id,
-                    GrantType = granttype.GrantType,
+                    Id = redirecturi.Id,
+                    PostLogoutRedirectUri = redirecturi.PostLogoutRedirectUri,
                 });
             }
 
@@ -45,9 +45,9 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Add(int clientid)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == clientid);
+            var client = await _dbContext.Clients.Include(i => i.PostLogoutRedirectUris).FirstOrDefaultAsync(u => u.Id == clientid);
 
-            var viewmodel = new ClientGrantTypeAddViewModel();
+            var viewmodel = new ClientPostLogoutRedirectUriAddViewModel();
 
             viewmodel.ClientId = client.Id;
             viewmodel.ClientIdString = client.ClientId;
@@ -57,23 +57,23 @@ namespace Codx.Auth.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(ClientGrantTypeAddViewModel viewmodel)
+        public async Task<IActionResult> Add(ClientPostLogoutRedirectUriAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
+                var client = await _dbContext.Clients.Include(i => i.PostLogoutRedirectUris).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
 
-                client.AllowedGrantTypes.Add(new ClientGrantType
+                client.PostLogoutRedirectUris.Add(new ClientPostLogoutRedirectUri
                 {
                     ClientId = viewmodel.ClientId,
-                    GrantType = viewmodel.GrantType,                    
+                    PostLogoutRedirectUri = viewmodel.PostLogoutRedirectUri,                    
                 });
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(GrantTypes), new { id = viewmodel.ClientId });
+                    return RedirectToAction(nameof(PostLogoutRedirectUris), new { id = viewmodel.ClientId });
                 }
 
                 ModelState.AddModelError("", "Failed");

@@ -6,51 +6,51 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class ClientGrantTypeViewModels
+    public class ClientRedirectUriViewModels
     {
     }
 
-    public class ClientGrantTypeDetailsViewModel 
+    public class ClientRedirectUriDetailsViewModel 
     {
         public int Id { get; set; }
-        public string GrantType { get; set; }
+        public string RedirectUri { get; set; }
     }
 
-    public class ClientGrantTypesDetailsViewModel
+    public class ClientRedirectUrisDetailsViewModel
     {
-        public ClientGrantTypesDetailsViewModel()
+        public ClientRedirectUrisDetailsViewModel()
         {
-            GrantTypes = new List<ClientGrantTypeDetailsViewModel>();
+            RedirectUris = new List<ClientRedirectUriDetailsViewModel>();
         }
 
         public int ClientId { get; set; }
         public string ClientIdString { get; set; }
         public string ClientName { get; set; }
         public string Description { get; set; }
-        public List<ClientGrantTypeDetailsViewModel> GrantTypes { get; set; }
+        public List<ClientRedirectUriDetailsViewModel> RedirectUris { get; set; }
     }
 
 
-    public class ClientGrantTypeAddViewModel : BaseGrantTypeClaimViewModel
+    public class ClientRedirectUriAddViewModel : BaseRedirectUriClaimViewModel
     {
         public string ClientIdString { get; set; }
         public string ClientName { get; set; }
     }
 
-    public class ClientGrantTypeEditViewModel : BaseGrantTypeClaimViewModel
+    public class ClientRedirectUriEditViewModel : BaseRedirectUriClaimViewModel
     {
         public string ClientIdString { get; set; }
         public string ClientName { get; set; }
     }
 
-    public class BaseGrantTypeClaimViewModel
+    public class BaseRedirectUriClaimViewModel
     {
         public int Id { get; set; }
         public int ClientId { get; set; }
 
         [Required]
-        [StringLength(250)]
-        public string GrantType { get; set; }
+        [StringLength(2000)]
+        public string RedirectUri { get; set; }
 
     }
 

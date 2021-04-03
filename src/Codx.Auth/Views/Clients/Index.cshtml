@@ -28,10 +28,12 @@
                     <td>@row.ClientId</td>
                     <td>@row.ClientName</td>
                     <td>
-                        <a asp-action="Edit" asp-route-id="@row.Id">Edit</a>
-                        <a asp-controller="ClientClaims" asp-action="Claims" asp-route-id="@row.Id">Claims</a>
-                        <a asp-controller="ClientGrantTypes" asp-action="GrantTypes" asp-route-id="@row.Id">Grant Types</a>
-                        <a asp-controller="ClientSecrets" asp-action="Secrets" asp-route-id="@row.Id">Secrets</a>
+                        <a asp-action="Edit" asp-route-id="@row.Id">[Edit]</a>
+                        <a asp-controller="ClientClaims" asp-action="Claims" asp-route-id="@row.Id">[Claims]</a>
+                        <a asp-controller="ClientGrantTypes" asp-action="GrantTypes" asp-route-id="@row.Id">[Grant Types]</a>
+                        <a asp-controller="ClientSecrets" asp-action="Secrets" asp-route-id="@row.Id">[Secrets]</a>
+                        <a asp-controller="ClientRedirectUris" asp-action="RedirectUris" asp-route-id="@row.Id">[Redirect URIs]</a>
+                        <a asp-controller="ClientPostLogoutRedirectUris" asp-action="PostLogoutRedirectUris" asp-route-id="@row.Id">[Post Logout Redirect URIs]</a>
                         <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
                     </td>
                 </tr>

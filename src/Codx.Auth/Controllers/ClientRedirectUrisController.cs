@@ -10,31 +10,31 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    public class ClientGrantTypesController : Controller
+    public class ClientRedirectUrisController : Controller
     {
         protected readonly ConfigurationDbContext _dbContext;
-        public ClientGrantTypesController(ConfigurationDbContext dbContext)
+        public ClientRedirectUrisController(ConfigurationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<IActionResult> GrantTypes(int id)
+        public async Task<IActionResult> RedirectUris(int id)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == id);
+            var client = await _dbContext.Clients.Include(i => i.RedirectUris).FirstOrDefaultAsync(u => u.Id == id);
 
-            var viewmodel = new ClientGrantTypesDetailsViewModel();
+            var viewmodel = new ClientRedirectUrisDetailsViewModel();
 
             viewmodel.ClientId = client.Id;
             viewmodel.ClientIdString = client.ClientId;
             viewmodel.ClientName = client.ClientName;
             viewmodel.Description = client.Description;
 
-            foreach (var granttype in client.AllowedGrantTypes)
+            foreach (var redirecturi in client.RedirectUris)
             {
-                viewmodel.GrantTypes.Add(new ClientGrantTypeDetailsViewModel
+                viewmodel.RedirectUris.Add(new ClientRedirectUriDetailsViewModel
                 {
-                    Id = granttype.Id,
-                    GrantType = granttype.GrantType,
+                    Id = redirecturi.Id,
+                    RedirectUri = redirecturi.RedirectUri,
                 });
             }
 
@@ -45,9 +45,9 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Add(int clientid)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == clientid);
+            var client = await _dbContext.Clients.Include(i => i.RedirectUris).FirstOrDefaultAsync(u => u.Id == clientid);
 
-            var viewmodel = new ClientGrantTypeAddViewModel();
+            var viewmodel = new ClientRedirectUriAddViewModel();
 
             viewmodel.ClientId = client.Id;
             viewmodel.ClientIdString = client.ClientId;
@@ -57,23 +57,23 @@ namespace Codx.Auth.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(ClientGrantTypeAddViewModel viewmodel)
+        public async Task<IActionResult> Add(ClientRedirectUriAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
+                var client = await _dbContext.Clients.Include(i => i.RedirectUris).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
 
-                client.AllowedGrantTypes.Add(new ClientGrantType
+                client.RedirectUris.Add(new ClientRedirectUri
                 {
                     ClientId = viewmodel.ClientId,
-                    GrantType = viewmodel.GrantType,                    
+                    RedirectUri = viewmodel.RedirectUri,                    
                 });
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(GrantTypes), new { id = viewmodel.ClientId });
+                    return RedirectToAction(nameof(RedirectUris), new { id = viewmodel.ClientId });
                 }
 
                 ModelState.AddModelError("", "Failed");
