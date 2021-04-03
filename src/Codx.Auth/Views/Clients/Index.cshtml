@@ -34,6 +34,7 @@
                         <a asp-controller="ClientSecrets" asp-action="Secrets" asp-route-id="@row.Id">[Secrets]</a>
                         <a asp-controller="ClientRedirectUris" asp-action="RedirectUris" asp-route-id="@row.Id">[Redirect URIs]</a>
                         <a asp-controller="ClientPostLogoutRedirectUris" asp-action="PostLogoutRedirectUris" asp-route-id="@row.Id">[Post Logout Redirect URIs]</a>
+                        <a asp-controller="ClientScopes" asp-action="Scopes" asp-route-id="@row.Id">[Scopes]</a>
                         <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
                     </td>
                 </tr>
