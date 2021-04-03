@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Codx.Auth.ViewModels.RoleViewModels
+namespace Codx.Auth.ViewModels
 {
     public class RoleViewModels
     {

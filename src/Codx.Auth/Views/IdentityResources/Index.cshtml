@@ -1,12 +1,12 @@
 ﻿
-@model List<UserDetailsViewModel>
+@model List<IdentityResourceDetailsViewModel>
 
 
 @{
-    ViewData["Title"] = "Users";
+    ViewData["Title"] = "Roles";
 }
 
-<h1>Users</h1>
+<h1>Identity Resources</h1>
 
 <a asp-action="Add">Add</a>
 
@@ -16,21 +16,19 @@
 
         <table class="table table-bordered">
             <tr>
-                <th>Username</th>
-                <th>Email</th>
+                <th>Name</th>
+                <th>Display Name</th>
                 <th></th>
             </tr>
 
             @for (var i = 0; i < Model.Count; i++)
             {
                 var row = Model[i];
-                <tr>                 
-                    <td>@row.Username</td>
-                    <td>@row.Email</td>
+                <tr>
+                    <td>@row.Name</td>
+                    <td>@row.DisplayName</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@row.Id">Edit</a>
-                        <a asp-controller="UserRoles" asp-action="UserRoles" asp-route-userid="@row.Id">Roles</a>
-                        <a asp-controller="UserClaims" asp-action="UserClaims" asp-route-userid="@row.Id">Claims</a>
                         <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
                     </td>
                 </tr>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Codx.Auth.ViewModels.UserClaimViewModels
+namespace Codx.Auth.ViewModels
 {
     public class UserClaimViewModels
     {
