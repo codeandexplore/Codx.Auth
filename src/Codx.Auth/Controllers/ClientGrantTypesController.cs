@@ -66,7 +66,7 @@ namespace Codx.Auth.Controllers
                 client.AllowedGrantTypes.Add(new ClientGrantType
                 {
                     ClientId = viewmodel.ClientId,
-                    GrantType = viewmodel.GrantType,
+                    GrantType = viewmodel.GrantType,                    
                 });
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
