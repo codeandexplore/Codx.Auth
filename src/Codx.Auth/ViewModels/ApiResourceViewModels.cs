@@ -9,25 +9,14 @@ namespace Codx.Auth.ViewModels
     public class ApiResourceViewModels
     {
     }
-    public class ApiResourceDetailsViewModel
+    public class ApiResourceDetailsViewModel : BaseApiResourceViewModel
     {
-        public ApiResourceDetailsViewModel()
-        {
-        }
-
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
-
     }
     public class ApiResourceAddViewModel : BaseApiResourceViewModel
     {
-
     }
-
     public class ApiResourceEditViewModel : BaseApiResourceViewModel
     {
-
     }
 
     public class BaseApiResourceViewModel

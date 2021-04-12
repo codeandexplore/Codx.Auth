@@ -35,7 +35,7 @@
                         <tr>
                             <th data-field="name">Name</th>
                             <th data-field="displayName">Display Name</th>
-                            <th data-field="id" data-width="100" data-formatter="rowActionButtons"></th>
+                            <th data-field="id" data-width="150" data-formatter="rowActionButtons"></th>
                         </tr>
                     </thead>
                    
@@ -56,7 +56,8 @@
             })
         };
         function rowActionButtons(index, row) {
-            return '<a class="btn btn-outline-warning btn-sm" href="/ApiResources/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
+            return '<a class="btn btn-outline-info btn-sm" href="/ApiResources/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-warning btn-sm" href="/ApiResources/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
                 '<a class="btn btn-outline-danger btn-sm" href="/ApiResources/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 

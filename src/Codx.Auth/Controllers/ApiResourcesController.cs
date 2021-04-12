@@ -43,6 +43,18 @@ namespace Codx.Auth.Controllers
             });
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ApiResourceDetailsViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+
         [HttpGet]
         public IActionResult Add()
         {
@@ -110,5 +122,39 @@ namespace Codx.Auth.Controllers
 
             return View(viewmodel);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ApiResourceEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(ApiResourceEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ApiResources.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ApiResource>(viewmodel);
+                _dbContext.Remove(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewmodel);
+        }
+
     }
 }
