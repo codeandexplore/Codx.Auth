@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
+using Codx.Auth.Mappings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,6 +30,8 @@ namespace Codx.Auth
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
+
+            services.AddAutoMapper(typeof(ApplicationProfile));
 
             services.AddDbContext<UserDbContext>(options => options.UseSqlServer(connectionString));
                 
