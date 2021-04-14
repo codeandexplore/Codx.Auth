@@ -3,8 +3,8 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,34 +12,29 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    [Authorize]
-    public class ApiResourcesController : Controller
+    public class ApiResourceClaimsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
         protected readonly IMapper _mapper;
-        public ApiResourcesController(IdentityServerDbContext dbContext, IMapper mapper)
+        public ApiResourceClaimsController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpGet]
-        public JsonResult GetApiResourcesTableData(string search, string sort, string order, int offset, int limit)
+        public JsonResult GetApiResourceClaimsTableData(string search, string sort, string order, int offset, int limit)
         {
-            var apiResources = _dbContext.ApiResources.Skip(offset).Take(limit).ToList();
-            var viewModel = apiResources.Select(apires => new ApiResourceDetailsViewModel
+            var apiResources = _dbContext.ApiResourceClaims.Skip(offset).Take(limit).ToList();
+            var viewModel = apiResources.Select(apires => new ApiResourceClaimDetailsViewModel
             {
                 Id = apires.Id,
-                Name = apires.Name,
-                DisplayName = apires.DisplayName,
+                Type = apires.Type,
             }).ToList();
 
-            return Json(new { 
-                total = _dbContext.ApiResources.Count(),
+            return Json(new
+            {
+                total = _dbContext.ApiResourceClaims.Count(),
                 rows = viewModel
             });
         }
@@ -48,52 +43,52 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
+            var record = _dbContext.ApiResourceClaims.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceDetailsViewModel>(record);
+            var viewmodel = _mapper.Map<ApiResourceClaimDetailsViewModel>(record);
 
             return View(viewmodel);
         }
 
 
         [HttpGet]
-        public IActionResult Add()
+        public IActionResult Add(int id)
         {
-            return View();
+            var viewmodel = new ApiResourceClaimAddViewModel 
+            {
+                ApiResourceId = id,
+            };
+            return View(viewmodel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(ApiResourceAddViewModel viewModel)
+        public async Task<IActionResult> Add(ApiResourceClaimAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ApiResource>(viewModel);
+                var record = _mapper.Map<ApiResourceClaim>(viewmodel);
+                _dbContext.ApiResourceClaims.Add(record);
 
-                record.Enabled = true;
-                record.ShowInDiscoveryDocument = true;
-                record.Created = DateTime.UtcNow;
-
-                await _dbContext.AddAsync(record).ConfigureAwait(false);
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Details", "ApiResources", new { id= viewmodel.ApiResourceId});
                 }
 
                 ModelState.AddModelError("", "Failed");
 
             }
 
-            return View(viewModel);
+            return View(viewmodel);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
+            var record = _dbContext.ApiResourceClaims.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceEditViewModel>(record);
+            var viewmodel = _mapper.Map<ApiResourceClaimEditViewModel>(record);
 
             return View(viewmodel);
         }
@@ -101,21 +96,20 @@ namespace Codx.Auth.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ApiResourceEditViewModel viewmodel)
+        public async Task<IActionResult> Edit(ApiResourceClaimEditViewModel viewmodel)
         {
-            var isRecordFound = _dbContext.ApiResources.Any(o => o.Id == viewmodel.Id);
+            var isRecordFound = _dbContext.ApiResourceClaims.Any(o => o.Id == viewmodel.Id);
 
             if (ModelState.IsValid && isRecordFound)
-            {                
-                var record = _mapper.Map<ApiResource>(viewmodel);
-                record.Updated = DateTime.UtcNow;
-
+            {
+                var record = _mapper.Map<ApiResourceClaim>(viewmodel);
+        
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Details", "ApiResources", new { id = viewmodel.ApiResourceId });
                 }
 
                 ModelState.AddModelError("", "Failed");
@@ -127,28 +121,28 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
+            var record = _dbContext.ApiResourceClaims.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceEditViewModel>(record);
+            var viewmodel = _mapper.Map<ApiResourceClaimEditViewModel>(record);
 
             return View(viewmodel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(ApiResourceEditViewModel viewmodel)
+        public async Task<IActionResult> Delete(ApiResourceClaimEditViewModel viewmodel)
         {
             var isRecordFound = _dbContext.ApiResources.Any(o => o.Id == viewmodel.Id);
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiResource>(viewmodel);
+                var record = _mapper.Map<ApiResourceClaim>(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Details", "ApiResources", new { id = viewmodel.ApiResourceId });
                 }
 
                 ModelState.AddModelError("", "Failed");
@@ -156,6 +150,5 @@ namespace Codx.Auth.Controllers
 
             return View(viewmodel);
         }
-
     }
 }

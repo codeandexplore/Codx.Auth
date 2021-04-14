@@ -29,7 +29,7 @@
                 </nav>
             </div>
             <div class="card-body">
-                             
+
 
                 <div class="tab-content" id="nav-tabContent">
                     <div class="tab-pane fade show active" id="nav-details" role="tabpanel" aria-labelledby="nav-details-tab">
@@ -70,7 +70,26 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nav-claims" role="tabpanel" aria-labelledby="nav-claims-tab">
-                        Claims
+                        <a asp-action="Add" asp-controller="ApiResourceClaims" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add</a>
+                        <br />  <br />
+                        <table class="table table-bordered"
+                               id="apiResourceClaimTable"
+                               data-toggle="table"
+                               data-pagination="true"
+                               data-side-pagination="server"
+                               data-page-size="5"
+                               data-page-list="[5,10,25,50,100,200,All]"
+                               data-ajax="apiResourceClaimAjaxRequest">
+
+                            <thead>
+                                <tr>
+                                    <th data-field="type">Type</th>
+                                    <th data-field="id" data-width="150" data-formatter="apiResourceClaimRowActionButtons"></th>
+                                </tr>
+                            </thead>
+
+                        </table>
+
                     </div>
                     <div class="tab-pane fade" id="nav-scopes" role="tabpanel" aria-labelledby="nav-scopes-tab">
                         Scopes
@@ -86,3 +105,23 @@
         </div>
     </div>
 </div>
+
+
+@section Scripts
+{
+    <script>
+        function apiResourceClaimAjaxRequest(params) {
+            var url = '@Url.Action("GetApiResourceClaimsTableData", "ApiResourceClaims")'
+            $.get(url + '?' + $.param(params.data)).then(function (res) {
+                params.success(res)
+            })
+        };
+        function apiResourceClaimRowActionButtons(index, row) {
+            return '<a class="btn btn-outline-info btn-sm" href="/ApiResourceClaims/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-warning btn-sm" href="/ApiResourceClaims/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/ApiResourceClaims/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+        }
+
+    </script>
+
+}

@@ -52,6 +52,8 @@ namespace Codx.Auth
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddDeveloperSigningCredential();
 
+            services.AddDbContext<IdentityServerDbContext>();
+
             services.AddAuthentication()
                 .AddCookie(options => {
                     options.ExpireTimeSpan = new TimeSpan(0, 15, 0);
