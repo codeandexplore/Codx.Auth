@@ -1,0 +1,172 @@
+﻿
+@model ApiScopeDetailsViewModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","ApiScopes")">Api Scopes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Details</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <div class="card">
+            <div class="card-header">
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <a class="nav-item nav-link active" id="nav-details-tab" data-toggle="tab" href="#nav-details" role="tab" aria-controls="nav-details" aria-selected="true">Details</a>
+                        <a class="nav-item nav-link" id="nav-claims-tab" data-toggle="tab" href="#nav-claims" role="tab" aria-controls="nav-claims" aria-selected="false">Claims</a>
+                        <a class="nav-item nav-link" id="nav-properties-tab" data-toggle="tab" href="#nav-properties" role="tab" aria-controls="nav-properties" aria-selected="false">Properties</a>
+                    </div>
+                </nav>
+            </div>
+            <div class="card-body">
+
+
+                <div class="tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="nav-details" role="tabpanel" aria-labelledby="nav-details-tab">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <input asp-for="@Model.Name" class="form-control" readonly />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>DisplayName</label>
+                                    <input asp-for="@Model.DisplayName" class="form-control" readonly />
+                                </div>
+
+                                <div class="form-group form-check">
+                                    <input type="checkbox" class="form-check-input" asp-for="@Model.Enabled" disabled>
+                                    <label class="form-check-label">Enabled</label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <input asp-for="@Model.Description" class="form-control" readonly />
+                                </div>
+
+                                <div class="form-group form-check">
+                                    <input type="checkbox" class="form-check-input" asp-for="@Model.Required" disabled>
+                                    <label class="form-check-label">Required</label>
+                                </div>
+
+                                <div class="form-group form-check">
+                                    <input type="checkbox" class="form-check-input" asp-for="@Model.Emphasize" disabled>
+                                    <label class="form-check-label">Emphasize</label>
+                                </div>
+
+                                <div class="form-group form-check">
+                                    <input type="checkbox" class="form-check-input" asp-for="@Model.ShowInDiscoveryDocument" disabled>
+                                    <label class="form-check-label">ShowInDiscoveryDocument</label>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-claims" role="tabpanel" aria-labelledby="nav-claims-tab">
+                        <a asp-action="Add" asp-controller="ApiScopeClaims" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add</a>
+                        <br />  <br />
+                        <table class="table table-bordered"
+                               id="apiScopeClaimTable"
+                               data-toggle="table"
+                               data-query-params="apiScopeClaimTableParams"
+                               data-pagination="true"
+                               data-side-pagination="server"
+                               data-page-size="5"
+                               data-page-list="[5,10,25,50,100,200,All]"
+                               data-ajax="apiScopeClaimAjaxRequest">
+
+                            <thead>
+                                <tr>
+                                    <th data-field="type">Type</th>
+                                    <th data-field="id" data-width="150" data-formatter="apiScopeClaimRowActionButtons"></th>
+                                </tr>
+                            </thead>
+
+                        </table>
+
+                    </div>
+                 
+                    <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-properties-tab">
+                        <a asp-action="Add" asp-controller="ApiScopeProperties" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add</a>
+                        <br />  <br />
+                        <table class="table table-bordered"
+                               id="apiScopePropertyTable"
+                               data-toggle="table"
+                               data-query-params="apiScopePropertyTableParams"
+                               data-pagination="true"
+                               data-side-pagination="server"
+                               data-page-size="5"
+                               data-page-list="[5,10,25,50,100,200,All]"
+                               data-ajax="apiScopePropertyAjaxRequest">
+
+                            <thead>
+                                <tr>
+                                    <th data-field="key">Key</th>
+                                    <th data-field="value">Value</th>
+                                    <th data-field="id" data-width="150" data-formatter="apiScopePropertyRowActionButtons"></th>
+                                </tr>
+                            </thead>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <script>
+        var modelid = '@Model.Id';
+    </script>
+
+    <script>
+        function apiScopeClaimAjaxRequest(params) {
+            var url = '@Url.Action("GetApiScopeClaimsTableData", "ApiScopeClaims")';
+            $.get(url + '?' + $.param(params.data)).then(function (res) {
+                params.success(res)
+            })
+        };
+        function apiScopeClaimTableParams(params) {
+            params.apiScopeid = modelid;
+            return params
+        }
+        function apiScopeClaimRowActionButtons(index, row) {
+            return '<a class="btn btn-outline-info btn-sm" href="/ApiScopeClaims/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-warning btn-sm" href="/ApiScopeClaims/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/ApiScopeClaims/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+        }
+
+    </script>
+
+    <script>
+        function apiScopePropertyAjaxRequest(params) {
+            var url = '@Url.Action("GetApiScopePropertiesTableData", "ApiScopeProperties")';
+            $.get(url + '?' + $.param(params.data)).then(function (res) {
+                params.success(res)
+            })
+        };
+        function apiScopePropertyTableParams(params) {
+            params.apiScopeid = modelid;
+            return params
+        }
+        function apiScopePropertyRowActionButtons(index, row) {
+            return '<a class="btn btn-outline-info btn-sm" href="/ApiScopeProperties/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-warning btn-sm" href="/ApiScopeProperties/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/ApiScopeProperties/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+        }
+
+    </script>
+
+}
