@@ -115,7 +115,27 @@
                         </table>
                     </div>
                     <div class="tab-pane fade" id="nav-secrets" role="tabpanel" aria-labelledby="nav-secrets-tab">
-                        Secrets
+                        <a asp-action="Add" asp-controller="ApiResourceSecrets" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add</a>
+                        <br />  <br />
+                        <table class="table table-bordered"
+                               id="apiResourceSecretTable"
+                               data-toggle="table"
+                               data-query-params="apiResourceSecretTableParams"
+                               data-pagination="true"
+                               data-side-pagination="server"
+                               data-page-size="5"
+                               data-page-list="[5,10,25,50,100,200,All]"
+                               data-ajax="apiResourceSecretAjaxRequest">
+
+                            <thead>
+                                <tr>
+                                    <th data-field="type">Type</th>
+                                    <th data-field="description">Description</th>
+                                    <th data-field="id" data-width="150" data-formatter="apiResourceSecretRowActionButtons"></th>
+                                </tr>
+                            </thead>
+
+                        </table>
                     </div>
                     <div class="tab-pane fade" id="nav-properties" role="tabpanel" aria-labelledby="nav-properties-tab">
                         Properties
@@ -167,6 +187,25 @@
             return '<a class="btn btn-outline-info btn-sm" href="/ApiResourceScopes/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
                 '<a class="btn btn-outline-warning btn-sm" href="/ApiResourceScopes/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
                 '<a class="btn btn-outline-danger btn-sm" href="/ApiResourceScopes/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+        }
+
+    </script>
+
+    <script>
+        function apiResourceSecretAjaxRequest(params) {
+            var url = '@Url.Action("GetApiResourceSecretsTableData", "ApiResourceSecrets")';
+            $.get(url + '?' + $.param(params.data)).then(function (res) {
+                params.success(res)
+            })
+        };
+        function apiResourceSecretTableParams(params) {
+            params.apiresourceid = modelid;
+            return params
+        }
+        function apiResourceSecretRowActionButtons(index, row) {
+            return '<a class="btn btn-outline-info btn-sm" href="/ApiResourceSecrets/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-warning btn-sm" href="/ApiResourceSecrets/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/ApiResourceSecrets/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
     </script>

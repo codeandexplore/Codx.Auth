@@ -1,0 +1,66 @@
+﻿
+@model ApiResourceSecretEditViewModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","ApiResources")">Api Resources</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Details","ApiResources", new { id=Model.ApiResourceId})">Details</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Delete Secret</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <div class="card">
+            <div class="card-header">
+                Delete Api Resource Secret
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-12">
+
+                        <partial name="_ValidationSummary" />
+
+                    </div>
+                </div>
+
+                <form asp-action="Delete">
+
+                    <input hidden asp-for="@Model.Id" />
+                    <input hidden asp-for="@Model.ApiResourceId" />
+
+                    <div class="form-group">
+                        <label>Type</label>
+                        <input asp-for="@Model.Type" class="form-control" readonly/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Value</label>
+                        <input asp-for="@Model.Value" class="form-control" readonly/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input asp-for="@Model.Description" class="form-control" readonly/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Expiration</label>
+                        <input asp-for="@Model.Expiration" class="form-control" readonly/>
+                    </div>
+
+                    <div class="form-group">
+                        <a asp-action="Details" asp-controller="ApiResources" asp-route-id="@Model.ApiResourceId" class="btn btn-info">Cancel</a>
+                        <input type="submit" class="btn btn-primary" value="Save" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
