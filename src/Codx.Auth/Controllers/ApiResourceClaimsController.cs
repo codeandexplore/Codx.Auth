@@ -134,7 +134,7 @@ namespace Codx.Auth.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(ApiResourceClaimEditViewModel viewmodel)
         {
-            var isRecordFound = _dbContext.ApiResources.Any(o => o.Id == viewmodel.Id);
+            var isRecordFound = _dbContext.ApiResourceClaims.Any(o => o.Id == viewmodel.Id);
 
             if (ModelState.IsValid && isRecordFound)
             {
