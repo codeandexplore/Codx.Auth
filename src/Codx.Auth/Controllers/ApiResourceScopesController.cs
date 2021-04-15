@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
-using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,26 +10,25 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    public class ApiResourceClaimsController : Controller
+    public class ApiResourceScopesController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
         protected readonly IMapper _mapper;
-        public ApiResourceClaimsController(IdentityServerDbContext dbContext, IMapper mapper)
+        public ApiResourceScopesController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
         }
 
         [HttpGet]
-        public JsonResult GetApiResourceClaimsTableData(int apiresourceid, string search, string sort, string order, int offset, int limit)
+        public JsonResult GetApiResourceScopesTableData(int apiresourceid, string search, string sort, string order, int offset, int limit)
         {
-            var query= _dbContext.ApiResourceClaims.Where(o => o.ApiResourceId == apiresourceid);
-
+            var query = _dbContext.ApiResourceScopes.Where(o => o.ApiResourceId == apiresourceid);
             var data = query.Skip(offset).Take(limit).ToList();
-            var viewModel = data.Select(apires => new ApiResourceClaimDetailsViewModel
+            var viewModel = data.Select(apires => new ApiResourceScopeDetailsViewModel
             {
                 Id = apires.Id,
-                Type = apires.Type,
+                Scope = apires.Scope,
             }).ToList();
 
             return Json(new
@@ -45,9 +42,9 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var record = _dbContext.ApiResourceClaims.FirstOrDefault(o => o.Id == id);
+            var record = _dbContext.ApiResourceScopes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceClaimDetailsViewModel>(record);
+            var viewmodel = _mapper.Map<ApiResourceScopeDetailsViewModel>(record);
 
             return View(viewmodel);
         }
@@ -56,7 +53,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public IActionResult Add(int id)
         {
-            var viewmodel = new ApiResourceClaimAddViewModel 
+            var viewmodel = new ApiResourceScopeAddViewModel
             {
                 ApiResourceId = id,
             };
@@ -65,18 +62,18 @@ namespace Codx.Auth.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(ApiResourceClaimAddViewModel viewmodel)
+        public async Task<IActionResult> Add(ApiResourceScopeAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ApiResourceClaim>(viewmodel);
-                _dbContext.ApiResourceClaims.Add(record);
+                var record = _mapper.Map<ApiResourceScope>(viewmodel);
+                _dbContext.ApiResourceScopes.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction("Details", "ApiResources", new { id= viewmodel.ApiResourceId});
+                    return RedirectToAction("Details", "ApiResources", new { id = viewmodel.ApiResourceId });
                 }
 
                 ModelState.AddModelError("", "Failed");
@@ -88,9 +85,9 @@ namespace Codx.Auth.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            var record = _dbContext.ApiResourceClaims.FirstOrDefault(o => o.Id == id);
+            var record = _dbContext.ApiResourceScopes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceClaimEditViewModel>(record);
+            var viewmodel = _mapper.Map<ApiResourceScopeEditViewModel>(record);
 
             return View(viewmodel);
         }
@@ -98,14 +95,14 @@ namespace Codx.Auth.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ApiResourceClaimEditViewModel viewmodel)
+        public async Task<IActionResult> Edit(ApiResourceScopeEditViewModel viewmodel)
         {
-            var isRecordFound = _dbContext.ApiResourceClaims.Any(o => o.Id == viewmodel.Id);
+            var isRecordFound = _dbContext.ApiResourceScopes.Any(o => o.Id == viewmodel.Id);
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiResourceClaim>(viewmodel);
-        
+                var record = _mapper.Map<ApiResourceScope>(viewmodel);
+
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
 
@@ -123,22 +120,22 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var record = _dbContext.ApiResourceClaims.FirstOrDefault(o => o.Id == id);
+            var record = _dbContext.ApiResourceScopes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceClaimEditViewModel>(record);
+            var viewmodel = _mapper.Map<ApiResourceScopeEditViewModel>(record);
 
             return View(viewmodel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(ApiResourceClaimEditViewModel viewmodel)
+        public async Task<IActionResult> Delete(ApiResourceScopeEditViewModel viewmodel)
         {
             var isRecordFound = _dbContext.ApiResources.Any(o => o.Id == viewmodel.Id);
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiResourceClaim>(viewmodel);
+                var record = _mapper.Map<ApiResourceScope>(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

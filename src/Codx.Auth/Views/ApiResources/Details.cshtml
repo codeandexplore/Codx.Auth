@@ -75,6 +75,7 @@
                         <table class="table table-bordered"
                                id="apiResourceClaimTable"
                                data-toggle="table"
+                               data-query-params="apiResourceClaimTableParams"
                                data-pagination="true"
                                data-side-pagination="server"
                                data-page-size="5"
@@ -92,7 +93,26 @@
 
                     </div>
                     <div class="tab-pane fade" id="nav-scopes" role="tabpanel" aria-labelledby="nav-scopes-tab">
-                        Scopes
+                        <a asp-action="Add" asp-controller="ApiResourceScopes" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add</a>
+                        <br />  <br />
+                        <table class="table table-bordered"
+                               id="apiResourceScopeTable"
+                               data-toggle="table"
+                               data-query-params="apiResourceScopeTableParams"
+                               data-pagination="true"
+                               data-side-pagination="server"
+                               data-page-size="5"
+                               data-page-list="[5,10,25,50,100,200,All]"
+                               data-ajax="apiResourceScopeAjaxRequest">
+
+                            <thead>
+                                <tr>
+                                    <th data-field="scope">Scope</th>
+                                    <th data-field="id" data-width="150" data-formatter="apiResourceScopeRowActionButtons"></th>
+                                </tr>
+                            </thead>
+
+                        </table>
                     </div>
                     <div class="tab-pane fade" id="nav-secrets" role="tabpanel" aria-labelledby="nav-secrets-tab">
                         Secrets
@@ -110,16 +130,43 @@
 @section Scripts
 {
     <script>
+        var modelid = '@Model.Id';
+    </script>
+
+    <script>
         function apiResourceClaimAjaxRequest(params) {
-            var url = '@Url.Action("GetApiResourceClaimsTableData", "ApiResourceClaims")'
+            var url = '@Url.Action("GetApiResourceClaimsTableData", "ApiResourceClaims")';
             $.get(url + '?' + $.param(params.data)).then(function (res) {
                 params.success(res)
             })
         };
+        function apiResourceClaimTableParams(params) {
+            params.apiresourceid = modelid;
+            return params
+        }
         function apiResourceClaimRowActionButtons(index, row) {
             return '<a class="btn btn-outline-info btn-sm" href="/ApiResourceClaims/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
                 '<a class="btn btn-outline-warning btn-sm" href="/ApiResourceClaims/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
                 '<a class="btn btn-outline-danger btn-sm" href="/ApiResourceClaims/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+        }
+
+    </script>
+
+    <script>
+        function apiResourceScopeAjaxRequest(params) {
+            var url = '@Url.Action("GetApiResourceScopesTableData", "ApiResourceScopes")';
+            $.get(url + '?' + $.param(params.data)).then(function (res) {
+                params.success(res)
+            })
+        };
+        function apiResourceScopeTableParams(params) {
+            params.apiresourceid = modelid;
+            return params
+        }
+        function apiResourceScopeRowActionButtons(index, row) {
+            return '<a class="btn btn-outline-info btn-sm" href="/ApiResourceScopes/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-warning btn-sm" href="/ApiResourceScopes/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/ApiResourceScopes/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
     </script>
