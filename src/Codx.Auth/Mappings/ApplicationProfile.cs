@@ -41,6 +41,11 @@ namespace Codx.Auth.Mappings
             CreateMap<ApiScope, ApiScopeAddViewModel>().ReverseMap();
             CreateMap<ApiScope, ApiScopeEditViewModel>().ReverseMap();
             CreateMap<ApiScope, ApiScopeEditViewModel>();
+
+            CreateMap<ApiScopeClaim, ApiScopeClaimDetailsViewModel>();
+            CreateMap<ApiScopeClaim, ApiScopeClaimAddViewModel>().ReverseMap();
+            CreateMap<ApiScopeClaim, ApiScopeClaimEditViewModel>().ReverseMap();
+            CreateMap<ApiScopeClaim, ApiScopeClaimEditViewModel>();
         }
     }
 }

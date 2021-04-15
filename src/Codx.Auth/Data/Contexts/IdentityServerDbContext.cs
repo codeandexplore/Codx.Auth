@@ -21,6 +21,8 @@ namespace Codx.Auth.Data.Contexts
         public DbSet<ApiResourceScope> ApiResourceScopes { get; set; }
         public DbSet<ApiResourceSecret> ApiResourceSecrets { get; set; }
         public DbSet<ApiResourceProperty> ApiResourceProperties { get; set; }
+        public DbSet<ApiScopeClaim> ApiScopeClaims { get; set; }
+        public DbSet<ApiScopeProperty> ApiScopeProperties { get; set; }
               
     }
 }
