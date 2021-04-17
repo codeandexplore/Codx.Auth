@@ -1,4 +1,6 @@
-﻿using Codx.Auth.ViewModels;
+﻿using AutoMapper;
+using Codx.Auth.Data.Contexts;
+using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -14,70 +16,139 @@ namespace Codx.Auth.Controllers
     [Authorize]
     public class ClientClaimsController : Controller
     {
-        protected readonly ConfigurationDbContext _dbContext;
-        public ClientClaimsController(ConfigurationDbContext dbContext)
+        protected readonly IdentityServerDbContext _dbContext;
+        protected readonly IMapper _mapper;
+        public ClientClaimsController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public async Task<IActionResult> Claims(int id)
+        [HttpGet]
+        public JsonResult GetClientClaimsTableData(int Clientid, string search, string sort, string order, int offset, int limit)
         {
-            var client = await _dbContext.Clients.Include(i => i.Claims).FirstOrDefaultAsync(u => u.Id == id);
+            var query = _dbContext.ClientClaims.Where(o => o.ClientId == Clientid);
 
-            var viewmodel = new ClientClaimsDetailsViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-            viewmodel.Description = client.Description;
-
-            foreach (var claim in client.Claims)
+            var data = query.Skip(offset).Take(limit).ToList();
+            var viewModel = data.Select(apires => new ClientClaimDetailsViewModel
             {
-                viewmodel.Claims.Add(new ClientClaimDetailsViewModel
-                {
-                    Id = claim.Id,
-                    ClaimType = claim.Type,
-                    ClaimValue = claim.Value,
-                });
-            }
+                Id = apires.Id,
+                Type = apires.Type,
+                Value = apires.Value,
+            }).ToList();
+
+            return Json(new
+            {
+                total = query.Count(),
+                rows = viewModel
+            });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var record = _dbContext.ClientClaims.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientClaimDetailsViewModel>(record);
 
             return View(viewmodel);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> Add(int clientid)
+        public IActionResult Add(int id)
         {
-            var client = await _dbContext.Clients.Include(i => i.Claims).FirstOrDefaultAsync(u => u.Id == clientid);
-
-            var viewmodel = new ClientClaimAddViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-
+            var viewmodel = new ClientClaimAddViewModel
+            {
+                ClientId = id,
+            };
             return View(viewmodel);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(ClientClaimAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var client = await _dbContext.Clients.Include(i => i.Claims).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
-
-                client.Claims.Add(new ClientClaim
-                {
-                    ClientId = viewmodel.ClientId,
-                    Type = viewmodel.ClaimType,
-                    Value = viewmodel.ClaimValue
-                });
+                var record = _mapper.Map<ClientClaim>(viewmodel);
+                record.Id = 0;
+                _dbContext.ClientClaims.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Claims), new { id = viewmodel.ClientId });
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+
+            }
+
+            return View(viewmodel);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var record = _dbContext.ClientClaims.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientClaimEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ClientClaimEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientClaims.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientClaim>(viewmodel);
+
+                _dbContext.Update(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewmodel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var record = _dbContext.ClientClaims.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientClaimEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(ClientClaimEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientClaims.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientClaim>(viewmodel);
+                _dbContext.Remove(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
                 }
 
                 ModelState.AddModelError("", "Failed");
