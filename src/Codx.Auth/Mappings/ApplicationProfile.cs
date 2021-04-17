@@ -12,6 +12,14 @@ namespace Codx.Auth.Mappings
     {
         public ApplicationProfile()
         {
+
+            CreateMap<Client, ClientDetailsViewModel>();
+            CreateMap<Client, ClientAddViewModel>().ReverseMap();
+            CreateMap<Client, ClientEditViewModel>().ReverseMap();
+            CreateMap<Client, ClientEditViewModel>();
+
+
+
             CreateMap<ApiResource, ApiResourceDetailsViewModel>();
             CreateMap<ApiResource, ApiResourceAddViewModel>().ReverseMap();
             CreateMap<ApiResource, ApiResourceEditViewModel>().ReverseMap();

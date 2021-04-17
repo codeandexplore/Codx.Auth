@@ -6,16 +6,9 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class ClientViewModels
-    {
-    }
 
-    public class ClientDetailsViewModel
+    public class ClientDetailsViewModel : BaseClientViewModel
     {  
-        public int Id { get; set; }
-        public string ClientId { get; set; }
-        public string ClientName { get; set; }
-        public string Description { get; set; }
     }
 
     public class ClientAddViewModel : BaseClientViewModel
@@ -25,6 +18,21 @@ namespace Codx.Auth.ViewModels
 
     public class ClientEditViewModel : BaseClientViewModel
     {
+      
+    }
+
+    public class BaseClientViewModel
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(200)]
+        public string ClientId { get; set; }
+        [StringLength(200)]
+        public string ClientName { get; set; }
+        [StringLength(1000)]
+        public string Description { get; set; }
+
         [StringLength(2000)]
         public string ClientUri { get; set; }
         [StringLength(2000)]
@@ -39,9 +47,8 @@ namespace Codx.Auth.ViewModels
         [StringLength(2000)]
         public string BackChannelLogoutUri { get; set; }
         public bool BackChannelLogoutSessionRequired { get; set; }
-
-
-
+        
+        
         public int AccessTokenLifetime { get; set; }
         public int AuthorizationCodeLifetime { get; set; }
         public int? ConsentLifetime { get; set; }
@@ -76,27 +83,14 @@ namespace Codx.Auth.ViewModels
         public string ProtocolType { get; set; }
         public bool RequireClientSecret { get; set; }
 
- 
-        public bool RequireConsent { get; set; }      
+
+        public bool RequireConsent { get; set; }
         public bool AllowRememberConsent { get; set; }
 
         public bool RequirePkce { get; set; }
         public bool AllowPlainTextPkce { get; set; }
         public bool RequireRequestObject { get; set; }
-   
+
         public bool NonEditable { get; set; }
-    }
-
-    public class BaseClientViewModel
-    {
-        public int Id { get; set; }
-
-        [Required]
-        [StringLength(200)]
-        public string ClientId { get; set; }
-        [StringLength(200)]
-        public string ClientName { get; set; }
-        [StringLength(1000)]
-        public string Description { get; set; }
     }
 }
