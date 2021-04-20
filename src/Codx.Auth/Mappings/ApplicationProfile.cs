@@ -33,6 +33,11 @@ namespace Codx.Auth.Mappings
             CreateMap<ClientScope, ClientScopeEditViewModel>().ReverseMap();
             CreateMap<ClientScope, ClientScopeEditViewModel>();
 
+            CreateMap<ClientCorsOrigin, ClientCorsOriginDetailsViewModel>();
+            CreateMap<ClientCorsOrigin, ClientCorsOriginAddViewModel>().ReverseMap();
+            CreateMap<ClientCorsOrigin, ClientCorsOriginEditViewModel>().ReverseMap();
+            CreateMap<ClientCorsOrigin, ClientCorsOriginEditViewModel>();
+
 
             CreateMap<ApiResource, ApiResourceDetailsViewModel>();
             CreateMap<ApiResource, ApiResourceAddViewModel>().ReverseMap();
