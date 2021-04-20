@@ -23,6 +23,11 @@ namespace Codx.Auth.Mappings
             CreateMap<ClientClaim, ClientClaimEditViewModel>().ReverseMap();
             CreateMap<ClientClaim, ClientClaimEditViewModel>();
 
+            CreateMap<ClientGrantType, ClientGrantTypeDetailsViewModel>();
+            CreateMap<ClientGrantType, ClientGrantTypeAddViewModel>().ReverseMap();
+            CreateMap<ClientGrantType, ClientGrantTypeEditViewModel>().ReverseMap();
+            CreateMap<ClientGrantType, ClientGrantTypeEditViewModel>();
+
 
             CreateMap<ApiResource, ApiResourceDetailsViewModel>();
             CreateMap<ApiResource, ApiResourceAddViewModel>().ReverseMap();

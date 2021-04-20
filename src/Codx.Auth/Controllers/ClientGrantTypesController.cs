@@ -1,4 +1,6 @@
-﻿using Codx.Auth.ViewModels;
+﻿using AutoMapper;
+using Codx.Auth.Data.Contexts;
+using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -14,68 +16,137 @@ namespace Codx.Auth.Controllers
     [Authorize]
     public class ClientGrantTypesController : Controller
     {
-        protected readonly ConfigurationDbContext _dbContext;
-        public ClientGrantTypesController(ConfigurationDbContext dbContext)
+        protected readonly IdentityServerDbContext _dbContext;
+        protected readonly IMapper _mapper;
+        public ClientGrantTypesController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public async Task<IActionResult> GrantTypes(int id)
+        [HttpGet]
+        public JsonResult GetClientGrantTypesTableData(int clientid, string search, string sort, string order, int offset, int limit)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == id);
+            var query = _dbContext.ClientGrantTypes.Where(o => o.ClientId == clientid);
 
-            var viewmodel = new ClientGrantTypesDetailsViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-            viewmodel.Description = client.Description;
-
-            foreach (var granttype in client.AllowedGrantTypes)
+            var data = query.Skip(offset).Take(limit).ToList();
+            var viewModel = data.Select(granttype => new ClientGrantTypeDetailsViewModel
             {
-                viewmodel.GrantTypes.Add(new ClientGrantTypeDetailsViewModel
-                {
-                    Id = granttype.Id,
-                    GrantType = granttype.GrantType,
-                });
-            }
+                Id = granttype.Id,
+                GrantType = granttype.GrantType,
+            }).ToList();
+
+            return Json(new
+            {
+                total = query.Count(),
+                rows = viewModel
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var record = _dbContext.ClientGrantTypes.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientGrantTypeDetailsViewModel>(record);
 
             return View(viewmodel);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> Add(int clientid)
+        public IActionResult Add(int id)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == clientid);
-
-            var viewmodel = new ClientGrantTypeAddViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-
+            var viewmodel = new ClientGrantTypeAddViewModel
+            {
+                ClientId = id,
+            };
             return View(viewmodel);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(ClientGrantTypeAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var client = await _dbContext.Clients.Include(i => i.AllowedGrantTypes).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
-
-                client.AllowedGrantTypes.Add(new ClientGrantType
-                {
-                    ClientId = viewmodel.ClientId,
-                    GrantType = viewmodel.GrantType,                    
-                });
+                var record = _mapper.Map<ClientGrantType>(viewmodel);
+                record.Id = 0;
+                _dbContext.ClientGrantTypes.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(GrantTypes), new { id = viewmodel.ClientId });
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+
+            }
+
+            return View(viewmodel);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var record = _dbContext.ClientGrantTypes.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientGrantTypeEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ClientGrantTypeEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientGrantTypes.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientGrantType>(viewmodel);
+
+                _dbContext.Update(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewmodel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var record = _dbContext.ClientGrantTypes.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientGrantTypeEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(ClientGrantTypeEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientGrantTypes.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientGrantType>(viewmodel);
+                _dbContext.Remove(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
                 }
 
                 ModelState.AddModelError("", "Failed");
