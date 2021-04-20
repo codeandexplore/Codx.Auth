@@ -28,6 +28,11 @@ namespace Codx.Auth.Mappings
             CreateMap<ClientGrantType, ClientGrantTypeEditViewModel>().ReverseMap();
             CreateMap<ClientGrantType, ClientGrantTypeEditViewModel>();
 
+            CreateMap<ClientScope, ClientScopeDetailsViewModel>();
+            CreateMap<ClientScope, ClientScopeAddViewModel>().ReverseMap();
+            CreateMap<ClientScope, ClientScopeEditViewModel>().ReverseMap();
+            CreateMap<ClientScope, ClientScopeEditViewModel>();
+
 
             CreateMap<ApiResource, ApiResourceDetailsViewModel>();
             CreateMap<ApiResource, ApiResourceAddViewModel>().ReverseMap();

@@ -1,4 +1,6 @@
-﻿using Codx.Auth.ViewModels;
+﻿using AutoMapper;
+using Codx.Auth.Data.Contexts;
+using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -14,68 +16,105 @@ namespace Codx.Auth.Controllers
     [Authorize]
     public class ClientScopesController : Controller
     {
-        protected readonly ConfigurationDbContext _dbContext;
-        public ClientScopesController(ConfigurationDbContext dbContext)
+        protected readonly IdentityServerDbContext _dbContext;
+        protected readonly IMapper _mapper;
+        public ClientScopesController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public async Task<IActionResult> Scopes(int id)
+        [HttpGet]
+        public JsonResult GetClientScopesTableData(int clientid, string search, string sort, string order, int offset, int limit)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedScopes).FirstOrDefaultAsync(u => u.Id == id);
+            var query = _dbContext.ClientScopes.Where(o => o.ClientId == clientid);
 
-            var viewmodel = new ClientScopesDetailsViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-            viewmodel.Description = client.Description;
-
-            foreach (var Scope in client.AllowedScopes)
+            var data = query.Skip(offset).Take(limit).ToList();
+            var viewModel = data.Select(apires => new ClientScopeDetailsViewModel
             {
-                viewmodel.Scopes.Add(new ClientScopeDetailsViewModel
-                {
-                    Id = Scope.Id,
-                    Scope = Scope.Scope,
-                });
-            }
+                Id = apires.Id,
+                Scope = apires.Scope,
+            }).ToList();
+
+            return Json(new
+            {
+                total = query.Count(),
+                rows = viewModel
+            });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var record = _dbContext.ClientScopes.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientScopeDetailsViewModel>(record);
 
             return View(viewmodel);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> Add(int clientid)
+        public IActionResult Add(int id)
         {
-            var client = await _dbContext.Clients.Include(i => i.AllowedScopes).FirstOrDefaultAsync(u => u.Id == clientid);
-
-            var viewmodel = new ClientScopeAddViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-
+            var viewmodel = new ClientScopeAddViewModel
+            {
+                ClientId = id,
+            };
             return View(viewmodel);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(ClientScopeAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var client = await _dbContext.Clients.Include(i => i.AllowedScopes).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
-
-                client.AllowedScopes.Add(new ClientScope
-                {
-                    ClientId = viewmodel.ClientId,
-                    Scope = viewmodel.Scope,                    
-                });
+                var record = _mapper.Map<ClientScope>(viewmodel);
+                record.Id = 0;
+                _dbContext.ClientScopes.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Scopes), new { id = viewmodel.ClientId });
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+
+            }
+
+            return View(viewmodel);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var record = _dbContext.ClientScopes.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientScopeEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ClientScopeEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientScopes.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientScope>(viewmodel);
+
+                _dbContext.Update(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
                 }
 
                 ModelState.AddModelError("", "Failed");
@@ -83,5 +122,39 @@ namespace Codx.Auth.Controllers
 
             return View(viewmodel);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var record = _dbContext.ClientScopes.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientScopeEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(ClientScopeEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientScopes.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientScope>(viewmodel);
+                _dbContext.Remove(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewmodel);
+        }
+
     }
 }
