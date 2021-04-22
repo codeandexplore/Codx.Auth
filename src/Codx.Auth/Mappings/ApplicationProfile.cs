@@ -53,6 +53,12 @@ namespace Codx.Auth.Mappings
             CreateMap<ClientRedirectUri, ClientRedirectUriEditViewModel>().ReverseMap();
             CreateMap<ClientRedirectUri, ClientRedirectUriEditViewModel>();
 
+            CreateMap<ClientPostLogoutRedirectUri, ClientPostLogoutRedirectUriDetailsViewModel>();
+            CreateMap<ClientPostLogoutRedirectUri, ClientPostLogoutRedirectUriAddViewModel>().ReverseMap();
+            CreateMap<ClientPostLogoutRedirectUri, ClientPostLogoutRedirectUriEditViewModel>().ReverseMap();
+            CreateMap<ClientPostLogoutRedirectUri, ClientPostLogoutRedirectUriEditViewModel>();
+
+
 
             CreateMap<ApiResource, ApiResourceDetailsViewModel>();
             CreateMap<ApiResource, ApiResourceAddViewModel>().ReverseMap();

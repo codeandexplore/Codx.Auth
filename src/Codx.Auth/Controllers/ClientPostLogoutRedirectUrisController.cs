@@ -1,4 +1,6 @@
-﻿using Codx.Auth.ViewModels;
+﻿using AutoMapper;
+using Codx.Auth.Data.Contexts;
+using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -14,68 +16,139 @@ namespace Codx.Auth.Controllers
     [Authorize]
     public class ClientPostLogoutRedirectUrisController : Controller
     {
-        protected readonly ConfigurationDbContext _dbContext;
-        public ClientPostLogoutRedirectUrisController(ConfigurationDbContext dbContext)
+        protected readonly IdentityServerDbContext _dbContext;
+        protected readonly IMapper _mapper;
+        public ClientPostLogoutRedirectUrisController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public async Task<IActionResult> PostLogoutRedirectUris(int id)
+
+        [HttpGet]
+        public JsonResult GetClientPostLogoutRedirectUrisTableData(int clientid, string search, string sort, string order, int offset, int limit)
         {
-            var client = await _dbContext.Clients.Include(i => i.PostLogoutRedirectUris).FirstOrDefaultAsync(u => u.Id == id);
+            var query = _dbContext.ClientPostLogoutRedirectUris.Where(o => o.ClientId == clientid);
 
-            var viewmodel = new ClientPostLogoutRedirectUrisDetailsViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-            viewmodel.Description = client.Description;
-
-            foreach (var redirecturi in client.PostLogoutRedirectUris)
+            var data = query.Skip(offset).Take(limit).ToList();
+            var viewModel = data.Select(uri => new ClientPostLogoutRedirectUriDetailsViewModel
             {
-                viewmodel.PostLogoutRedirectUris.Add(new ClientPostLogoutRedirectUriDetailsViewModel
-                {
-                    Id = redirecturi.Id,
-                    PostLogoutRedirectUri = redirecturi.PostLogoutRedirectUri,
-                });
-            }
+                Id = uri.Id,
+                PostLogoutRedirectUri = uri.PostLogoutRedirectUri,
+            }).ToList();
+
+            return Json(new
+            {
+                total = query.Count(),
+                rows = viewModel
+            });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var record = _dbContext.ClientPostLogoutRedirectUris.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientPostLogoutRedirectUriDetailsViewModel>(record);
 
             return View(viewmodel);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> Add(int clientid)
+        public IActionResult Add(int id)
         {
-            var client = await _dbContext.Clients.Include(i => i.PostLogoutRedirectUris).FirstOrDefaultAsync(u => u.Id == clientid);
-
-            var viewmodel = new ClientPostLogoutRedirectUriAddViewModel();
-
-            viewmodel.ClientId = client.Id;
-            viewmodel.ClientIdString = client.ClientId;
-            viewmodel.ClientName = client.ClientName;
-
+            var viewmodel = new ClientPostLogoutRedirectUriAddViewModel
+            {
+                ClientId = id,
+            };
             return View(viewmodel);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(ClientPostLogoutRedirectUriAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var client = await _dbContext.Clients.Include(i => i.PostLogoutRedirectUris).FirstOrDefaultAsync(u => u.Id == viewmodel.ClientId);
-
-                client.PostLogoutRedirectUris.Add(new ClientPostLogoutRedirectUri
-                {
-                    ClientId = viewmodel.ClientId,
-                    PostLogoutRedirectUri = viewmodel.PostLogoutRedirectUri,                    
-                });
+                var record = _mapper.Map<ClientPostLogoutRedirectUri>(viewmodel);
+                record.Id = 0;
+                _dbContext.ClientPostLogoutRedirectUris.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(PostLogoutRedirectUris), new { id = viewmodel.ClientId });
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+
+            }
+
+            return View(viewmodel);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var record = _dbContext.ClientPostLogoutRedirectUris.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientPostLogoutRedirectUriEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ClientPostLogoutRedirectUriEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientPostLogoutRedirectUris.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientPostLogoutRedirectUri>(viewmodel);
+
+                _dbContext.Update(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewmodel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var record = _dbContext.ClientPostLogoutRedirectUris.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<ClientPostLogoutRedirectUriEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(ClientPostLogoutRedirectUriEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.ClientPostLogoutRedirectUris.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<ClientPostLogoutRedirectUri>(viewmodel);
+                _dbContext.Remove(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Clients", new { id = viewmodel.ClientId });
                 }
 
                 ModelState.AddModelError("", "Failed");
