@@ -43,6 +43,11 @@ namespace Codx.Auth.Mappings
             CreateMap<ClientSecret, ClientSecretEditViewModel>().ReverseMap();
             CreateMap<ClientSecret, ClientSecretEditViewModel>();
 
+            CreateMap<ClientIdPRestriction, ClientIdpRestrictionDetailsViewModel>();
+            CreateMap<ClientIdPRestriction, ClientIdpRestrictionAddViewModel>().ReverseMap();
+            CreateMap<ClientIdPRestriction, ClientIdpRestrictionEditViewModel>().ReverseMap();
+            CreateMap<ClientIdPRestriction, ClientIdpRestrictionEditViewModel>();
+
 
             CreateMap<ApiResource, ApiResourceDetailsViewModel>();
             CreateMap<ApiResource, ApiResourceAddViewModel>().ReverseMap();
