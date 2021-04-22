@@ -1,4 +1,6 @@
-﻿using Codx.Auth.ViewModels;
+﻿using AutoMapper;
+using Codx.Auth.Data.Contexts;
+using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -13,24 +15,47 @@ namespace Codx.Auth.Controllers
     [Authorize]
     public class IdentityResourcesController : Controller
     {
-        protected readonly ConfigurationDbContext _dbContext;
-        public IdentityResourcesController(ConfigurationDbContext dbContext)
+        protected readonly IdentityServerDbContext _dbContext;
+        protected readonly IMapper _mapper;
+        public IdentityResourcesController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
         public IActionResult Index()
         {
-            var identityResources = _dbContext.IdentityResources.ToList();
+            return View();
+        }
 
-            var viewModel = identityResources.Select(idres => new IdentityResourceDetailsViewModel
+        [HttpGet]
+        public JsonResult GetIdentityResourcesTableData(string search, string sort, string order, int offset, int limit)
+        {
+            var idResources = _dbContext.IdentityResources.Skip(offset).Take(limit).ToList();
+            var viewModel = idResources.Select(idres => new IdentityResourceDetailsViewModel
             {
                 Id = idres.Id,
                 Name = idres.Name,
                 DisplayName = idres.DisplayName,
             }).ToList();
 
-            return View(viewModel);
+            return Json(new
+            {
+                total = _dbContext.Clients.Count(),
+                rows = viewModel
+            });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var record = _dbContext.IdentityResources.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<IdentityResourceDetailsViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+
 
         [HttpGet]
         public IActionResult Add()
@@ -38,18 +63,18 @@ namespace Codx.Auth.Controllers
             return View();
         }
 
+
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(IdentityResourceAddViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                var record = new IdentityResource {
-                    Name = viewModel.Name,
-                    DisplayName = viewModel.DisplayName,
-                    Enabled = true,
-                    ShowInDiscoveryDocument = true,
-                    Created = DateTime.UtcNow,
-                };
+                var record = _mapper.Map<IdentityResource>(viewModel);
+
+                record.Enabled = true;
+                record.ShowInDiscoveryDocument = true;
+                record.Created = DateTime.UtcNow;
 
                 await _dbContext.AddAsync(record).ConfigureAwait(false);
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -59,9 +84,8 @@ namespace Codx.Auth.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                
                 ModelState.AddModelError("", "Failed");
-                
+
             }
 
             return View(viewModel);
@@ -71,27 +95,23 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.IdentityResources.FirstOrDefault(o => o.Id == id);
 
-            var viewModel = new IdentityResourceEditViewModel
-            {
-                Id = record.Id,
-                Name = record.Name,
-                DisplayName = record.DisplayName,
-            };
-
-            return View(viewModel);
+            var viewmodel = _mapper.Map<IdentityResourceEditViewModel>(record);
+           
+            return View(viewmodel);
         }
 
 
         [HttpPost]
         public async Task<IActionResult> Edit(IdentityResourceEditViewModel viewmodel)
         {
-            var record = _dbContext.IdentityResources.FirstOrDefault(o => o.Id == viewmodel.Id);
+            var isRecordFound = _dbContext.IdentityResources.Any(o => o.Id == viewmodel.Id);
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && isRecordFound)
             {
-                record.Name = viewmodel.Name;
-                record.DisplayName = viewmodel.DisplayName;
+                var record = _mapper.Map<IdentityResource>(viewmodel);
+                record.Updated = DateTime.UtcNow;
 
+                _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
 
                 if (result > 0)
@@ -104,5 +124,40 @@ namespace Codx.Auth.Controllers
 
             return View(viewmodel);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var record = _dbContext.IdentityResources.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<IdentityResourceEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(IdentityResourceEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.IdentityResources.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<IdentityResource>(viewmodel);
+                _dbContext.Remove(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewmodel);
+        }
+
+
     }
 }

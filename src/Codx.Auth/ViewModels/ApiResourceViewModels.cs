@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class ApiResourceViewModels
-    {
-    }
     public class ApiResourceDetailsViewModel : BaseApiResourceViewModel
     {
     }

@@ -30,14 +30,7 @@ namespace Codx.Auth.Controllers
             viewmodel.Name = identityresource.Name;
             viewmodel.DisplayName = identityresource.DisplayName;
 
-            foreach (var claim in identityresource.UserClaims)
-            {
-                viewmodel.Claims.Add(new IdentityResourceClaimDetailsViewModel
-                {
-                    Id = claim.Id,
-                    Type = claim.Type,
-                });
-            }
+          
 
             return View(viewmodel);
         }
