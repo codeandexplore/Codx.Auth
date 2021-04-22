@@ -30,11 +30,11 @@ namespace Codx.Auth.Controllers
             var query = _dbContext.ClientClaims.Where(o => o.ClientId == Clientid);
 
             var data = query.Skip(offset).Take(limit).ToList();
-            var viewModel = data.Select(apires => new ClientClaimDetailsViewModel
+            var viewModel = data.Select(claim => new ClientClaimDetailsViewModel
             {
-                Id = apires.Id,
-                Type = apires.Type,
-                Value = apires.Value,
+                Id = claim.Id,
+                Type = claim.Type,
+                Value = claim.Value,
             }).ToList();
 
             return Json(new

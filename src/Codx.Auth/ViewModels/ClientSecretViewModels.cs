@@ -6,58 +6,37 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class ClientSecretViewModels
-    {
-    }
-
-    public class ClientSecretDetailsViewModel 
+    public class ClientSecretDetailsViewModel : BaseClientSecretViewModel
     {
         public int Id { get; set; }
-
-        public string Type { get; set; }
         public string Value { get; set; }
-
-        public string Description { get; set; }
     }
-
-    public class ClientSecretsDetailsViewModel
-    {
-        public ClientSecretsDetailsViewModel()
-        {
-            Secrets = new List<ClientSecretDetailsViewModel>();
-        }
-
-        public int ClientId { get; set; }
-        public string ClientIdString { get; set; }
-        public string ClientName { get; set; }
-        public string Description { get; set; }
-        public List<ClientSecretDetailsViewModel> Secrets { get; set; }
-    }
-
 
     public class ClientSecretAddViewModel : BaseClientSecretViewModel
     {
-        public string ClientIdString { get; set; }
-        public string ClientName { get; set; }
+        [Required]
+        [StringLength(200)]
+        public string NewSecret { get; set; }
     }
 
     public class ClientSecretEditViewModel : BaseClientSecretViewModel
     {
-        public string ClientIdString { get; set; }
-        public string ClientName { get; set; }
+        public int Id { get; set; }
+        [StringLength(200)]
+        public string NewSecret { get; set; }
+        public string Value { get; set; }
     }
 
     public class BaseClientSecretViewModel
     {
-        public int Id { get; set; }
         public int ClientId { get; set; }
-
         [Required]
         [StringLength(250)]
-        public string Value { get; set; }
+        public string Type { get; set; }
 
         [StringLength(2000)]
         public string Description { get; set; }
+        public DateTime? Expiration { get; set; }
     }
 
 

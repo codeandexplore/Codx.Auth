@@ -22,23 +22,23 @@
             <input type="hidden" asp-for="@Model.ClientId" />
 
             <div class="form-group">
-                <label>ClientID</label>
-                <input asp-for="@Model.ClientIdString" class="form-control" readonly />
-            </div>
-            <div class="form-group">
-                <label>Client Name</label>
-                <input asp-for="@Model.ClientName" class="form-control" readonly />
+                <label>Type</label>
+                <input asp-for="@Model.Type" class="form-control" />
             </div>
 
-
             <div class="form-group">
-                <label>Secret</label>
-                <input asp-for="Value" class="form-control" />
+                <label>NewSecret</label>
+                <input asp-for="@Model.NewSecret" class="form-control" />
             </div>
 
             <div class="form-group">
                 <label>Description</label>
-                <input asp-for="Description" class="form-control" />
+                <input asp-for="@Model.Description" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Expiration</label>
+                <input asp-for="@Model.Expiration" class="form-control" />
             </div>
 
             <div class="form-group">
