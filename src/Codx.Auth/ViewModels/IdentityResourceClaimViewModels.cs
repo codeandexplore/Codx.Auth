@@ -6,31 +6,23 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class IdentityResourceClaimViewModels
-    {
-    }
 
-    public class IdentityResourceClaimDetailsViewModel
+    public class IdentityResourceClaimDetailsViewModel : BaseIdentityResourceClaimViewModel
     {
         public int Id { get; set; }
-        public string Type { get; set; }
     }
 
     public class IdentityResourceClaimAddViewModel : BaseIdentityResourceClaimViewModel
     {
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
     }
 
     public class IdentityResourceClaimEditViewModel : BaseIdentityResourceClaimViewModel
     {
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
+        public int Id { get; set; }
     }
 
     public class BaseIdentityResourceClaimViewModel
     {
-        public int Id { get; set; }
         public int IdentityResourceId { get; set; }
 
         [Required]

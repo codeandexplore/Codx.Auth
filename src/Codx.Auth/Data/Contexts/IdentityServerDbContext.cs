@@ -35,5 +35,9 @@ namespace Codx.Auth.Data.Contexts
         public DbSet<ClientPostLogoutRedirectUri> ClientPostLogoutRedirectUris { get; set; }
 
 
+        public DbSet<IdentityResourceClaim> IdentityResourceClaims { get; set; }
+        public DbSet<IdentityResourceProperty> IdentityResourceProperties { get; set; }
+
+
     }
 }

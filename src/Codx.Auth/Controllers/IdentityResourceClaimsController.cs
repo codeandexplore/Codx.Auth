@@ -1,4 +1,6 @@
-﻿using Codx.Auth.ViewModels;
+﻿using AutoMapper;
+using Codx.Auth.Data.Contexts;
+using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -14,60 +16,139 @@ namespace Codx.Auth.Controllers
     [Authorize]
     public class IdentityResourceClaimsController : Controller
     {
-        protected readonly ConfigurationDbContext _dbContext;
-        public IdentityResourceClaimsController(ConfigurationDbContext dbContext)
+        protected readonly IdentityServerDbContext _dbContext;
+        protected readonly IMapper _mapper;
+        public IdentityResourceClaimsController(IdentityServerDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public async Task<IActionResult> IdentityResourceClaims(int id)
+        [HttpGet]
+        public JsonResult GetIdentityResourceClaimsTableData(int identityresourceid, string search, string sort, string order, int offset, int limit)
         {
-            var identityresource = _dbContext.IdentityResources.Include(o => o.UserClaims).FirstOrDefault(o => o.Id == id);
+            var query = _dbContext.IdentityResourceClaims.Where(o => o.IdentityResourceId == identityresourceid);
 
-            var viewmodel = new IdentityResourceDetailsViewModel();
+            var data = query.Skip(offset).Take(limit).ToList();
+            var viewModel = data.Select(Identityres => new IdentityResourceClaimDetailsViewModel
+            {
+                Id = Identityres.Id,
+                Type = Identityres.Type,
+            }).ToList();
 
-            viewmodel.Id = identityresource.Id;
-            viewmodel.Name = identityresource.Name;
-            viewmodel.DisplayName = identityresource.DisplayName;
+            return Json(new
+            {
+                total = query.Count(),
+                rows = viewModel
+            });
+        }
 
-          
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var record = _dbContext.IdentityResourceClaims.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<IdentityResourceClaimDetailsViewModel>(record);
 
             return View(viewmodel);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> Add(int id)
+        public IActionResult Add(int id)
         {
-            var identityresource = _dbContext.IdentityResources.Include(o => o.UserClaims).FirstOrDefault(o => o.Id == id);
-
-            var viewmodel = new IdentityResourceClaimAddViewModel();
-
-            viewmodel.IdentityResourceId = identityresource.Id;
-            viewmodel.Name = identityresource.Name;
-            viewmodel.DisplayName = identityresource.DisplayName;
-
+            var viewmodel = new IdentityResourceClaimAddViewModel
+            {
+                IdentityResourceId = id,
+            };
             return View(viewmodel);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(IdentityResourceClaimAddViewModel viewmodel)
         {
             if (ModelState.IsValid)
             {
-                var identityresource = _dbContext.IdentityResources.Include(o => o.UserClaims).FirstOrDefault(o => o.Id == viewmodel.IdentityResourceId);
-
-                identityresource.UserClaims.Add(new IdentityResourceClaim {
-                    IdentityResourceId = viewmodel.IdentityResourceId,
-                    Type = viewmodel.Type,
-                });
+                var record = _mapper.Map<IdentityResourceClaim>(viewmodel);
+                _dbContext.IdentityResourceClaims.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(IdentityResourceClaims), new { id = viewmodel.IdentityResourceId });
+                    return RedirectToAction("Details", "IdentityResources", new { id = viewmodel.IdentityResourceId });
                 }
+
+                ModelState.AddModelError("", "Failed");
+
+            }
+
+            return View(viewmodel);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var record = _dbContext.IdentityResourceClaims.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<IdentityResourceClaimEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(IdentityResourceClaimEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.IdentityResourceClaims.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<IdentityResourceClaim>(viewmodel);
+
+                _dbContext.Update(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "IdentityResources", new { id = viewmodel.IdentityResourceId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewmodel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var record = _dbContext.IdentityResourceClaims.FirstOrDefault(o => o.Id == id);
+
+            var viewmodel = _mapper.Map<IdentityResourceClaimEditViewModel>(record);
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(IdentityResourceClaimEditViewModel viewmodel)
+        {
+            var isRecordFound = _dbContext.IdentityResourceClaims.Any(o => o.Id == viewmodel.Id);
+
+            if (ModelState.IsValid && isRecordFound)
+            {
+                var record = _mapper.Map<IdentityResourceClaim>(viewmodel);
+                _dbContext.Remove(record);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "IdentityResources", new { id = viewmodel.IdentityResourceId });
+                }
+
                 ModelState.AddModelError("", "Failed");
             }
 

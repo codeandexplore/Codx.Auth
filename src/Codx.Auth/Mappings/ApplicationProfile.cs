@@ -110,7 +110,10 @@ namespace Codx.Auth.Mappings
             CreateMap<IdentityResource, IdentityResourceEditViewModel>().ReverseMap();
             CreateMap<IdentityResource, IdentityResourceEditViewModel>();
 
-
+            CreateMap<IdentityResourceClaim, IdentityResourceClaimDetailsViewModel>();
+            CreateMap<IdentityResourceClaim, IdentityResourceClaimAddViewModel>().ReverseMap();
+            CreateMap<IdentityResourceClaim, IdentityResourceClaimEditViewModel>().ReverseMap();
+            CreateMap<IdentityResourceClaim, IdentityResourceClaimEditViewModel>();
 
 
         }
