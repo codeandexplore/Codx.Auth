@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -15,24 +16,47 @@ namespace Codx.Auth.Controllers
     {
 
         protected readonly RoleManager<ApplicationRole> _roleManager;
+        protected readonly IMapper _mapper;
 
-        public RolesController(RoleManager<ApplicationRole> roleManager)
+        public RolesController(RoleManager<ApplicationRole> roleManager, IMapper mapper)
         {
             _roleManager = roleManager;
+            _mapper = mapper;
         }
 
         public IActionResult Index()
         {
-            var roles = _roleManager.Roles.ToList();
+            return View();
+        }
 
-            var viewModel = roles.Select(role => new RoleDetailsViewModel
+        [HttpGet]
+        public JsonResult GetRolesTableData(string search, string sort, string order, int offset, int limit)
+        {
+            var roles = _roleManager.Roles;
+            var userroles = roles.Skip(offset).Take(limit).ToList();
+            var viewModel = userroles.Select(role => new RoleDetailsViewModel
             {
                 Id = role.Id,
                 Name = role.Name,
             }).ToList();
 
-            return View(viewModel);
+            return Json(new
+            {
+                total = roles.Count(),
+                rows = viewModel
+            });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            var record = _roleManager.Roles.FirstOrDefault(o => o.Id.ToString() == id);
+
+            var viewmodel = _mapper.Map<RoleDetailsViewModel>(record);
+
+            return View(viewmodel);
+        }
+
 
         // Add Role
         [HttpGet]
@@ -41,12 +65,14 @@ namespace Codx.Auth.Controllers
             return View();
         }
 
+
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(RoleAddViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                var record = new ApplicationRole { Name = viewModel.Name };
+                var record = _mapper.Map<ApplicationRole>(viewModel);
 
                 var result = await _roleManager.CreateAsync(record).ConfigureAwait(false);
 
@@ -59,6 +85,7 @@ namespace Codx.Auth.Controllers
                 {
                     ModelState.AddModelError("", error.ToString());
                 }
+
             }
 
             return View(viewModel);
@@ -69,13 +96,9 @@ namespace Codx.Auth.Controllers
         {
             var record = await _roleManager.FindByIdAsync(id);
 
-            var viewModel = new RoleEditViewModel
-            {
-                Id = record.Id,
-                Name = record.Name,
-            };
+            var viewmodel = _mapper.Map<RoleEditViewModel>(record);
 
-            return View(viewModel);
+            return View(viewmodel);
         }
 
 
@@ -111,11 +134,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _roleManager.FindByIdAsync(id);
 
-            var viewmodel = new RoleEditViewModel
-            {
-                Id = record.Id,
-                Name = record.Name,
-            };
+            var viewmodel = _mapper.Map<RoleEditViewModel>(record);
 
             return View(viewmodel);
         }

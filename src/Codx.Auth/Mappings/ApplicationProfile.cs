@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
+using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
 using IdentityServer4.EntityFramework.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Codx.Auth.Mappings
 {
@@ -119,6 +116,13 @@ namespace Codx.Auth.Mappings
             CreateMap<IdentityResourceProperty, IdentityResourcePropertyAddViewModel>().ReverseMap();
             CreateMap<IdentityResourceProperty, IdentityResourcePropertyEditViewModel>().ReverseMap();
             CreateMap<IdentityResourceProperty, IdentityResourcePropertyEditViewModel>();
+
+
+            CreateMap<ApplicationRole, RoleDetailsViewModel>();
+            CreateMap<ApplicationRole, RoleAddViewModel>().ReverseMap();
+            CreateMap<ApplicationRole, RoleEditViewModel>().ReverseMap();
+            CreateMap<ApplicationRole, RoleEditViewModel>();
+
 
         }
     }
