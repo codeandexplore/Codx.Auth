@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Codx.Auth</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/lib/fontawesome-free/css/fontawesome.min.css" rel="stylesheet" />
+    <link href="~/lib/fontawesome-free/css/all.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-table/dist/bootstrap-table.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
@@ -27,6 +30,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="Index">Roles</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="IdentityResources" asp-action="Index">Identity Resources</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Clients" asp-action="Index">Clients</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="ApiResources" asp-action="Index">Api Resources</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="ApiScopes" asp-action="Index">Api Scopes</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -48,6 +63,9 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/fontawesome-free/js/fontawesome.min.js"></script>
+    <script src="~/lib/fontawesome-free/js/all.min.js"></script>
+    <script src="~/lib/bootstrap-table/dist/bootstrap-table.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>

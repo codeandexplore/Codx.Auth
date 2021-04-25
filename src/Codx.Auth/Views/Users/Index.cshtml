@@ -1,44 +1,51 @@
 ﻿
-@model List<Codx.Auth.ViewModels.UserViewModels.UserDetailsViewModel>
+@model List<UserDetailsViewModel>
 
 
 @{
     ViewData["Title"] = "Users";
 }
 
-<h1>Users</h1>
-
-<a asp-action="Add">Add</a>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Users</li>
+    </ol>
+</nav>
 
 <div class="row">
-
     <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <a asp-action="Add" class="btn btn-outline-primary">Add</a>
+            </div>           
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th></th>
+                    </tr>
 
-        <table class="table table-bordered">
-            <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th></th>
-            </tr>
+                    @for (var i = 0; i < Model.Count; i++)
+                    {
+                        var row = Model[i];
+                        <tr>
+                            <td>@row.Username</td>
+                            <td>@row.Email</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@row.Id" class="btn btn-outline-warning btn-sm">Edit</a>
+                                <a asp-controller="UserRoles" asp-action="UserRoles" asp-route-userid="@row.Id" class="btn btn-outline-primary btn-sm">Roles</a>
+                                <a asp-controller="UserClaims" asp-action="UserClaims" asp-route-userid="@row.Id" class="btn btn-outline-primary btn-sm">Claims</a>
+                                <a asp-action="Delete" asp-route-id="@row.Id" class="btn btn-outline-danger btn-sm">Delete</a>
+                            </td>
+                        </tr>
 
-            @for (var i = 0; i < Model.Count; i++)
-            {
-                var row = Model[i];
-                <tr>                 
-                    <td>@row.Username</td>
-                    <td>@row.Email</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@row.Id">Edit</a>
-                        <a asp-controller="UserRoles" asp-action="UserRoles" asp-route-userid="@row.Id">Roles</a>
-                        <a asp-controller="UserClaims" asp-action="UserClaims" asp-route-userid="@row.Id">Claims</a>
-                        <a asp-action="Delete" asp-route-id="@row.Id">Delete</a>
-                    </td>
-                </tr>
+                    }
 
-            }
+                </table>
 
-        </table>
-
+            </div>
+        </div>               
     </div>
-
 </div>

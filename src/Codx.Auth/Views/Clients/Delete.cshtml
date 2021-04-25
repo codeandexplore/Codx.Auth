@@ -1,0 +1,269 @@
+﻿
+@model ClientEditViewModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Clients")">Clients</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Delete</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <div class="card">
+            <div class="card-header">
+                Are you sure you want to delete this record?
+            </div>
+            <div class="card-body">
+
+                <form asp-action="Delete">
+
+                    <div class="row">
+                        <div class="col-lg-12">
+
+
+                            <div class="form-group">
+                                <label>Client ID</label>
+                                <input asp-for="@Model.ClientId" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Client Name</label>
+                                <input asp-for="@Model.ClientName" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input asp-for="@Model.Description" class="form-control" readonly />
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+
+
+                            <div class="form-group">
+                                <label>ClientUri</label>
+                                <input asp-for="@Model.ClientUri" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>LogoUri</label>
+                                <input asp-for="@Model.LogoUri" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.Enabled" disabled>
+                                <label class="form-check-label">Enabled</label>
+                            </div>
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.EnableLocalLogin" disabled>
+                                <label class="form-check-label">EnableLocalLogin</label>
+                            </div>
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.AllowOfflineAccess" disabled>
+                                <label class="form-check-label">AllowOfflineAccess</label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.FrontChannelLogoutSessionRequired" disabled>
+                                <label class="form-check-label">FrontChannelLogoutSessionRequired</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>FrontChannelLogoutUri</label>
+                                <input asp-for="@Model.FrontChannelLogoutUri" class="form-control" readonly />
+                            </div>
+
+
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.BackChannelLogoutSessionRequired" disabled>
+                                <label class="form-check-label">BackChannelLogoutSessionRequired</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>BackChannelLogoutUri</label>
+                                <input asp-for="@Model.BackChannelLogoutUri" class="form-control" readonly />
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+
+                            <div class="form-group">
+                                <label>AccessTokenLifetime</label>
+                                <input asp-for="@Model.AccessTokenLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>AuthorizationCodeLifetime</label>
+                                <input asp-for="@Model.AuthorizationCodeLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>ConsentLifetime</label>
+                                <input asp-for="@Model.ConsentLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>AbsoluteRefreshTokenLifetime</label>
+                                <input asp-for="@Model.AbsoluteRefreshTokenLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>SlidingRefreshTokenLifetime</label>
+                                <input asp-for="@Model.SlidingRefreshTokenLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>UserSsoLifetime</label>
+                                <input asp-for="@Model.UserSsoLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>DeviceCodeLifetime</label>
+                                <input asp-for="@Model.DeviceCodeLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>IdentityTokenLifetime</label>
+                                <input asp-for="@Model.IdentityTokenLifetime" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>AccessTokenType</label>
+                                <input asp-for="@Model.AccessTokenType" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.UpdateAccessTokenClaimsOnRefresh" disabled>
+                                <label class="form-check-label">UpdateAccessTokenClaimsOnRefresh</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>RefreshTokenUsage</label>
+                                <input asp-for="@Model.RefreshTokenUsage" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group">
+                                <label>RefreshTokenExpiration</label>
+                                <input asp-for="@Model.RefreshTokenExpiration" class="form-control" readonly />
+                            </div>
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.AllowAccessTokensViaBrowser" disabled>
+                                <label class="form-check-label">AllowAccessTokensViaBrowser</label>
+                            </div>
+
+
+
+                        </div>
+                        <div class="col-lg-6">
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.IncludeJwtId" disabled>
+                                <label class="form-check-label">IncludeJwtId</label>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>ClientClaimsPrefix</label>
+                                <input asp-for="@Model.ClientClaimsPrefix" class="form-control" readonly />
+                            </div>
+
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.AlwaysIncludeUserClaimsInIdToken" disabled>
+                                <label class="form-check-label">AlwaysIncludeUserClaimsInIdToken</label>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.AlwaysSendClientClaims" disabled>
+                                <label class="form-check-label">AlwaysSendClientClaims</label>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>PairWiseSubjectSalt</label>
+                                <input asp-for="@Model.PairWiseSubjectSalt" class="form-control" readonly />
+                            </div>
+                            <div class="form-group">
+                                <label>UserCodeType</label>
+                                <input asp-for="@Model.UserCodeType" class="form-control" readonly />
+                            </div>
+                            <div class="form-group">
+                                <label>AllowedIdentityTokenSigningAlgorithms</label>
+                                <input asp-for="@Model.AllowedIdentityTokenSigningAlgorithms" class="form-control" readonly />
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>ProtocolType</label>
+                                <input asp-for="@Model.ProtocolType" class="form-control" readonly />
+                            </div>
+
+
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.RequireClientSecret" disabled>
+                                <label class="form-check-label">RequireClientSecret</label>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.RequireConsent" disabled>
+                                <label class="form-check-label">RequireConsent</label>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.AllowRememberConsent" disabled>
+                                <label class="form-check-label">AllowRememberConsent</label>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.RequirePkce" disabled>
+                                <label class="form-check-label">RequirePkce</label>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.AllowPlainTextPkce" disabled>
+                                <label class="form-check-label">AllowPlainTextPkce</label>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.RequireRequestObject" disabled>
+                                <label class="form-check-label">RequireRequestObject</label>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="@Model.NonEditable" disabled>
+                                <label class="form-check-label">NonEditable</label>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <a asp-action="Index" class="btn btn-info">Cancel</a>
+                        <input type="submit" class="btn btn-primary" value="Yes" />
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

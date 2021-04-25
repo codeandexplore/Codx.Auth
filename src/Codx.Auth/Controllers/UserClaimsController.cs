@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
-using Codx.Auth.ViewModels.UserClaimViewModels;
+using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
