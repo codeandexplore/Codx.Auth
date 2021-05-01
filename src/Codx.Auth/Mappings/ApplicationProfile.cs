@@ -123,6 +123,10 @@ namespace Codx.Auth.Mappings
             CreateMap<ApplicationRole, RoleEditViewModel>().ReverseMap();
             CreateMap<ApplicationRole, RoleEditViewModel>();
 
+            CreateMap<ApplicationUser, UserDetailsViewModel>();
+            CreateMap<ApplicationUser, UserAddViewModel>().ReverseMap();
+            CreateMap<ApplicationUser, UserEditViewModel>().ReverseMap();
+            CreateMap<ApplicationUser, UserEditViewModel>();
 
         }
     }

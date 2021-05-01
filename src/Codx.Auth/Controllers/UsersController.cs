@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -14,26 +15,48 @@ namespace Codx.Auth.Controllers
     public class UsersController : Controller
     {
         protected readonly UserManager<ApplicationUser> _userManager;
+        protected readonly IMapper _mapper;
 
-        public UsersController(UserManager<ApplicationUser> userManager)
+        public UsersController(UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _userManager = userManager;
+            _mapper = mapper;
         }
 
         // List all Users
         public IActionResult Index()
-        {
-            var users = _userManager.Users.ToList();
-
-            var viewModel = users.Select(user => new UserDetailsViewModel { 
-                Id = user.Id,
-                Username = user.UserName,
-                Email = user.Email
-            }).ToList();
-                       
-            return View(viewModel);
+        {           
+            return View();
         }
 
+        [HttpGet]
+        public JsonResult GetUsersTableData(string search, string sort, string order, int offset, int limit)
+        {
+            var roles = _userManager.Users;
+            var userroles = roles.Skip(offset).Take(limit).ToList();
+            var viewModel = userroles.Select(user => new UserDetailsViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email
+            }).ToList();
+
+            return Json(new
+            {
+                total = roles.Count(),
+                rows = viewModel
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            var record = _userManager.Users.FirstOrDefault(o => o.Id.ToString() == id);
+
+            var viewmodel = _mapper.Map<UserDetailsViewModel>(record);
+
+            return View(viewmodel);
+        }
 
         // Add User
         [HttpGet]
@@ -45,7 +68,7 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(UserAddViewModel model)
         {
-            if (string.IsNullOrEmpty(model.Username))
+            if (string.IsNullOrEmpty(model.UserName))
             {
                 ModelState.AddModelError("Username", "Username is required.");
                 return View(model);
@@ -65,7 +88,7 @@ namespace Codx.Auth.Controllers
 
             var record = new ApplicationUser
             {
-                UserName = model.Username,
+                UserName = model.UserName,
                 Email = model.Email
             };
 
@@ -94,7 +117,7 @@ namespace Codx.Auth.Controllers
             var viewmodel = new UserEditViewModel
             {
                 Id = record.Id,
-                Username = record.UserName,
+                UserName = record.UserName,
                 Email = record.Email
             };
 
@@ -130,7 +153,7 @@ namespace Codx.Auth.Controllers
             var viewmodel = new UserEditViewModel
             {
                 Id = record.Id,
-                Username = record.UserName,
+                UserName = record.UserName,
                 Email = record.Email
             };
 
@@ -151,8 +174,6 @@ namespace Codx.Auth.Controllers
         
             return View(viewmodel);
         }
-
-
 
     }
 }
