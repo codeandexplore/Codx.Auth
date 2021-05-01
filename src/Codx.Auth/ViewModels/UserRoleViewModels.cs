@@ -8,54 +8,41 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class UserRoleViewModels
+    public class UserRoleDetailsViewModel : BaseUserRoleViewModel
     {
+        public string Role { get; set; }
     }
 
-    public class UserRolesDetailsViewModel 
-    {
-        public UserRolesDetailsViewModel()
-        {
-            Roles = new List<RoleDetailsViewModel>();
-        }
-
-        public Guid UserId { get; set; }
-
-        public string Username { get; set; }
-
-        public string Email { get; set; }
-
-        public List<RoleDetailsViewModel> Roles { get; set; }
-    }
-
-    public class UserRoleAddViewModel
+    public class UserRoleAddViewModel : BaseUserRoleViewModel
     {
         public UserRoleAddViewModel()
         {
             Roles = new List<SelectListItem>();
         }
 
-        [Required]
-        public Guid UserId { get; set; }
-
-        public string Username { get; set; }
-
-        public string Email { get; set; }
-
-        [Required]
-        public Guid RoleId { get; set; }
         public List<SelectListItem> Roles { get; set; }
     }
 
-    public class UserRoleDeleteViewModel
+    public class UserRoleEditViewModel : BaseUserRoleViewModel
+    {
+        public UserRoleEditViewModel()
+        {
+            Roles = new List<SelectListItem>();
+        }
+
+        [Required]
+        public Guid OldRoleId { get; set; }
+        public string Role { get; set; }
+        public List<SelectListItem> Roles { get; set; }
+    }
+
+    public class BaseUserRoleViewModel
     {
         [Required]
         public Guid UserId { get; set; }
-        public string Username { get; set; }
 
         [Required]
         public Guid RoleId { get; set; }
-        public string Rolename { get; set; }
     }
 
 }

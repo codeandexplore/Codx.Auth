@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
@@ -20,44 +21,43 @@ namespace Codx.Auth.Controllers
         protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly RoleManager<ApplicationRole> _roleManager;
-        public UserRolesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        protected readonly IMapper _mapper;
+        public UserRolesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IMapper mapper)
         {
             _userdbcontext = userdbcontext;
             _userManager = userManager;
             _roleManager = roleManager;
-        }
-
-        public async Task<IActionResult> UserRoles(string userid)
-        {
-            var user = await _userdbcontext.Users.Include(i => i.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id.ToString() == userid);
-                       
-            var viewmodel = new UserRolesDetailsViewModel();
-
-            viewmodel.UserId = user.Id;
-            viewmodel.Username = user.UserName;
-            viewmodel.Email = user.Email;
-
-            foreach (var role in user.UserRoles)
-            {
-                viewmodel.Roles.Add(new RoleDetailsViewModel { 
-                    Id = role.RoleId,
-                    Name = role.Role.Name,
-                });
-            }
-            
-            return View(viewmodel);
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Add(string userid)
+        public JsonResult GetUserRolesTableData(Guid userid, string search, string sort, string order, int offset, int limit)
         {
-            var user = await _userdbcontext.Users.Include(i => i.UserRoles).FirstOrDefaultAsync(u => u.Id.ToString() == userid);
+            var query = _userdbcontext.UserRoles.Include(o => o.Role).Where(o => o.UserId == userid);
+
+            var data = query.Skip(offset).Take(limit).ToList();
+            var viewModel = data.Select(userrole => new UserRoleDetailsViewModel
+            {
+                RoleId = userrole.RoleId,
+                Role = userrole.Role.Name,
+            }).ToList();
+
+            return Json(new
+            {
+                total = query.Count(),
+                rows = viewModel
+            });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Add(Guid id)
+        {
+            var user = await _userdbcontext.Users.Include(i => i.UserRoles).FirstOrDefaultAsync(u => u.Id == id);
 
             var viewmodel = new UserRoleAddViewModel();
 
             viewmodel.UserId = user.Id;
-            viewmodel.Username = user.UserName;
-            viewmodel.Email = user.Email;
 
             var roles = await _userdbcontext.Roles.ToListAsync().ConfigureAwait(false);
                         
@@ -86,7 +86,7 @@ namespace Codx.Auth.Controllers
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction(nameof(UserRoles), new { userid=viewmodel.UserId });
+                    return RedirectToAction("Details", "Users", new { id = viewmodel.UserId });
                 }
 
                 foreach (var error in result.Errors)
@@ -111,33 +111,30 @@ namespace Codx.Auth.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Delete(string userid, string roleid)
+        public async Task<IActionResult> Delete(Guid userid, Guid roleid)
         {
-            var user = await _userdbcontext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userid);
+            var userrole = await _userdbcontext.UserRoles.Include(o => o.Role).FirstOrDefaultAsync(u => u.UserId == userid && u.RoleId == roleid);
 
-            var role = await _userdbcontext.Roles.FirstOrDefaultAsync(u => u.Id.ToString() == roleid);
-
-            var viewmodel = new UserRoleDeleteViewModel
+            var viewmodel = new UserRoleEditViewModel
             {
-                UserId = user.Id,
-                Username = user.UserName,
-                RoleId = role.Id,
-                Rolename = role.Name,
+                UserId = userrole.UserId,
+                RoleId = userrole.RoleId,
+                Role = userrole.Role.Name,
             };
 
             return View(viewmodel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(UserRoleDeleteViewModel viewmodel)
+        public async Task<IActionResult> Delete(UserRoleEditViewModel viewmodel)
         {
             var user = await _userdbcontext.Users.FirstOrDefaultAsync(u => u.Id == viewmodel.UserId);
 
-            var result = await _userManager.RemoveFromRoleAsync(user, viewmodel.Rolename).ConfigureAwait(false);
+            var result = await _userManager.RemoveFromRoleAsync(user, viewmodel.Role).ConfigureAwait(false);
 
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(UserRoles), new { userid = viewmodel.UserId });
+                return RedirectToAction("Details", "Users", new { id = viewmodel.UserId });
             }
 
             return View(viewmodel);

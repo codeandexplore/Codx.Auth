@@ -90,8 +90,8 @@
 
                             <thead>
                                 <tr>
-                                    <th data-field="name">Name</th>
-                                    <th data-field="id" data-width="150" data-formatter="userRoleRowActionButtons"></th>
+                                    <th data-field="role">Role</th>
+                                    <th data-field="roleId" data-width="150" data-formatter="userRoleRowActionButtons"></th>
                                 </tr>
                             </thead>
 
@@ -141,9 +141,7 @@
             return params
         }
         function userRoleRowActionButtons(index, row) {
-            return '<a class="btn btn-outline-info btn-sm" href="/UserRoles/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
-                '<a class="btn btn-outline-warning btn-sm" href="/UserRoles/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
-                '<a class="btn btn-outline-danger btn-sm" href="/UserRoles/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+            return  '<a class="btn btn-outline-danger btn-sm" href="/UserRoles/Delete/?userid=' + modelid + '&roleid=' + row.roleId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
     </script>

@@ -1,5 +1,5 @@
 ﻿
-@model UserRoleDeleteViewModel
+@model UserRoleEditViewModel
 
 @{
     ViewData["Title"] = "Delete";
@@ -9,8 +9,8 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Users")">Users</a></li>
-        <li class="breadcrumb-item"><a href="@Url.Action("UserRoles","UserRoles", new { userid = Model.UserId})">User Roles</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Delete</li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Details","Users", new { id = Model.UserId})">Details</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Delete Role</li>
     </ol>
 </nav>
 
@@ -35,22 +35,15 @@
                 <form asp-action="Delete">
 
                     <input type="hidden" asp-for="@Model.UserId" />
-                    <input type="hidden" asp-for="@Model.Username" />
                     <input type="hidden" asp-for="@Model.RoleId" />
-                    <input type="hidden" asp-for="@Model.Rolename" />
-
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input asp-for="@Model.Username" class="form-control" disabled />
-                    </div>
 
                     <div class="form-group">
                         <label>Role</label>
-                        <input asp-for="@Model.Rolename" class="form-control" disabled />
+                        <input asp-for="@Model.Role" class="form-control" readonly />
                     </div>
 
                     <div class="form-group">
-                        <a asp-action="UserRoles" asp-controller="UserRoles" asp-route-userid="@Model.UserId" class="btn btn-info">Cancel</a>
+                        <a asp-action="Details" asp-controller="Users" asp-route-id="@Model.UserId" class="btn btn-info">Cancel</a>
                         <input type="submit" class="btn btn-primary" value="YES" />
                     </div>
 
