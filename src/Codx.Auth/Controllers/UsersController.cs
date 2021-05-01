@@ -49,9 +49,9 @@ namespace Codx.Auth.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(Guid id)
         {
-            var record = _userManager.Users.FirstOrDefault(o => o.Id.ToString() == id);
+            var record = _userManager.Users.FirstOrDefault(o => o.Id == id);
 
             var viewmodel = _mapper.Map<UserDetailsViewModel>(record);
 
