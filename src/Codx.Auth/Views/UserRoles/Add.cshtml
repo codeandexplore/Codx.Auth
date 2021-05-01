@@ -8,8 +8,8 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Users")">Users</a></li>
-        <li class="breadcrumb-item"><a href="@Url.Action("UserRoles","UserRoles", new { userid = Model.UserId})">User Roles</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Add</li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Details","Users", new { id = Model.UserId})">Details</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add Role</li>
     </ol>
 </nav>
 
@@ -19,7 +19,7 @@
 
         <div class="card">
             <div class="card-header">
-                Add User Role
+                Add Role
             </div>
             <div class="card-body">
                 <div class="row">
@@ -34,20 +34,12 @@
                 <form asp-action="Add">
 
                     <input type="hidden" asp-for="@Model.UserId" />
-                    <input type="hidden" asp-for="@Model.Username" />
-
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input asp-for="@Model.Username" class="form-control" readonly />
-                    </div>
 
                     <div class="form-group">
                         <label>Role</label>
                         <select asp-for="RoleId" asp-items="Model.Roles" class="form-control">
                         </select>
                     </div>
-
-
 
                     <div class="form-group">
                         <input type="submit" class="btn btn-primary" value="Save" />

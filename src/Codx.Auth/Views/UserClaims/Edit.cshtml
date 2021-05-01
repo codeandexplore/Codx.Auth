@@ -1,25 +1,25 @@
-﻿@model UserClaimAddViewModel
+﻿
+@model UserClaimEditViewModel
 
 @{
-    ViewData["Title"] = "Add";
+    ViewData["Title"] = "Edit";
 }
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
-        <li class="breadcrumb-item"><a href="@Url.Action("Index","Users")">Users</a></li>
-        <li class="breadcrumb-item"><a href="@Url.Action("Details","Users", new { id = Model.UserId})">Details</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Add Claim</li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","IdentityResources")">Identity Resources</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Details","Users", new { id=Model.UserId})">Details</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Claim</li>
     </ol>
 </nav>
-
 
 <div class="row">
     <div class="col-lg-12">
 
         <div class="card">
             <div class="card-header">
-                Add Claim
+                Edit User Claim
             </div>
             <div class="card-body">
                 <div class="row">
@@ -30,24 +30,25 @@
                     </div>
                 </div>
 
-                <form asp-action="Add">
+                <form asp-action="Edit">
 
-                    <input type="hidden" asp-for="@Model.UserId" />
+                    <input hidden asp-for="@Model.Id" />
+                    <input hidden asp-for="@Model.UserId" />
 
                     <div class="form-group">
                         <label>Claim Type</label>
-                        <input asp-for="ClaimType" class="form-control" />
+                        <input asp-for="@Model.ClaimType" class="form-control" />
                     </div>
 
                     <div class="form-group">
                         <label>Claim Value</label>
-                        <input asp-for="ClaimValue" class="form-control" />
+                        <input asp-for="@Model.ClaimValue" class="form-control" />
                     </div>
 
                     <div class="form-group">
+                        <a asp-action="Details" asp-controller="Users" asp-route-id="@Model.UserId" class="btn btn-info">Cancel</a>
                         <input type="submit" class="btn btn-primary" value="Save" />
                     </div>
-
                 </form>
             </div>
         </div>

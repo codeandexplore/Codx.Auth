@@ -1,66 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class UserClaimViewModels
+
+    public class UserClaimDetailsViewModel : BaseUserClaimViewModel
+    {
+        public int Id { get; set; }
+    }
+
+    public class UserClaimAddViewModel : BaseUserClaimViewModel
     {
     }
 
-    public class ClaimDetailsViewModel 
+    public class UserClaimEditViewModel : BaseUserClaimViewModel
     {
+        public int Id { get; set; }
+    }
+
+    public class BaseUserClaimViewModel
+    {      
+
         public Guid UserId { get; set; }
 
-        public int ClaimId { get; set; }
-
+        [Required]
+        [StringLength(1000)]
         public string ClaimType { get; set; }
 
+        [Required]
+        [StringLength(1000)]
         public string ClaimValue { get; set; }
     }
-
-    public class UserClaimsDetailsViewModel
-    {
-        public UserClaimsDetailsViewModel()
-        {
-            Claims = new List<ClaimDetailsViewModel>();
-        }
-
-        public Guid UserId { get; set; }
-
-        public string Username { get; set; }
-
-        public string Email { get; set; }
-
-        public List<ClaimDetailsViewModel> Claims { get; set; }
-    }
-
-
-    public class UserClaimAddViewModel
-    {
-        public Guid UserId { get; set; }
-
-        public string Username { get; set; }
-
-        public string Email { get; set; }
-
-        public string ClaimType { get; set; }
-
-        public string ClaimValue { get; set; }
-    }
-
-    public class UserClaimDeleteViewModel
-    {
-        public Guid UserId { get; set; }
-        public string Username { get; set; }
-
-        public int ClaimId { get; set; }
-
-        public string ClaimType { get; set; }
-
-        public string ClaimValue { get; set; }
-    }
-
-
 }

@@ -6,30 +6,25 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
-    public class RoleViewModels
-    {
-    }
-
-    public class RoleDetailsViewModel 
+    public class RoleDetailsViewModel : BaseRoleViewModel
     {
         public Guid  Id { get; set; }
-
-        public string Name { get; set; }
     }
 
-    public class RoleAddViewModel
+    public class RoleAddViewModel : BaseRoleViewModel
     { 
-        [Required]
-        public string Name { get; set; }
     }
 
-    public class RoleEditViewModel
+    public class RoleEditViewModel : BaseRoleViewModel
     {
         public Guid Id { get; set; }
+    }
+    public class BaseRoleViewModel
+    {
 
         [Required]
+        [StringLength(256)]
         public string Name { get; set; }
     }
-
 
 }

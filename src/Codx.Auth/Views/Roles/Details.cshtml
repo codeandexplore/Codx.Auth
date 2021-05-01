@@ -1,0 +1,35 @@
+﻿
+@model RoleDetailsViewModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Roles")">Roles</a></li>
+        <li class="breadcrumb-item active" aria-current="page"> Detail </li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <div class="card">
+            <div class="card-header">
+                Role
+            </div>
+            <div class="card-body">
+
+                <input hidden asp-for="@Model.Id" />
+
+                <div class="form-group">
+                    <label>Name</label>
+                    <input asp-for="@Model.Name" class="form-control" readonly />
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
