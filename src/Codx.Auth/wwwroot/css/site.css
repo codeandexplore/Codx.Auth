@@ -79,3 +79,11 @@ body {
     max-width: 500px;
     position: relative;
 }
+
+.loggedout_wrapper {
+    right: 0px;
+    margin: 0px auto;
+    margin-top: 5%;
+    max-width: 1200px;
+    position: relative;
+}
