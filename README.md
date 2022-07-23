@@ -1,4 +1,5 @@
 
+
 # Codx.Auth
 Code and Explore Authentication and Authorization Project
 
@@ -31,8 +32,9 @@ Example:
 - DB_USER - Your Database Username
 - DB_PASSWORD - Your Database User Password
 
-3. Run the application
-There are two default users
+3. Run the application.
+
+# Default users
 
 |   Type          | Username      | Password        |
 | --------------- | ------------- | --------------- |
