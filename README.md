@@ -33,8 +33,10 @@ Example:
 
 3. Run the application
 There are two default users
+
 |   Type          | Username      | Password        |
-|-----------------|---------------|-----------------|
+| --------------- | ------------- | --------------- |
 |   Administrator | administrator | AdminPass12345! |
 |   User          | user          | UserPass12345!  |
+
 These values are seeded on application startup. You can change the values in **src/Codex.Auth/Extensions/DatabaseContext.cs**
