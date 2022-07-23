@@ -7,14 +7,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Codx.Auth
+namespace Codx.Auth.Extensions
 {
-    public static class ServiceCollectionExtensions
+    public static class AspNetIdentity
     {
 
         public static IServiceCollection AddAspNetIdentity(this IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, ApplicationRole>(options => {
+            services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+            {
                 // Password settings.
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -36,7 +37,7 @@ namespace Codx.Auth
                 .AddEntityFrameworkStores<UserDbContext>()
                 .AddDefaultTokenProviders();
 
-        
+
 
             return services;
         }
