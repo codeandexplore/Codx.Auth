@@ -22,6 +22,8 @@
                         <form asp-route="Login">
                             <input type="hidden" asp-for="ReturnUrl" />
 
+                            <partial name="_ValidationSummary" />
+
                             <div class="form-group">
                                 @*<label asp-for="Username"></label>*@
                                 <input class="form-control" placeholder="Username" asp-for="Username" autofocus>
