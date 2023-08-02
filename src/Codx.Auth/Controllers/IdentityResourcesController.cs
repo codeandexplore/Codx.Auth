@@ -30,7 +30,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public JsonResult GetIdentityResourcesTableData(string search, string sort, string order, int offset, int limit)
         {
-            var idResources = _dbContext.IdentityResources.Skip(offset).Take(limit).ToList();
+            var idResources = _dbContext.IdentityResources.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = idResources.Select(idres => new IdentityResourceDetailsViewModel
             {
                 Id = idres.Id,

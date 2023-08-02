@@ -25,7 +25,7 @@ namespace Codx.Auth.Controllers
         {
             var query = _dbContext.ApiResourceProperties.Where(o => o.ApiResourceId == apiresourceid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(apires => new ApiResourcePropertyDetailsViewModel
             {
                 Id = apires.Id,

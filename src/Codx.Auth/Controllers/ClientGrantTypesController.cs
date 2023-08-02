@@ -29,7 +29,7 @@ namespace Codx.Auth.Controllers
         {
             var query = _dbContext.ClientGrantTypes.Where(o => o.ClientId == clientid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(granttype => new ClientGrantTypeDetailsViewModel
             {
                 Id = granttype.Id,

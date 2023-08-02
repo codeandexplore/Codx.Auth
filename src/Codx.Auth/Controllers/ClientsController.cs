@@ -31,7 +31,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public JsonResult GetClientsTableData(string search, string sort, string order, int offset, int limit)
         {
-            var apiResources = _dbContext.Clients.Skip(offset).Take(limit).ToList();
+            var apiResources = _dbContext.Clients.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = apiResources.Select(apires => new ClientDetailsViewModel
             {
                 Id = apires.Id,

@@ -24,7 +24,7 @@ namespace Codx.Auth.Controllers
         public JsonResult GetApiResourceScopesTableData(int apiresourceid, string search, string sort, string order, int offset, int limit)
         {
             var query = _dbContext.ApiResourceScopes.Where(o => o.ApiResourceId == apiresourceid);
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(apires => new ApiResourceScopeDetailsViewModel
             {
                 Id = apires.Id,

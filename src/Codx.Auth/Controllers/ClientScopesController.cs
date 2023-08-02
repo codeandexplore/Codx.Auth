@@ -29,7 +29,7 @@ namespace Codx.Auth.Controllers
         {
             var query = _dbContext.ClientScopes.Where(o => o.ClientId == clientid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(apires => new ClientScopeDetailsViewModel
             {
                 Id = apires.Id,

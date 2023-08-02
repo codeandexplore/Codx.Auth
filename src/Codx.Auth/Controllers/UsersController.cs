@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
@@ -33,7 +32,7 @@ namespace Codx.Auth.Controllers
         public JsonResult GetUsersTableData(string search, string sort, string order, int offset, int limit)
         {
             var roles = _userManager.Users;
-            var userroles = roles.Skip(offset).Take(limit).ToList();
+            var userroles = roles.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = userroles.Select(user => new UserDetailsViewModel
             {
                 Id = user.Id,

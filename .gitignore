@@ -3,6 +3,9 @@
 ################################################################################
 
 /.vs
+
+/src/Codx.Auth/bin
 /src/Codx.Auth/bin/Debug/netcoreapp3.1
+/src/Codx.Auth/bin/Release/netcoreapp3.1
 /src/Codx.Auth/obj
 /src/Codx.Auth/appsettings.Development.json

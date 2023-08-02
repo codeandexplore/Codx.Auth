@@ -27,7 +27,7 @@ namespace Codx.Auth.Controllers
         {
             var query = _dbContext.ClientIdPRestrictions.Where(o => o.ClientId == clientid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(idp => new ClientIdpRestrictionDetailsViewModel
             {
                 Id = idp.Id,
