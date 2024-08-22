@@ -4,9 +4,9 @@
 Code and Explore Authentication and Authorization Project
 
 This is created using 
-- .NET Core 3.1
-- IdentityServer4 4.1.2
-- EntityFrameworkCore 5.0.4
+- .NET8.0
+- Duende IdentityServer 7.0
+- EntityFrameworkCore 8.0
 
 For the data access, we have three DbContext
 - UserDbContext - For the AspNet Identity
