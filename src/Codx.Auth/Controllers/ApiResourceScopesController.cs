@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
-using IdentityServer4.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;

@@ -2,9 +2,7 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using IdentityModel;
-using IdentityServer4;
-using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Entities;
+using Duende.IdentityServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace Codx.Auth.Controllers
 {
@@ -77,7 +76,7 @@ namespace Codx.Auth.Controllers
             {
                 var record = _mapper.Map<ClientSecret>(viewmodel);
                 record.Id = 0;
-                record.Value = new IdentityServer4.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
+                record.Value = new Duende.IdentityServer.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
                 _dbContext.ClientSecrets.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -115,7 +114,7 @@ namespace Codx.Auth.Controllers
                 var record = _mapper.Map<ClientSecret>(viewmodel);
                 if (!string.IsNullOrEmpty(viewmodel.NewSecret) && !string.IsNullOrWhiteSpace(viewmodel.NewSecret))
                 {
-                    record.Value = new IdentityServer4.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
+                    record.Value = new Duende.IdentityServer.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
                 }
 
                 _dbContext.Update(record);

@@ -2,13 +2,13 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using IdentityModel;
-using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace Codx.Auth.Controllers
 {
@@ -71,7 +71,7 @@ namespace Codx.Auth.Controllers
             if (ModelState.IsValid)
             {
                 var record = _mapper.Map<ApiResourceSecret>(viewmodel);
-                record.Value = new IdentityServer4.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
+                record.Value = new Duende.IdentityServer.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
                 record.Created = DateTime.UtcNow;
 
                 _dbContext.ApiResourceSecrets.Add(record);
@@ -111,7 +111,7 @@ namespace Codx.Auth.Controllers
 
                 if (!string.IsNullOrEmpty(viewmodel.NewSecret) && !string.IsNullOrWhiteSpace(viewmodel.NewSecret))         
                 { 
-                    record.Value = new IdentityServer4.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
+                    record.Value = new Duende.IdentityServer.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
                 }
 
                 _dbContext.Update(record);

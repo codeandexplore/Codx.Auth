@@ -1,6 +1,6 @@
 ﻿using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
-using IdentityServer4.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.DbContexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

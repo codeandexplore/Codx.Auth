@@ -1,6 +1,6 @@
-﻿using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.EntityFramework.Options;
+﻿using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,8 +11,8 @@ namespace Codx.Auth.Data.Contexts
 {
     public class IdentityServerDbContext : ConfigurationDbContext
     {
-        public IdentityServerDbContext(DbContextOptions<ConfigurationDbContext> options, ConfigurationStoreOptions storeOptions)
-           : base(options, storeOptions)
+        public IdentityServerDbContext(DbContextOptions<ConfigurationDbContext> options)
+           : base(options)
         {
 
         }

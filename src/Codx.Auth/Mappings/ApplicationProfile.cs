@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
-using IdentityServer4.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace Codx.Auth.Mappings
 {
