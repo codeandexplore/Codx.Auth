@@ -27,7 +27,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public JsonResult GetApiScopesTableData(string search, string sort, string order, int offset, int limit)
         {
-            var apiScopes = _dbContext.ApiScopes.Skip(offset).Take(limit).ToList();
+            var apiScopes = _dbContext.ApiScopes.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = apiScopes.Select(apires => new ApiScopeDetailsViewModel
             {
                 Id = apires.Id,

@@ -31,7 +31,7 @@ namespace Codx.Auth.Controllers
         {
             var query = _dbContext.ClientSecrets.Where(o => o.ClientId == clientid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(secret => new ClientSecretDetailsViewModel
             {
                 Id = secret.Id,

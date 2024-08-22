@@ -32,7 +32,7 @@ namespace Codx.Auth.Controllers
         {
             var query = _userdbcontext.UserClaims.Where(o => o.UserId == userid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(claim => new UserClaimDetailsViewModel
             {
                 Id = claim.Id,

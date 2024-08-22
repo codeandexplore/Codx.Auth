@@ -33,7 +33,7 @@ namespace Codx.Auth.Controllers
         public JsonResult GetRolesTableData(string search, string sort, string order, int offset, int limit)
         {
             var roles = _roleManager.Roles;
-            var userroles = roles.Skip(offset).Take(limit).ToList();
+            var userroles = roles.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = userroles.Select(role => new RoleDetailsViewModel
             {
                 Id = role.Id,

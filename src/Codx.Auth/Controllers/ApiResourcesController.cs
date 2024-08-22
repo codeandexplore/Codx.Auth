@@ -30,7 +30,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public JsonResult GetApiResourcesTableData(string search, string sort, string order, int offset, int limit)
         {
-            var apiResources = _dbContext.ApiResources.Skip(offset).Take(limit).ToList();
+            var apiResources = _dbContext.ApiResources.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = apiResources.Select(apires => new ApiResourceDetailsViewModel
             {
                 Id = apires.Id,

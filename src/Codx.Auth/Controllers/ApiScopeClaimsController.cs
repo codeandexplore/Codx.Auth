@@ -27,7 +27,7 @@ namespace Codx.Auth.Controllers
         {
             var query= _dbContext.ApiScopeClaims.Where(o => o.ScopeId == apiScopeid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(apires => new ApiScopeClaimDetailsViewModel
             {
                 Id = apires.Id,

@@ -25,7 +25,7 @@ namespace Codx.Auth.Controllers
         {
             var query = _dbContext.IdentityResourceProperties.Where(o => o.IdentityResourceId == identityresourceid);
 
-            var data = query.Skip(offset).Take(limit).ToList();
+            var data = query.OrderBy(o => o.Id).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(identityres => new IdentityResourcePropertyDetailsViewModel
             {
                 Id = identityres.Id,
