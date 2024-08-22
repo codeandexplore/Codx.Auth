@@ -1,5 +1,5 @@
 ﻿using Codx.Auth.ViewModels;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 

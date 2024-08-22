@@ -31,5 +31,6 @@ namespace Codx.Auth.ViewModels
         public string AllowedAccessTokenSigningAlgorithms { get; set; }
         public bool ShowInDiscoveryDocument { get; set; }
         public bool NonEditable { get; set; }
+        public bool RequireResourceIndicator { get; set; }
     }
 }

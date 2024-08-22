@@ -47,8 +47,7 @@ namespace Codx.Auth
                 {
                     options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                .AddAspNetIdentity<ApplicationUser>()
-                .AddDeveloperSigningCredential();
+                .AddAspNetIdentity<ApplicationUser>();
 
             services.AddDbContext<IdentityServerDbContext>();
 
