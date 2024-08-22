@@ -9,3 +9,4 @@
 /src/Codx.Auth/bin/Release/netcoreapp3.1
 /src/Codx.Auth/obj
 /src/Codx.Auth/appsettings.Development.json
+/src/Codx.Auth/wwwroot/lib/bootstrap/node_modules/hugo-bin
