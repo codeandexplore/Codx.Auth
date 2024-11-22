@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Entities.AspNet;
+using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
 
@@ -138,6 +139,15 @@ namespace Codx.Auth.Mappings
             CreateMap<ApplicationUserRole, UserRoleEditViewModel>().ReverseMap();
             CreateMap<ApplicationUserRole, UserRoleEditViewModel>();
 
+            CreateMap<Tenant, TenantDetailsViewModel>();
+            CreateMap<Tenant, TenantAddViewModel>().ReverseMap();
+            CreateMap<Tenant, TenantEditViewModel>().ReverseMap();
+            CreateMap<Tenant, TenantEditViewModel>();
+
+            CreateMap<Company, CompanyDetailsViewModel>();
+            CreateMap<Company, CompanyAddViewModel>().ReverseMap();
+            CreateMap<Company, CompanyEditViewModel>().ReverseMap();
+            CreateMap<Company, CompanyEditViewModel>();
         }
     }
 }

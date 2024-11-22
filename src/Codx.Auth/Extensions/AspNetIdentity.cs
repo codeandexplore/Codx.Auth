@@ -3,9 +3,6 @@ using Codx.Auth.Data.Entities.AspNet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Codx.Auth.Extensions
 {

@@ -51,6 +51,8 @@ namespace Codx.Auth
 
             services.AddDbContext<IdentityServerDbContext>();
 
+            services.AddScoped<ITenantResolver, TenantResolver>();
+
             services.AddAuthentication()
                 .AddCookie(options => {
                     options.ExpireTimeSpan = new TimeSpan(0, 15, 0);

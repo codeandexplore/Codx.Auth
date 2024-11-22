@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Codx.Auth.Data.Entities.Enterprise;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +13,7 @@ namespace Codx.Auth.Data.Entities.AspNet
         public virtual ICollection<ApplicationUserRole> UserRoles { get; set; }
 
         public virtual ICollection<ApplicationUserClaim> UserClaims { get; set; }
+
+        public virtual ICollection<UserCompany> UserCompanies { get; set; }
     }
 }
