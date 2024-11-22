@@ -85,6 +85,13 @@ namespace Codx.Auth.Controllers
                 return View(model);
             }
 
+            var existingEmailUser = await _userManager.FindByEmailAsync(model.Email).ConfigureAwait(false);
+            if (existingEmailUser != null)
+            {
+                ModelState.AddModelError("Email", "Email already exists.");
+                return View(model);
+            }
+
             var record = new ApplicationUser
             {
                 UserName = model.UserName,
