@@ -148,6 +148,13 @@ namespace Codx.Auth.Mappings
             CreateMap<Company, CompanyAddViewModel>().ReverseMap();
             CreateMap<Company, CompanyEditViewModel>().ReverseMap();
             CreateMap<Company, CompanyEditViewModel>();
+
+            CreateMap<UserCompany, CompanyUserDetailsViewModel>()
+                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+            CreateMap<UserCompany, CompanyUserAddViewModel>().ReverseMap();
+            CreateMap<UserCompany, CompanyUserEditViewModel>().ReverseMap();
+            CreateMap<UserCompany, CompanyUserEditViewModel>();
         }
     }
 }

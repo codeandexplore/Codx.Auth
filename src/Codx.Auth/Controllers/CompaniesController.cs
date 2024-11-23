@@ -24,11 +24,6 @@ namespace Codx.Auth.Controllers
             _mapper = mapper;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         public IActionResult GetCompaniesTableData(Guid tenantid, string search, string sort, string order, int offset, int limit)
         {
             var query = _context.Companies.Where(o => !o.IsDeleted && o.TenantId == tenantid);
@@ -39,7 +34,7 @@ namespace Codx.Auth.Controllers
             return Json(new
             {
                 total = query.Count(),
-                rows = data
+                rows = viewModel
             });
         }
 
