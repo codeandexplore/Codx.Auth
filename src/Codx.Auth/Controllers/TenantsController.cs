@@ -3,6 +3,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
 using Codx.Auth.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class TenantsController : Controller
     {
         private readonly UserDbContext _context;

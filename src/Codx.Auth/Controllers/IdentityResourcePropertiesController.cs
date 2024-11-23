@@ -2,6 +2,7 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class IdentityResourcePropertiesController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;

@@ -1,21 +1,20 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
+using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
-using Codx.Auth.Extensions;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Codx.Auth.Data.Entities.AspNet;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class CompanyUsersController : Controller
     {
         protected readonly UserManager<ApplicationUser> _userManager;

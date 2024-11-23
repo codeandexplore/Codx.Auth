@@ -9,9 +9,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Duende.IdentityServer.EntityFramework.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Codx.Auth.Controllers
 {
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class ApiResourceSecretsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;

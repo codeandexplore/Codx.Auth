@@ -58,6 +58,10 @@ namespace Codx.Auth
                     options.ExpireTimeSpan = new TimeSpan(0, 15, 0);
                 });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IdentityServerAdmin", policy => policy.RequireRole("Administrator"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class UsersController : Controller
     {
         protected readonly UserManager<ApplicationUser> _userManager;
