@@ -18,6 +18,7 @@ using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer;
+using System.Security.Policy;
 
 namespace Codx.Auth.Controllers
 {
@@ -54,12 +55,17 @@ namespace Codx.Auth.Controllers
         public async Task<IActionResult> Login(string returnUrl)
         {
             // build a model so we know what to show on the login page
-            var vm = await BuildLoginViewModelAsync(returnUrl);
+            var vm = await BuildLoginViewModelAsync(returnUrl);           
 
             if (vm.IsExternalLoginOnly)
             {
                 // we only have one option for logging in and it's an external provider
                 return RedirectToAction("Challenge", "External", new { scheme = vm.ExternalLoginScheme, returnUrl });
+            }
+
+            if(vm.ClientId == "tuos-ui")
+            {
+                return View("LoginTuosUI", vm);
             }
 
             return View(vm);
@@ -266,7 +272,8 @@ namespace Codx.Auth.Controllers
                 EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
                 ReturnUrl = returnUrl,
                 Username = context?.LoginHint,
-                ExternalProviders = providers.ToArray()
+                ExternalProviders = providers.ToArray(),
+                ClientId = context?.Client.ClientId,
             };
         }
 
