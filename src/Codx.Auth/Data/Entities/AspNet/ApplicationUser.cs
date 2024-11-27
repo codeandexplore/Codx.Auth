@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Codx.Auth.Data.Entities.AspNet
 {
@@ -15,5 +13,7 @@ namespace Codx.Auth.Data.Entities.AspNet
         public virtual ICollection<ApplicationUserClaim> UserClaims { get; set; }
 
         public virtual ICollection<UserCompany> UserCompanies { get; set; }
+
+        public Guid? DefaultCompanyId { get; set; }
     }
 }
