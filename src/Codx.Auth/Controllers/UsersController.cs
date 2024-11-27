@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,12 +16,14 @@ namespace Codx.Auth.Controllers
     [Authorize(Policy = "IdentityServerAdmin")]
     public class UsersController : Controller
     {
+        protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly IMapper _mapper;
 
-        public UsersController(UserManager<ApplicationUser> userManager, IMapper mapper)
+        public UsersController(UserManager<ApplicationUser> userManager, UserDbContext userdbcontext, IMapper mapper)
         {
             _userManager = userManager;
+            _userdbcontext = userdbcontext;
             _mapper = mapper;
         }
 
@@ -53,6 +58,13 @@ namespace Codx.Auth.Controllers
             var record = _userManager.Users.FirstOrDefault(o => o.Id == id);
 
             var viewmodel = _mapper.Map<UserDetailsViewModel>(record);
+
+            if(record.DefaultCompanyId != null)
+            {
+                var company = await _userdbcontext.Companies.Include(c => c.Tenant).FirstOrDefaultAsync(o => o.Id == record.DefaultCompanyId);
+                viewmodel.CompanyName = company.Name;
+                viewmodel.TenantName = company.Tenant.Name;
+            }
 
             return View(viewmodel);
         }
@@ -119,12 +131,19 @@ namespace Codx.Auth.Controllers
         public async Task<IActionResult> Edit(string id)
         {
             var record = await _userManager.FindByIdAsync(id);
+            var companySelectOptions = await _userdbcontext.UserCompanies.Include(uc => uc.Company).Where(uc => uc.UserId == record.Id).Select(o => new SelectListItem
+            {
+                Value = o.CompanyId.ToString(),
+                Text = o.Company.Name
+            }).ToListAsync();
 
             var viewmodel = new UserEditViewModel
             {
                 Id = record.Id,
                 UserName = record.UserName,
-                Email = record.Email
+                Email = record.Email,
+                DefaultCompanyId = record.DefaultCompanyId,
+                CompanySelectOptions = companySelectOptions
             };
 
             return View(viewmodel);
@@ -138,7 +157,7 @@ namespace Codx.Auth.Controllers
             if (ModelState.IsValid)
             {
                 record.Email = viewmodel.Email;
-
+                record.DefaultCompanyId = viewmodel.DefaultCompanyId;
                 var result = await _userManager.UpdateAsync(record);
 
                 if (result.Succeeded)
@@ -146,6 +165,14 @@ namespace Codx.Auth.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
+
+            var companySelectOptions = await _userdbcontext.UserCompanies.Include(uc => uc.Company).Where(uc => uc.UserId == record.Id).Select(o => new SelectListItem
+            {
+                Value = o.CompanyId.ToString(),
+                Text = o.Company.Name
+            }).ToListAsync();
+
+            viewmodel.CompanySelectOptions = companySelectOptions;
 
             return View(viewmodel);
         }
