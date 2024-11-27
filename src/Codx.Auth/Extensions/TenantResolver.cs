@@ -1,4 +1,5 @@
 ﻿using Codx.Auth.Data.Contexts;
+using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
 using Duende.IdentityServer.Validation;
 using System;
@@ -8,8 +9,8 @@ namespace Codx.Auth.Extensions
 {
     public interface ITenantResolver
     {
-        Tenant ResolveTenant(ResourceValidationResult requestedResources);
-        Company ResolveCompany(ResourceValidationResult requestedResources);
+        Tenant ResolveTenant(ApplicationUser user);
+        Company ResolveCompany(ApplicationUser user);
     }
 
     public class TenantResolver : ITenantResolver
@@ -21,22 +22,22 @@ namespace Codx.Auth.Extensions
             _context = context;
         }
 
-        public Tenant ResolveTenant(ResourceValidationResult requestedResources)
+        public Tenant ResolveTenant(ApplicationUser user)
         {
-            var tenantScope = requestedResources.Resources.ApiScopes.FirstOrDefault(s => s.Name.StartsWith("tenant_id"));
-            if (tenantScope != null && Guid.TryParse(tenantScope.Name.Split(':').Last(), out var tenantGuid))
+            var company = ResolveCompany(user);
+            if (company != null)
             {
-                return _context.Tenants.FirstOrDefault(t => t.Id == tenantGuid);
+                return _context.Tenants.FirstOrDefault(t => t.Id == company.TenantId);
             }
             return null;
         }
 
-        public Company ResolveCompany(ResourceValidationResult requestedResources)
+        public Company ResolveCompany(ApplicationUser user)
         {
-            var companyScope = requestedResources.Resources.ApiScopes.FirstOrDefault(s => s.Name.StartsWith("company_id"));
-            if (companyScope != null && Guid.TryParse(companyScope.Name.Split(':').Last(), out var companyGuid))
+            var company = _context.Companies.FirstOrDefault(c => c.Id == user.DefaultCompanyId);
+            if (company != null)
             {
-                return _context.Companies.FirstOrDefault(c => c.Id == companyGuid);
+                return company;
             }
             return null;
         }

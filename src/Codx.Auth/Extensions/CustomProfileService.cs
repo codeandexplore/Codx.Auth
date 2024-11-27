@@ -24,8 +24,8 @@ namespace Codx.Auth.Extensions
             var user = await _userManager.GetUserAsync(context.Subject);
             if (user != null)
             {
-                var tenant = _tenantResolver.ResolveTenant(context.RequestedResources);
-                var company = _tenantResolver.ResolveCompany(context.RequestedResources);
+                var tenant = _tenantResolver.ResolveTenant(user);
+                var company = _tenantResolver.ResolveCompany(user);
 
                 var claims = new List<Claim>
                 {   
