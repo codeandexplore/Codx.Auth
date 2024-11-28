@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
@@ -16,12 +17,14 @@ namespace Codx.Auth.Controllers
     public class MyProfileController : Controller
     {
         protected readonly UserDbContext _userdbcontext;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly IMapper _mapper;
 
-        public MyProfileController(UserManager<ApplicationUser> userManager, UserDbContext userdbcontext, IMapper mapper)
+        public MyProfileController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, UserDbContext userdbcontext, IMapper mapper)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _userdbcontext = userdbcontext;
             _mapper = mapper;
         }
@@ -106,6 +109,53 @@ namespace Codx.Auth.Controllers
                 total = query.Count(),
                 rows = viewModel
             });
+        }
+
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if(model.NewPassword != model.ConfirmPassword)
+            {
+                ModelState.AddModelError(string.Empty, "Password and Confirm Password do not match");
+                return View(model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                await _signInManager.RefreshSignInAsync(user);
+                return RedirectToAction("ChangePasswordConfirmation");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ChangePasswordConfirmation()
+        {
+            return View();
         }
     }
 }
