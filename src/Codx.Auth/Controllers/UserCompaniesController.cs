@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Codx.Auth.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class UserCompaniesController : Controller
     {
         protected readonly UserDbContext _userdbcontext;
