@@ -63,8 +63,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="nav-claims" role="tabpanel" aria-labelledby="nav-claims-tab">
-                        <a asp-action="Add" asp-controller="UserClaims" asp-route-userid="@Model.Id" class="btn btn-outline-primary">Add</a>
+                    <div class="tab-pane fade" id="nav-claims" role="tabpanel" aria-labelledby="nav-claims-tab">                       
                         <br />  <br />
                         <table class="table table-bordered"
                                id="userClaimTable"
@@ -79,8 +78,7 @@
                             <thead>
                                 <tr>
                                     <th data-field="claimType">Type</th>
-                                    <th data-field="claimValue">Value</th>
-                                    <th data-field="id" data-width="150" data-formatter="userClaimRowActionButtons"></th>
+                                    <th data-field="claimValue">Value</th>                               
                                 </tr>
                             </thead>
 
@@ -89,7 +87,7 @@
                     </div>
 
                     <div class="tab-pane fade" id="nav-roles" role="tabpanel" aria-labelledby="nav-roles-tab">
-                        <a asp-action="Add" asp-controller="userRoles" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add</a>
+                      
                         <br />  <br />
                         <table class="table table-bordered"
                                id="userRoleTable"
@@ -103,8 +101,7 @@
 
                             <thead>
                                 <tr>
-                                    <th data-field="role">Role</th>
-                                    <th data-field="roleId" data-width="150" data-formatter="userRoleRowActionButtons"></th>
+                                    <th data-field="role">Role</th>                                
                                 </tr>
                             </thead>
 
@@ -127,7 +124,7 @@
                                 <tr>
                                     <th data-field="companyName">Company</th>
                                     <th data-field="tenantName">Tenant</th>
-                                    <th data-field="companyId" data-width="150" data-formatter="userCompanyRowActionButtons"></th>
+                                @*     <th data-field="companyId" data-width="150" data-formatter="userCompanyRowActionButtons"></th> *@
                                 </tr>
                             </thead>
 
@@ -148,7 +145,7 @@
 
     <script>
         function userClaimAjaxRequest(params) {
-            var url = '@Url.Action("GetUserClaimsTableData", "UserClaims")';
+            var url = '@Url.Action("GetMyClaimsTableData", "MyProfile")';
             $.get(url + '?' + $.param(params.data)).then(function (res) {
                 params.success(res)
             })
@@ -167,7 +164,7 @@
 
     <script>
         function userRoleAjaxRequest(params) {
-            var url = '@Url.Action("GetUserRolesTableData", "UserRoles")';
+            var url = '@Url.Action("GetMyRolesTableData", "MyProfile")';
             $.get(url + '?' + $.param(params.data)).then(function (res) {
                 params.success(res)
             })
@@ -184,7 +181,7 @@
 
     <script>
         function userCompanyAjaxRequest(params) {
-            var url = '@Url.Action("GetUserCompaniesTableData", "UserCompanies")';
+            var url = '@Url.Action("GetMyCompaniesTableData", "MyProfile")';
             $.get(url + '?' + $.param(params.data)).then(function (res) {
                 params.success(res)
             })
@@ -194,7 +191,7 @@
             return params
         }
         function userCompanyRowActionButtons(index, row) {
-            return  '<a class="btn btn-outline-danger btn-sm" href="/UserCompanies/Delete/?userid=' + modelid + '&companyid=' + row.companyId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+            return  ''
         }
 
     </script>
