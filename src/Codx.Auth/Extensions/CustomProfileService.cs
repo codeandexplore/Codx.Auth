@@ -22,13 +22,13 @@ namespace Codx.Auth.Extensions
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             var user = await _userManager.GetUserAsync(context.Subject);
-            if (user != null)
+            if (user != null && user.DefaultCompanyId.HasValue)
             {
-                var tenant = _tenantResolver.ResolveTenant(user);
                 var company = _tenantResolver.ResolveCompany(user);
+                var tenant = company.Tenant;
 
                 var claims = new List<Claim>
-                {   
+                {
                     new Claim("tenant_id", tenant.Id.ToString()),
                     new Claim("tenant_name", tenant.Name),
                     new Claim("company_id", company.Id.ToString()),
@@ -36,6 +36,24 @@ namespace Codx.Auth.Extensions
                 };
 
                 context.IssuedClaims.AddRange(claims);
+            }
+            else
+            {
+                var company = _tenantResolver.ResolveFirstUserCompany(user);
+                if (company != null)
+                {
+                    var tenant = company.Tenant;
+
+                    var claims = new List<Claim>
+                    {
+                        new Claim("tenant_id", tenant.Id.ToString()),
+                        new Claim("tenant_name", tenant.Name),
+                        new Claim("company_id", company.Id.ToString()),
+                        new Claim("company_name", company.Name)
+                    };
+
+                    context.IssuedClaims.AddRange(claims);
+                }
             }
         }
 
