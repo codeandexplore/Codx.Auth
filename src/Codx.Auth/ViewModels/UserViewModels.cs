@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Codx.Auth.ViewModels
 {
     public class UserDetailsViewModel : BaseUserEditViewModel
     { 
         public Guid Id { get; set; }
+        public string TenantName { get; set; }
+        public string CompanyName { get; set; }
     }
 
     public class UserAddViewModel : BaseUserEditViewModel
@@ -24,9 +25,9 @@ namespace Codx.Auth.ViewModels
 
     public class UserEditViewModel : BaseUserEditViewModel
     {
-
         public Guid Id { get; set; }
-
+        public Guid? DefaultCompanyId { get; set; }
+        public List<SelectListItem> CompanySelectOptions { get; set; }
     }
 
     public class BaseUserEditViewModel

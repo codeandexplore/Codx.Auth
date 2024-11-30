@@ -1,20 +1,17 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
+using Duende.IdentityServer.EntityFramework.Entities;
 using IdentityModel;
-using Duende.IdentityServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace Codx.Auth.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class ClientSecretsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;

@@ -43,6 +43,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Default Company</label>
+                        <select asp-for="@Model.DefaultCompanyId" class="form-control" asp-items="Model.CompanySelectOptions"></select>
+                    </div>
+
+                    <div class="form-group">
                         <a asp-action="Index" class="btn btn-info">Cancel</a>
                         <input type="submit" class="btn btn-primary" value="Save" />
                     </div>

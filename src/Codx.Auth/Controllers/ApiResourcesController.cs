@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class ApiResourcesController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;

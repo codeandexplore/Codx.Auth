@@ -1,17 +1,16 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
-using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class ApiScopeClaimsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;

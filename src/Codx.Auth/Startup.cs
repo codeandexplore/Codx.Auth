@@ -6,6 +6,7 @@ using Codx.Auth.Extensions;
 using Codx.Auth.Mappings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,15 +48,22 @@ namespace Codx.Auth
                 {
                     options.ConfigureDbContext = builder => builder.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                .AddAspNetIdentity<ApplicationUser>();
+                .AddAspNetIdentity<ApplicationUser>()
+                .AddProfileService<CustomProfileService>();
 
             services.AddDbContext<IdentityServerDbContext>();
+
+            services.AddScoped<ITenantResolver, TenantResolver>();
 
             services.AddAuthentication()
                 .AddCookie(options => {
                     options.ExpireTimeSpan = new TimeSpan(0, 15, 0);
                 });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IdentityServerAdmin", policy => policy.RequireRole("Administrator"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,6 +84,11 @@ namespace Codx.Auth
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             app.UseRouting();
 

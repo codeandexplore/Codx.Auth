@@ -24,6 +24,7 @@
                         <a class="nav-item nav-link active" id="nav-details-tab" data-toggle="tab" href="#nav-details" role="tab" aria-controls="nav-details" aria-selected="true">Details</a>
                         <a class="nav-item nav-link" id="nav-claims-tab" data-toggle="tab" href="#nav-claims" role="tab" aria-controls="nav-claims" aria-selected="false">Claims</a>
                         <a class="nav-item nav-link" id="nav-roles-tab" data-toggle="tab" href="#nav-roles" role="tab" aria-controls="nav-roles" aria-selected="false">Roles</a>
+                        <a class="nav-item nav-link" id="nav-companies-tab" data-toggle="tab" href="#nav-companies" role="tab" aria-controls="nav-companies" aria-selected="false">Companies</a>
                     </div>
                 </nav>
             </div>
@@ -45,6 +46,16 @@
                                 <div class="form-group">
                                     <label>Email</label>
                                     <input asp-for="@Model.Email" class="form-control" readonly />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Default Company</label>
+                                    <input asp-for="@Model.CompanyName" class="form-control" readonly />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Default Tenant</label>
+                                    <input asp-for="@Model.TenantName" class="form-control" readonly />
                                 </div>
 
                             </div>
@@ -92,6 +103,29 @@
                                 <tr>
                                     <th data-field="role">Role</th>
                                     <th data-field="roleId" data-width="150" data-formatter="userRoleRowActionButtons"></th>
+                                </tr>
+                            </thead>
+
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade" id="nav-companies" role="tabpanel" aria-labelledby="nav-companies-tab">
+                        <br />  <br />
+                        <table class="table table-bordered"
+                               id="userCompanyTable"
+                               data-toggle="table"
+                               data-query-params="userCompanyTableParams"
+                               data-pagination="true"
+                               data-side-pagination="server"
+                               data-page-size="5"
+                               data-page-list="[5,10,25,50,100,200,All]"
+                               data-ajax="userCompanyAjaxRequest">
+
+                            <thead>
+                                <tr>
+                                    <th data-field="companyName">Company</th>
+                                    <th data-field="tenantName">Tenant</th>
+                                    <th data-field="companyId" data-width="150" data-formatter="userCompanyRowActionButtons"></th>
                                 </tr>
                             </thead>
 
@@ -146,4 +180,20 @@
 
     </script>
 
+    <script>
+        function userCompanyAjaxRequest(params) {
+            var url = '@Url.Action("GetUserCompaniesTableData", "UserCompanies")';
+            $.get(url + '?' + $.param(params.data)).then(function (res) {
+                params.success(res)
+            })
+        };
+        function userCompanyTableParams(params) {
+            params.userid = modelid;
+            return params
+        }
+        function userCompanyRowActionButtons(index, row) {
+            return  '<a class="btn btn-outline-danger btn-sm" href="/UserCompanies/Delete/?userid=' + modelid + '&companyid=' + row.companyId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+        }
+
+    </script>
 }

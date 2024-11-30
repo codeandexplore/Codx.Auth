@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Codx.Auth.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "IdentityServerAdmin")]
     public class RolesController : Controller
     {
 

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Entities.AspNet;
+using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
 
@@ -128,6 +129,8 @@ namespace Codx.Auth.Mappings
             CreateMap<ApplicationUser, UserEditViewModel>().ReverseMap();
             CreateMap<ApplicationUser, UserEditViewModel>();
 
+            CreateMap<ApplicationUser, MyProfileViewModel>();
+
             CreateMap<ApplicationUserClaim, UserClaimDetailsViewModel>();
             CreateMap<ApplicationUserClaim, UserClaimAddViewModel>().ReverseMap();
             CreateMap<ApplicationUserClaim, UserClaimEditViewModel>().ReverseMap();
@@ -138,6 +141,22 @@ namespace Codx.Auth.Mappings
             CreateMap<ApplicationUserRole, UserRoleEditViewModel>().ReverseMap();
             CreateMap<ApplicationUserRole, UserRoleEditViewModel>();
 
+            CreateMap<Tenant, TenantDetailsViewModel>();
+            CreateMap<Tenant, TenantAddViewModel>().ReverseMap();
+            CreateMap<Tenant, TenantEditViewModel>().ReverseMap();
+            CreateMap<Tenant, TenantEditViewModel>();
+
+            CreateMap<Company, CompanyDetailsViewModel>();
+            CreateMap<Company, CompanyAddViewModel>().ReverseMap();
+            CreateMap<Company, CompanyEditViewModel>().ReverseMap();
+            CreateMap<Company, CompanyEditViewModel>();
+
+            CreateMap<UserCompany, CompanyUserDetailsViewModel>()
+                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+            CreateMap<UserCompany, CompanyUserAddViewModel>().ReverseMap();
+            CreateMap<UserCompany, CompanyUserEditViewModel>().ReverseMap();
+            CreateMap<UserCompany, CompanyUserEditViewModel>();
         }
     }
 }
