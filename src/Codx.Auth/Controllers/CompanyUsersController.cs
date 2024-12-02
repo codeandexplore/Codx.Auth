@@ -94,7 +94,14 @@ namespace Codx.Auth.Controllers
                     record.UserId = findByEmail.Id;
 
                     await _context.UserCompanies.AddAsync(record).ConfigureAwait(false);
-                    var result = await _context.SaveChangesAsync().ConfigureAwait(false);
+
+                    if (!record.User.DefaultCompanyId.HasValue)
+                    {
+                        record.User.DefaultCompanyId = record.CompanyId;
+                        _context.Users.Update(record.User);
+                    }
+
+                    var result = await _context.SaveChangesAsync().ConfigureAwait(false);                  
 
                     if (result > 0)
                     {
