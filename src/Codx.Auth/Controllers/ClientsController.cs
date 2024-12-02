@@ -79,7 +79,7 @@ namespace Codx.Auth.Controllers
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Details), new { id=record.Id });
                 }
 
 
@@ -115,7 +115,7 @@ namespace Codx.Auth.Controllers
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Details), new { id = record.Id });
                 }
 
                 ModelState.AddModelError("", "Failed");

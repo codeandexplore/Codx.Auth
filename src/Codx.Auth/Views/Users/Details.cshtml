@@ -194,7 +194,8 @@
             return params
         }
         function userCompanyRowActionButtons(index, row) {
-            return  '<a class="btn btn-outline-danger btn-sm" href="/UserCompanies/Delete/?userid=' + modelid + '&companyid=' + row.companyId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+            return  '<a class="btn btn-outline-info btn-sm" href="/Companies/Details/' + row.companyId + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/UserCompanies/Delete/?userid=' + modelid + '&companyid=' + row.companyId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
     </script>
