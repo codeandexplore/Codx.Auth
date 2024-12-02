@@ -71,7 +71,7 @@ namespace Codx.Auth.Controllers
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Details), new { id = record.Id });
                 }
 
                 ModelState.AddModelError("", "Failed");
@@ -99,16 +99,16 @@ namespace Codx.Auth.Controllers
             {
                 var userId = User.GetUserId();
 
-                var update = _mapper.Map<Tenant>(viewModel);
-                update.UpdatedAt = DateTime.Now;
-                update.UpdatedBy = userId;
+                var record = _mapper.Map<Tenant>(viewModel);
+                record.UpdatedAt = DateTime.Now;
+                record.UpdatedBy = userId;
 
-                _context.Tenants.Update(update);
+                _context.Tenants.Update(record);
                 var result = await _context.SaveChangesAsync().ConfigureAwait(false);
 
                 if (result > 0)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Details), new { id = record.Id });
                 }
 
                 ModelState.AddModelError("", "Failed");

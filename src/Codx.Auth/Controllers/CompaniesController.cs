@@ -76,7 +76,7 @@ namespace Codx.Auth.Controllers
 
                 if (result > 0)
                 {
-                    return RedirectToAction("Details", "Tenants", new { id = viewModel.TenantId });
+                    return RedirectToAction("Details", "Companies", new { id = result });
                 }
 
                 ModelState.AddModelError("", "Failed");
