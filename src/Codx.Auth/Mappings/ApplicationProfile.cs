@@ -157,6 +157,21 @@ namespace Codx.Auth.Mappings
             CreateMap<UserCompany, CompanyUserAddViewModel>().ReverseMap();
             CreateMap<UserCompany, CompanyUserEditViewModel>().ReverseMap();
             CreateMap<UserCompany, CompanyUserEditViewModel>();
+
+            CreateMap<UserCompany, UserCompanyDetailsViewModel>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.CompanyId))
+                .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.Company.Name))
+                .ForMember(dest => dest.TenantId, opt => opt.MapFrom(src => src.Company.TenantId))
+                .ForMember(dest => dest.TenantName, opt => opt.MapFrom(src => src.User.UserName));
+            CreateMap<UserCompany, UserCompanyAddViewModel>().ReverseMap();
+            CreateMap<UserCompany, UserCompanyEditViewModel>().ReverseMap();
+            CreateMap<UserCompany, UserCompanyEditViewModel>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.CompanyId))
+                .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.Company.Name))
+                .ForMember(dest => dest.TenantId, opt => opt.MapFrom(src => src.Company.TenantId))
+                .ForMember(dest => dest.TenantName, opt => opt.MapFrom(src => src.Company.Tenant.Name));
         }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
@@ -11,6 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Codx.Auth.Controllers
 {
@@ -47,6 +45,41 @@ namespace Codx.Auth.Controllers
                 total = query.Count(),
                 rows = viewModel
             });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(Guid companyid, Guid userid)
+        {
+            var record = await _userdbcontext.UserCompanies.Include(uc => uc.Company).ThenInclude(uc => uc.Tenant).FirstOrDefaultAsync(o => o.CompanyId == companyid && o.UserId == userid);
+
+            var viewModel = _mapper.Map<UserCompanyEditViewModel>(record);
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(UserCompanyEditViewModel viewModel)
+        {
+            var record = await _userdbcontext.UserCompanies.Include(uc => uc.User).FirstOrDefaultAsync(o => o.CompanyId == viewModel.CompanyId && o.UserId == viewModel.UserId);
+            if (ModelState.IsValid && record != null)
+            {
+                if (record.User.DefaultCompanyId == record.CompanyId)
+                {
+                    record.User.DefaultCompanyId = null;
+                    _userdbcontext.Users.Update(record.User);
+                }
+
+                _userdbcontext.UserCompanies.Remove(record);
+                var result = await _userdbcontext.SaveChangesAsync().ConfigureAwait(false);
+                if (result > 0)
+                {
+                    return RedirectToAction("Details", "Users", new { id = viewModel.UserId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewModel);
         }
     }
 }
