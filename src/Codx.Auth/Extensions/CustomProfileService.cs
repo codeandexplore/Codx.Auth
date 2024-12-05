@@ -1,8 +1,11 @@
 ﻿using Codx.Auth.Data.Entities.AspNet;
+using Codx.Auth.Data.Entities.Enterprise;
+using Duende.IdentityServer.AspNetIdentity;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -24,37 +27,50 @@ namespace Codx.Auth.Extensions
             var user = await _userManager.GetUserAsync(context.Subject);
             if (user != null && user.DefaultCompanyId.HasValue)
             {
-                var company = _tenantResolver.ResolveCompany(user);
-                var tenant = company.Tenant;
+                var claims = new List<Claim>();
 
-                var claims = new List<Claim>
+                // Add tenant and company claims
+                Company company = null;
+                if (user.DefaultCompanyId.HasValue)
                 {
-                    new Claim("tenant_id", tenant.Id.ToString()),
-                    new Claim("tenant_name", tenant.Name),
-                    new Claim("company_id", company.Id.ToString()),
-                    new Claim("company_name", company.Name)
-                };
+                    company = _tenantResolver.ResolveCompany(user);
+                }
+                else
+                {
+                    company = _tenantResolver.ResolveFirstUserCompany(user);
+                }
 
-                context.IssuedClaims.AddRange(claims);
-            }
-            else
-            {
-                var company = _tenantResolver.ResolveFirstUserCompany(user);
                 if (company != null)
                 {
                     var tenant = company.Tenant;
-
-                    var claims = new List<Claim>
+                    claims.AddRange(new List<Claim>                    
                     {
                         new Claim("tenant_id", tenant.Id.ToString()),
                         new Claim("tenant_name", tenant.Name),
                         new Claim("company_id", company.Id.ToString()),
                         new Claim("company_name", company.Name)
-                    };
-
-                    context.IssuedClaims.AddRange(claims);
+                    });
                 }
-            }
+
+                // Add user claims
+                var userClaims = await _userManager.GetClaimsAsync(user);
+                claims.AddRange(userClaims);
+
+                // Add email claim if the scope includes email
+                if (context.RequestedResources.ParsedScopes.Any(scope => scope.ParsedName == "email"))
+                {
+                    claims.Add(new Claim(ClaimTypes.Email, user.Email));
+                }
+
+                // Add role claims
+                var roles = await _userManager.GetRolesAsync(user);
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                context.IssuedClaims.AddRange(claims);
+            }  
         }
 
         public Task IsActiveAsync(IsActiveContext context)
