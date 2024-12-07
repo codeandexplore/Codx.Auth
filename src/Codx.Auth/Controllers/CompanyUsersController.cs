@@ -94,7 +94,14 @@ namespace Codx.Auth.Controllers
                     record.UserId = findByEmail.Id;
 
                     await _context.UserCompanies.AddAsync(record).ConfigureAwait(false);
-                    var result = await _context.SaveChangesAsync().ConfigureAwait(false);
+
+                    if (!record.User.DefaultCompanyId.HasValue)
+                    {
+                        record.User.DefaultCompanyId = record.CompanyId;
+                        _context.Users.Update(record.User);
+                    }
+
+                    var result = await _context.SaveChangesAsync().ConfigureAwait(false);                  
 
                     if (result > 0)
                     {
@@ -121,10 +128,16 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(CompanyUserEditViewModel viewModel)
         {
-            var record = await _context.UserCompanies.FirstOrDefaultAsync(o => o.CompanyId == viewModel.CompanyId && o.UserId == viewModel.UserId);
+            var record = await _context.UserCompanies.Include(uc => uc.User).FirstOrDefaultAsync(o => o.CompanyId == viewModel.CompanyId && o.UserId == viewModel.UserId);
             if (ModelState.IsValid && record != null)
             {
-               _context.UserCompanies.Remove(record);
+                if(record.User.DefaultCompanyId == record.CompanyId)
+                {
+                    record.User.DefaultCompanyId = null;
+                    _context.Users.Update(record.User);
+                }
+
+                _context.UserCompanies.Remove(record);
                 var result = await _context.SaveChangesAsync().ConfigureAwait(false);
                 if (result > 0)
                 {

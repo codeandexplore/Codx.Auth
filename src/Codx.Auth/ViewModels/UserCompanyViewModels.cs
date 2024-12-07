@@ -24,7 +24,7 @@ namespace Codx.Auth.ViewModels
 
         [StringLength(100)]
         public string CompanyName { get; set; }
-        [StringLength(100)]
+      
         public Guid TenantId { get; set; }
         public string TenantName { get; set; }
     }

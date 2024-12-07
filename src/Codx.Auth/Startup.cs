@@ -4,6 +4,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
 using Codx.Auth.Mappings;
+using Duende.IdentityServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -60,9 +61,28 @@ namespace Codx.Auth
                     options.ExpireTimeSpan = new TimeSpan(0, 15, 0);
                 });
 
+            services.AddLocalApiAuthentication();
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("IdentityServerAdmin", policy => policy.RequireRole("Administrator"));
+                options.AddPolicy(IdentityServerConstants.LocalApi.PolicyName, policy =>
+                {
+                    policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
+                    policy.RequireAuthenticatedUser();
+                });
+            });
+
+            // Add CORS services
+            var allowedOrigins = Configuration["AllowedOrigins"]?.Split(',') ?? Array.Empty<string>();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigins", builder =>
+                {
+                    builder.WithOrigins(allowedOrigins)
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
             });
         }
 
@@ -95,6 +115,9 @@ namespace Codx.Auth
             app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Use CORS middleware
+            app.UseCors("AllowSpecificOrigins");
 
             app.UseEndpoints(endpoints =>
             {

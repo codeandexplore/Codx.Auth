@@ -30,6 +30,8 @@
 
                 <div class="tab-content" id="nav-tabContent">
                     <div class="tab-pane fade show active" id="nav-details" role="tabpanel" aria-labelledby="nav-details-tab">
+                        <a asp-action="Edit" asp-controller="Companies" asp-route-id="@Model.Id" class="btn btn-outline-warning"><i class="fa fa-edit"></i>Edit</a>
+                        <br />  <br />
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group">
@@ -108,7 +110,8 @@
             return params
         }
         function companyUserRowActionButtons(index, row) {
-            return '<a class="btn btn-outline-danger btn-sm" href="/CompanyUsers/Delete?companyid='+modelid+'&userid=' + row.userId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+            return '<a class="btn btn-outline-info btn-sm" href="/Users/Details/' + row.userId + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/CompanyUsers/Delete?companyid='+modelid+'&userid=' + row.userId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
     </script>
