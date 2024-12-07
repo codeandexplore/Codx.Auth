@@ -72,6 +72,18 @@ namespace Codx.Auth
                     policy.RequireAuthenticatedUser();
                 });
             });
+
+            // Add CORS services
+            var allowedOrigins = Configuration["AllowedOrigins"]?.Split(',') ?? Array.Empty<string>();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigins", builder =>
+                {
+                    builder.WithOrigins(allowedOrigins)
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -103,6 +115,9 @@ namespace Codx.Auth
             app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Use CORS middleware
+            app.UseCors("AllowSpecificOrigins");
 
             app.UseEndpoints(endpoints =>
             {

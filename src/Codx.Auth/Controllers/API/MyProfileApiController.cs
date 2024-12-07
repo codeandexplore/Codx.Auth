@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using static Duende.IdentityServer.IdentityServerConstants;
 
@@ -49,7 +51,7 @@ namespace Codx.Auth.Controllers.API
             return Ok(new
             {
                 total = await query.CountAsync(),
-                rows = viewModel
+                data = viewModel
             });
         }
 
@@ -69,7 +71,7 @@ namespace Codx.Auth.Controllers.API
             return Ok(new
             {
                 total = await query.CountAsync(),
-                rows = viewModel
+                data = viewModel
             });
         }
 
@@ -92,8 +94,53 @@ namespace Codx.Auth.Controllers.API
             return Ok(new
             {
                 total = await query.CountAsync(),
-                rows = viewModel
+                data = viewModel
             });
         }
+
+        [HttpPost("switch-company")]
+        public async Task<IActionResult> SwitchCompany([FromBody] SwitchCompanyModel company)
+        {
+            if (!Guid.TryParse(company.CompanyId, out var companyIdGuid))
+            {
+                return BadRequest("Invalid company ID format.");
+            }
+
+            var userId = User.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var userCompany = await _userdbcontext.UserCompanies
+                .Include(uc => uc.Company)
+                .ThenInclude(c => c.Tenant)
+                .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.CompanyId == companyIdGuid);
+
+            if (userCompany == null)
+            {
+                return BadRequest("User is not associated with the specified company.");
+            }
+
+            user.DefaultCompanyId = companyIdGuid;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error updating user.");
+            }
+            
+            // Sign the user in again to update the claims in the session
+            await _signInManager.RefreshSignInAsync(user);
+
+            return Ok("Company switched successfully.");
+        }
+    }
+
+    public class SwitchCompanyModel
+    { 
+        public string CompanyId { get; set; }
     }
 }
