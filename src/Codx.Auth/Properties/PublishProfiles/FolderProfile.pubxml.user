@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>D:\external-code\Codx.Auth\src\Codx.Auth\bin\Release\net8.0\publish\</_PublishTargetUrl>
-    <History>True|2024-11-29T21:52:39.7347321Z||;True|2024-11-29T00:50:28.7383960+08:00||;</History>
+    <History>True|2024-12-07T17:24:18.4292152Z||;True|2024-11-30T05:52:39.7347321+08:00||;True|2024-11-29T00:50:28.7383960+08:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>
