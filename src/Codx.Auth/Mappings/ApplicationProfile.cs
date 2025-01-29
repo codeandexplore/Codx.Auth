@@ -146,6 +146,15 @@ namespace Codx.Auth.Mappings
             CreateMap<Tenant, TenantEditViewModel>().ReverseMap();
             CreateMap<Tenant, TenantEditViewModel>();
 
+            CreateMap<TenantManager, TenantManagerDetailsViewModel>()
+              .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.Manager.Email))
+              .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Manager.UserName));
+            CreateMap<TenantManager, TenantManagerAddViewModel>().ReverseMap();
+            CreateMap<TenantManager, TenantManagerEditViewModel>().ReverseMap();
+            CreateMap<TenantManager, TenantManagerEditViewModel>()
+                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.Manager.Email))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Manager.UserName));
+
             CreateMap<Company, CompanyDetailsViewModel>();
             CreateMap<Company, CompanyAddViewModel>().ReverseMap();
             CreateMap<Company, CompanyEditViewModel>().ReverseMap();
