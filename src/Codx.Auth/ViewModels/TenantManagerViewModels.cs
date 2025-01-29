@@ -22,6 +22,8 @@ namespace Codx.Auth.ViewModels
         [Required]
         public Guid UserId { get; set; }
         [StringLength(100)]
+        public string Tenant { get; set; }
+        [StringLength(100)]
         public string UserEmail { get; set; }
         [StringLength(100)]
         public string UserName { get; set; }
