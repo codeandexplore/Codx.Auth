@@ -9,6 +9,7 @@
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
         <li class="breadcrumb-item"><a href="@Url.Action("Index","MyProfile")">My Profile</a></li>
         <li class="breadcrumb-item"><a href="@Url.Action("ManageTenant","MyProfile", new { id = Model.TenantId})">Manage Tenant</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("ManageTenantCompanyDetails","MyProfile", new { id = Model.Id})">Company</a></li>
         <li class="breadcrumb-item active" aria-current="page">Delete Company</li>
     </ol>
 </nav>
@@ -53,7 +54,7 @@
 
 
                     <div class="form-group">
-                        <a asp-action="ManageTenant" asp-controller="MyProfile" asp-route-id="@Model.TenantId" class="btn btn-info">Cancel</a>
+                        <a asp-action="ManageTenantCompanyDetails" asp-controller="MyProfile" asp-route-id="@Model.Id" class="btn btn-info">Cancel</a>
                         <input type="submit" class="btn btn-primary" value="YES" />
                     </div>
 
