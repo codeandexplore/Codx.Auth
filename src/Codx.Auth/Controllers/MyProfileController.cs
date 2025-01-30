@@ -331,6 +331,129 @@ namespace Codx.Auth.Controllers
             return View(viewModel);
         }
 
+        public IActionResult GetManageTenantCompanyUsersTableData(Guid companyid, string search, string sort, string order, int offset, int limit)
+        {
+            var query = _userdbcontext.UserCompanies.Include(o => o.User).Where(o => o.CompanyId == companyid);
+            var data = query.OrderBy(o => o.User.UserName).Skip(offset).Take(limit).ToList();
+
+            var viewModel = _mapper.Map<List<CompanyUserDetailsViewModel>>(data);
+
+            return Json(new
+            {
+                total = query.Count(),
+                rows = viewModel
+            });
+        }
+
+        public async Task<IActionResult> ManageTenantCompanyUserAdd(Guid companyid)
+        {
+            var company = await _userdbcontext.Companies.FirstOrDefaultAsync(o => o.Id == companyid);
+
+            var viewModel = new CompanyUserAddViewModel
+            {
+                CompanyId = company.Id,
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ManageTenantCompanyUserAdd(CompanyUserAddViewModel viewModel, string action)
+        {
+            if (action == "Search")
+            {
+                var findByEmail = await _userManager.FindByEmailAsync(viewModel.UserEmail);
+
+                if (findByEmail != null)
+                {
+                    viewModel.UserId = findByEmail.Id;
+                    viewModel.UserEmail = findByEmail.Email;
+                    viewModel.UserName = findByEmail.UserName;
+                }
+                else
+                {
+                    ModelState.AddModelError("", "User not found");
+                }
+            }
+            else
+            {
+                if (ModelState.IsValid)
+                {
+                    var findByEmail = await _userManager.FindByEmailAsync(viewModel.UserEmail);
+
+                    if (findByEmail == null)
+                    {
+                        ModelState.AddModelError("", "User not found");
+                        return View(viewModel);
+                    }
+
+                    var isUserCompanyExist = await _userdbcontext.UserCompanies.AnyAsync(o => o.UserId == findByEmail.Id && o.CompanyId == viewModel.CompanyId);
+                    if (isUserCompanyExist)
+                    {
+                        ModelState.AddModelError("", "User already added to this company");
+                        return View(viewModel);
+                    }
+
+                    var record = new UserCompany();
+                    record.CompanyId = viewModel.CompanyId;
+                    record.UserId = findByEmail.Id;
+
+                    await _userdbcontext.UserCompanies.AddAsync(record).ConfigureAwait(false);
+
+                    if (!record.User.DefaultCompanyId.HasValue)
+                    {
+                        record.User.DefaultCompanyId = record.CompanyId;
+                        _userdbcontext.Users.Update(record.User);
+                    }
+
+                    var result = await _userdbcontext.SaveChangesAsync().ConfigureAwait(false);
+
+                    if (result > 0)
+                    {
+                        return RedirectToAction("ManageTenantCompanyDetails", "MyProfile", new { id = viewModel.CompanyId });
+                    }
+
+                    ModelState.AddModelError("", "Failed");
+                }
+            }
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageTenantCompanyUserDelete(Guid companyid, Guid userid)
+        {
+            var record = await _userdbcontext.UserCompanies.Include(o => o.User).FirstOrDefaultAsync(o => o.CompanyId == companyid && o.UserId == userid);
+
+            var viewModel = _mapper.Map<CompanyUserEditViewModel>(record);
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ManageTenantCompanyUserDelete(CompanyUserEditViewModel viewModel)
+        {
+            var record = await _userdbcontext.UserCompanies.Include(uc => uc.User).FirstOrDefaultAsync(o => o.CompanyId == viewModel.CompanyId && o.UserId == viewModel.UserId);
+            if (ModelState.IsValid && record != null)
+            {
+                if (record.User.DefaultCompanyId == record.CompanyId)
+                {
+                    record.User.DefaultCompanyId = null;
+                    _userdbcontext.Users.Update(record.User);
+                }
+
+                _userdbcontext.UserCompanies.Remove(record);
+                var result = await _userdbcontext.SaveChangesAsync().ConfigureAwait(false);
+                if (result > 0)
+                {
+                    return RedirectToAction("ManageTenantCompanyDetails", "MyProfile", new { id = viewModel.CompanyId });
+                }
+
+                ModelState.AddModelError("", "Failed");
+            }
+
+            return View(viewModel);
+        }
+
         [HttpGet]
         public JsonResult GetManageTenantManagersTableData(Guid tenantid, string search, string sort, string order, int offset, int limit)
         {

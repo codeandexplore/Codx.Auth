@@ -63,7 +63,7 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nav-users" role="tabpanel" aria-labelledby="nav-users-tab">
-                        <a asp-action="Add" asp-controller="CompanyUsers" asp-route-companyid="@Model.Id" class="btn btn-outline-primary">Add</a>
+                        <a asp-action="ManageTenantCompanyUserAdd" asp-controller="MyProfile" asp-route-companyid="@Model.Id" class="btn btn-outline-primary">Add</a>
                         <br />  <br />
                         <table class="table table-bordered"
                                id="companyUserTable"
@@ -100,7 +100,7 @@
 
     <script>
         function companyUserAjaxRequest(params) {
-            var url = '@Url.Action("GetCompanyUsersTableData", "CompanyUsers")';
+            var url = '@Url.Action("GetManageTenantCompanyUsersTableData", "MyProfile")';
             $.get(url + '?' + $.param(params.data)).then(function (res) {
                 params.success(res)
             })
@@ -110,8 +110,7 @@
             return params
         }
         function companyUserRowActionButtons(index, row) {
-            return '<a class="btn btn-outline-info btn-sm" href="/Users/Details/' + row.userId + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
-                '<a class="btn btn-outline-danger btn-sm" href="/CompanyUsers/Delete?companyid='+modelid+'&userid=' + row.userId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+            return '<a class="btn btn-outline-danger btn-sm" href="/MyProfile/ManageTenantCompanyUserDelete?companyid='+modelid+'&userid=' + row.userId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
     </script>
