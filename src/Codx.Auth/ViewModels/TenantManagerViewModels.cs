@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Codx.Auth.Helpers.CustomAttributes;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Codx.Auth.ViewModels
@@ -23,6 +24,7 @@ namespace Codx.Auth.ViewModels
         public Guid UserId { get; set; }
         [StringLength(100)]
         public string Tenant { get; set; }
+        [CustomEmailAddress]
         [StringLength(100)]
         public string UserEmail { get; set; }
         [StringLength(100)]
