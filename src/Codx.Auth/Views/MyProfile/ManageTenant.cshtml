@@ -7,8 +7,8 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Home</a></li>
-        <li class="breadcrumb-item"><a href="@Url.Action("Index","Tenants")">Tenants</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Details</li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","MyProfile")">My Profile</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tenant</li>
     </ol>
 </nav>
 
@@ -27,10 +27,9 @@
             </div>
             <div class="card-body">
 
-
                 <div class="tab-content" id="nav-tabContent">
                     <div class="tab-pane fade show active" id="nav-details" role="tabpanel" aria-labelledby="nav-details-tab">
-                        <a asp-action="Edit" asp-controller="Tenants" asp-route-id="@Model.Id" class="btn btn-outline-warning"><i class="fa fa-edit"></i>Edit</a>
+                        <a asp-action="ManageTenantEdit" asp-controller="MyProfile" asp-route-id="@Model.Id" class="btn btn-outline-warning"><i class="fa fa-edit"></i>Edit</a>
                         <br />  <br />
                         <div class="row">
                             <div class="col-lg-12">
@@ -58,12 +57,12 @@
                                     <label>Description</label>
                                     <input asp-for="@Model.Description" class="form-control" readonly />
                                 </div>
-                           
+
                             </div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nav-companies" role="tabpanel" aria-labelledby="nav-companies-tab">
-                        <a asp-action="Add" asp-controller="Companies" asp-route-tenantid="@Model.Id" class="btn btn-outline-primary">Add</a>
+                        <a asp-action="ManageTenantCompanyAdd" asp-controller="MyProfile" asp-route-tenantid="@Model.Id" class="btn btn-outline-primary">Add</a>
                         <br />  <br />
                         <table class="table table-bordered"
                                id="companyTable"
@@ -123,7 +122,7 @@
 
     <script>
         function companyAjaxRequest(params) {
-            var url = '@Url.Action("GetCompaniesTableData", "Companies")';
+            var url = '@Url.Action("GetManageTenantCompaniesTableData", "MyProfile")';
             $.get(url + '?' + $.param(params.data)).then(function (res) {
                 params.success(res)
             })
@@ -133,13 +132,13 @@
             return params
         }
         function companyRowActionButtons(index, row) {
-            return '<a class="btn btn-outline-info btn-sm" href="/Companies/Details/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
-                '<a class="btn btn-outline-warning btn-sm" href="/Companies/Edit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
-                '<a class="btn btn-outline-danger btn-sm" href="/Companies/Delete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+            return '<a class="btn btn-outline-info btn-sm" href="/MyProfile/ManageTenantCompanyDetails/' + row.id + '" title="Show record details"><i class="fa fa-file-alt"></i></a> ' +
+                '<a class="btn btn-outline-warning btn-sm" href="/MyProfile/ManageTenantCompanyEdit/' + row.id + '" title="Edit this record"><i class="fa fa-edit"></i></a> ' +
+                '<a class="btn btn-outline-danger btn-sm" href="/MyProfile/ManageTenantCompanyDelete/' + row.id +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
         function tenantManagerAjaxRequest(params) {
-            var url = '@Url.Action("GetTenantManagersTableData", "TenantManagers")';
+            var url = '@Url.Action("GetManageTenantManagersTableData", "MyProfile")';
             $.get(url + '?' + $.param(params.data)).then(function (res) {
                 params.success(res)
             })
@@ -153,6 +152,6 @@
                 '<a class="btn btn-outline-danger btn-sm" href="/TenantManagers/Delete?tenantid='+modelid+'&userid=' + row.userId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
         }
 
-    </script>   
+    </script>
 
 }

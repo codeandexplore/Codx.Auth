@@ -23,6 +23,7 @@ namespace Codx.Auth.Data.Contexts
         }
 
         public DbSet<Tenant> Tenants { get; set; }
+        public DbSet<TenantManager> TenantManagers { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<UserCompany> UserCompanies { get; set; }
 
@@ -74,6 +75,19 @@ namespace Codx.Auth.Data.Contexts
                 entity.Property(e => e.Theme).HasMaxLength(50);
                 entity.Property(e => e.Description).HasMaxLength(500);
             });
+
+            builder.Entity<TenantManager>()
+                .HasKey(tm => new { tm.TenantId, tm.UserId });
+
+            builder.Entity<TenantManager>()
+                .HasOne(tm => tm.Manager)
+                .WithMany(u => u.TenantManagers)
+                .HasForeignKey(tm => tm.UserId);
+
+            builder.Entity<TenantManager>()
+                .HasOne(tm => tm.Tenant)
+                .WithMany(t => t.TenantManagers)
+                .HasForeignKey(tm => tm.TenantId);
 
             builder.Entity<Company>(entity =>
             {

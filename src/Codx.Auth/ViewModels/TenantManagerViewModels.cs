@@ -4,24 +4,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Codx.Auth.ViewModels
 {
-    public class CompanyUserDetailsViewModel : BaseCompanyUserViewModel
+    public class TenantManagerDetailsViewModel : BaseTenantManagerViewModel
     {
     }
 
-    public class CompanyUserAddViewModel : BaseCompanyUserViewModel
+    public class TenantManagerAddViewModel : BaseTenantManagerViewModel
     {      
     }
 
-    public class CompanyUserEditViewModel : BaseCompanyUserViewModel
+    public class TenantManagerEditViewModel : BaseTenantManagerViewModel
     {
     }
 
-    public class BaseCompanyUserViewModel
+    public class BaseTenantManagerViewModel
     {
         [Required]
-        public Guid CompanyId { get; set; }
+        public Guid TenantId { get; set; }
         [Required]
         public Guid UserId { get; set; }
+        [StringLength(100)]
+        public string Tenant { get; set; }
         [CustomEmailAddress]
         [StringLength(100)]
         public string UserEmail { get; set; }

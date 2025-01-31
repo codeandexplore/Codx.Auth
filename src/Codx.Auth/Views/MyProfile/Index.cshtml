@@ -16,6 +16,7 @@
                         <a class="nav-item nav-link active" id="nav-details-tab" data-toggle="tab" href="#nav-details" role="tab" aria-controls="nav-details" aria-selected="true">Details</a>
                         <a class="nav-item nav-link" id="nav-claims-tab" data-toggle="tab" href="#nav-claims" role="tab" aria-controls="nav-claims" aria-selected="false">Claims</a>
                         <a class="nav-item nav-link" id="nav-roles-tab" data-toggle="tab" href="#nav-roles" role="tab" aria-controls="nav-roles" aria-selected="false">Roles</a>
+                        <a class="nav-item nav-link" id="nav-tenants-tab" data-toggle="tab" href="#nav-tenants" role="tab" aria-controls="nav-tenants" aria-selected="false">Managed Tenants</a>
                         <a class="nav-item nav-link" id="nav-companies-tab" data-toggle="tab" href="#nav-companies" role="tab" aria-controls="nav-companies" aria-selected="false">Companies</a>
                         <a class="nav-item nav-link" id="nav-manage-tab" data-toggle="tab" href="#nav-manage" role="tab" aria-controls="nav-manage" aria-selected="false">Manage</a>
                     </div>
@@ -65,7 +66,9 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nav-claims" role="tabpanel" aria-labelledby="nav-claims-tab">                       
-                        <br />  <br />
+                        <br /> 
+                        <span>These are my claims.</span>
+                        <br /> <br />
                         <table class="table table-bordered"
                                id="userClaimTable"
                                data-toggle="table"
@@ -87,9 +90,10 @@
 
                     </div>
 
-                    <div class="tab-pane fade" id="nav-roles" role="tabpanel" aria-labelledby="nav-roles-tab">
-                      
-                        <br />  <br />
+                    <div class="tab-pane fade" id="nav-roles" role="tabpanel" aria-labelledby="nav-roles-tab">                      
+                        <br />                         
+                        <span>These are my roles.</span>
+                        <br /> <br />
                         <table class="table table-bordered"
                                id="userRoleTable"
                                data-toggle="table"
@@ -109,8 +113,34 @@
                         </table>
                     </div>
 
+                    <div class="tab-pane fade" id="nav-tenants" role="tabpanel" aria-labelledby="nav-tenants-tab">
+                        <br />
+                        <span> These are the tenants I manage.</span>
+                        <br /> <br />
+                        <table class="table table-bordered"
+                               id="managedTenantTable"
+                               data-toggle="table"
+                               data-query-params="managedTenantTableParams"
+                               data-pagination="true"
+                               data-side-pagination="server"
+                               data-page-size="5"
+                               data-page-list="[5,10,25,50,100,200,All]"
+                               data-ajax="managedTenantAjaxRequest">
+
+                            <thead>
+                                <tr>
+                                    <th data-field="tenant">Tenant</th>
+                                    <th data-field="tenantId" data-width="150" data-formatter="manageTenantRowActionButtons"></th>
+                                </tr>
+                            </thead>
+
+                        </table>
+                    </div>
+
                     <div class="tab-pane fade" id="nav-companies" role="tabpanel" aria-labelledby="nav-companies-tab">
-                        <br />  <br />
+                        <br />  
+                        <span> These are the companies I am a part of.</span>
+                        <br /> <br />
                         <table class="table table-bordered"
                                id="userCompanyTable"
                                data-toggle="table"
@@ -179,6 +209,22 @@
         }
         function userRoleRowActionButtons(index, row) {
             return  '<a class="btn btn-outline-danger btn-sm" href="/UserRoles/Delete/?userid=' + modelid + '&roleid=' + row.roleId +'" title="Delete this record"><i class="fa fa-trash-alt"></i></a>'
+        }
+
+    </script>
+
+    <script>
+        function managedTenantAjaxRequest(params) {
+            var url = '@Url.Action("GetMyTenantsTableData", "MyProfile")';
+            $.get(url + '?' + $.param(params.data)).then(function (res) {
+                params.success(res)
+            })
+        };
+        function managedTenantTableParams(params) {
+            return params
+        }
+        function manageTenantRowActionButtons(index, row) {
+            return  '<a class="btn btn-outline-info btn-sm" href="/MyProfile/ManageTenant/' + row.tenantId + '" title="Manage record details"><i class="fa fa-file-alt"></i></a> '
         }
 
     </script>

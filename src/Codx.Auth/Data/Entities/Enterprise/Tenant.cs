@@ -21,5 +21,6 @@ namespace Codx.Auth.Data.Entities.Enterprise
         public Guid? UpdatedBy { get; set; }
 
         public ICollection<Company> Companies { get; set; }
+        public ICollection<TenantManager> TenantManagers { get; set; }
     }
 }
