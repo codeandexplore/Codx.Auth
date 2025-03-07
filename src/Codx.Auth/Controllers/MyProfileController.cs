@@ -34,7 +34,7 @@ namespace Codx.Auth.Controllers
 
         public IActionResult Index()
         {
-            var user = _userManager.Users.FirstOrDefault(o => o.UserName == User.Identity.Name);
+            var user = _userManager.Users.FirstOrDefault(o => o.Id == User.GetUserId());
 
             var viewModel = _mapper.Map<MyProfileViewModel>(user);
             viewModel.FirstName = User.GetUserFirstName();
