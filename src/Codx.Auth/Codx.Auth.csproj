@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <ApplicationInsightsResourceId>/subscriptions/ab2f2c4d-386d-4919-a627-7c94453d81e8/resourceGroups/dscodelab-rg/providers/microsoft.insights/components/dscodelab-auth-7180</ApplicationInsightsResourceId>
   </PropertyGroup>
 
