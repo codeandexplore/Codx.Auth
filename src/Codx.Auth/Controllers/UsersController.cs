@@ -59,7 +59,7 @@ namespace Codx.Auth.Controllers
 
             var viewmodel = _mapper.Map<UserDetailsViewModel>(record);
 
-            if(record.DefaultCompanyId != null)
+            if(record.DefaultCompanyId.HasValue)
             {
                 var company = await _userdbcontext.Companies.Include(c => c.Tenant).FirstOrDefaultAsync(o => o.Id == record.DefaultCompanyId);
                 viewmodel.CompanyName = company.Name;
