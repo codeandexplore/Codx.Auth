@@ -71,11 +71,16 @@ namespace Codx.Auth.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, "User");
+                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("given_name", model.FirstName));
+                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("family_name", model.LastName));
+                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", model.Username));
+                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("name", EmailHelper.GetEmailUsername(model.Username)));
 
                     var defaultTenant = new Tenant
                     {
                         Name = "Default",
                         Description = "Default Tenant",
+                        Email = model.Username,
                         CreatedAt = DateTime.Now,
                         CreatedBy = user.Id,
                         IsDeleted = false,
@@ -110,6 +115,7 @@ namespace Codx.Auth.Controllers
                     };
 
                     await _context.Tenants.AddAsync(defaultTenant);
+                    user.DefaultCompanyId = defaultTenant.Companies.FirstOrDefault().Id;
                     await _context.SaveChangesAsync();
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
