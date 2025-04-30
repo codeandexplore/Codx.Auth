@@ -6,6 +6,14 @@ namespace Codx.Auth.ViewModels
     public class RegisterViewModel
     {
         [Required]
+        [StringLength(100)]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+        [StringLength(100)]
+        [Display(Name = "Middle Name")]
+        public string LastName { get; set; }
+
+        [Required]
         [CustomEmailAddress]
         [Display(Name = "Email Address")]
         public string Username { get; set; }
