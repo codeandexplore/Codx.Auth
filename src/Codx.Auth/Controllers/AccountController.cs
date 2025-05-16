@@ -55,9 +55,13 @@ namespace Codx.Auth.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Register(string returnUrl)
         {
-            return View();
+            var model = new RegisterViewModel
+            {
+                ReturnUrl = returnUrl
+            };
+            return View(model);
         }
 
         [HttpPost]
@@ -119,6 +123,27 @@ namespace Codx.Auth.Controllers
                     await _context.SaveChangesAsync();
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    // Handle returnUrl after registration
+                    if (!string.IsNullOrEmpty(model.ReturnUrl))
+                    {
+                        // Check for authorization context
+                        var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
+                        if (context != null)
+                        {
+                            if (context.IsNativeClient())
+                            {
+                                return this.LoadingPage("Redirect", model.ReturnUrl);
+                            }
+                            return Redirect(model.ReturnUrl);
+                        }
+
+                        // Check if the returnUrl is local to prevent open redirect attacks
+                        if (Url.IsLocalUrl(model.ReturnUrl))
+                        {
+                            return Redirect(model.ReturnUrl);
+                        }
+                    }
 
                     return RedirectToAction("Index", "MyProfile");
                 }
