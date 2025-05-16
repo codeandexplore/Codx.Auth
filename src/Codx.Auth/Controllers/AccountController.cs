@@ -189,7 +189,7 @@ namespace Codx.Auth.Controllers
                 else
                 {
                     // since we don't have a valid context, then we just go back to the home page
-                    return Redirect("~/");
+                    return RedirectToAction("Index", "MyProfile");
                 }
             }
 
@@ -221,7 +221,7 @@ namespace Codx.Auth.Controllers
                     }
                     else if (string.IsNullOrEmpty(model.ReturnUrl))
                     {
-                        return Redirect("~/");
+                        return RedirectToAction("Index", "MyProfile");
                     }
                     else
                     {
