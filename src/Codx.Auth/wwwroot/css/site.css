@@ -87,3 +87,7 @@ body {
     max-width: 1200px;
     position: relative;
 }
+
+.register-link-small {
+    font-size: 0.9em;
+}

@@ -34,10 +34,13 @@ namespace Codx.Auth.Controllers
                 return View();
             }
 
-            _logger.LogInformation("Homepage is disabled in production. Returning 404.");
-            return NotFound();
+            //_logger.LogInformation("Homepage is disabled in production. Returning 404.");
+            //return NotFound();
+
+            return RedirectToAction("Index", "MyProfile");
         }
 
+        [AllowAnonymous]
         public IActionResult Privacy()
         {
             return View();
