@@ -6,6 +6,9 @@
 
 <h2>Register</h2>
 
+<!-- Display ModelState errors summary -->
+<div asp-validation-summary="All" class="text-danger"></div>
+
 <form asp-action="Register" method="post">
     @* Add this hidden field to preserve returnUrl during form submission *@
     <input type="hidden" asp-for="ReturnUrl" />
