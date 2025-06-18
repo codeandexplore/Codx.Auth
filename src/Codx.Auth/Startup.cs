@@ -4,6 +4,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
 using Codx.Auth.Mappings;
+using Codx.Auth.Services;
 using Duende.IdentityServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,7 +35,9 @@ namespace Codx.Auth
             services.AddAutoMapper(typeof(ApplicationProfile));
 
             services.AddDbContext<UserDbContext>(options => options.UseSqlServer(connectionString));
-                
+
+            services.AddTransient<IAccountService, AccountService>();
+
             services.AddAspNetIdentity();
                        
             services.AddControllersWithViews();
