@@ -15,7 +15,7 @@ namespace Codx.Auth.Services
 {
     public interface IAccountService
     {
-        Task<RegisterResponse> RegisterAsync(RegisterRequest request);
+        Task<(RegisterResponse result, ApplicationUser user)> RegisterAsync(RegisterRequest request);
     }
 
     public class AccountService : IAccountService
@@ -28,7 +28,7 @@ namespace Codx.Auth.Services
             _userManager = userManager;
         }
 
-        public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
+        public async Task<(RegisterResponse result, ApplicationUser user)> RegisterAsync(RegisterRequest request)
         {
             var user = new ApplicationUser { UserName = request.Email, Email = request.Email };
             var result = await _userManager.CreateAsync(user, request.Password);
@@ -83,7 +83,7 @@ namespace Codx.Auth.Services
                 user.DefaultCompanyId = defaultTenant.Companies.FirstOrDefault().Id;
                 await _context.SaveChangesAsync();
 
-                return new RegisterResponse { Success = true };
+                return (new RegisterResponse { Success = true }, user);
             }
 
             
@@ -93,7 +93,7 @@ namespace Codx.Auth.Services
                 errors.Add(error.Description);
             }
 
-            return new RegisterResponse { Success = false, Errors = errors };
+            return (new RegisterResponse { Success = false, Errors = errors }, null);
         }
     }
 }
