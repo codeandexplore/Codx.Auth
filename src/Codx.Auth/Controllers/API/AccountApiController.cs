@@ -26,7 +26,7 @@ namespace Codx.Auth.Controllers.API
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _accountService.RegisterAsync(request);
+            var (result, user) = await _accountService.RegisterAsync(request);
 
             if (!result.Success)
                 return BadRequest(new { errors = result.Errors });
