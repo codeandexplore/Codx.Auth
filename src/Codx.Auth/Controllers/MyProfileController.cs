@@ -94,14 +94,16 @@ namespace Codx.Auth.Controllers
         public JsonResult GetMyTenantsTableData(string search, string sort, string order, int offset, int limit)
         {
             var userId = User.GetUserId();
-            var query = _userdbcontext.TenantManagers.Include(o => o.Tenant).Where(o => o.UserId == userId);
+            var query = _userdbcontext.TenantManagers.Include(o => o.Manager).Include(o => o.Tenant).Where(o => o.UserId == userId);
 
             var data = query.OrderBy(o => o.Tenant.Name).Skip(offset).Take(limit).ToList();
             var viewModel = data.Select(tenant => new TenantManagerDetailsViewModel
             {
                 UserId = tenant.UserId,
                 TenantId = tenant.TenantId,
-                Tenant = tenant.Tenant.Name,
+                TenantName = tenant.Tenant.Name,
+                UserEmail = tenant.Manager.Email,
+                UserName = tenant.Manager.UserName
             }).ToList();
 
             return Json(new

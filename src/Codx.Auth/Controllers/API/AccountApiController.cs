@@ -7,7 +7,7 @@ using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Codx.Auth.Controllers.API
 {
-    [Route("api/accounts")]
+    [Route("api/v1/accounts")]
     [Authorize(LocalApi.PolicyName)]
     [ApiController]
     public class AccountApiController : ControllerBase
