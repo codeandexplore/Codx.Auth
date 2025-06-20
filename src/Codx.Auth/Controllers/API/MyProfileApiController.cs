@@ -212,6 +212,148 @@ namespace Codx.Auth.Controllers.API
             }
         }
 
+        [HttpGet("tenants/managed/{id}/companies")]
+        public async Task<IActionResult> GetMyManagedTenantCompaniesTableData(Guid id,
+            [FromQuery] string search = null,
+            [FromQuery] string sort = null,
+            [FromQuery] string order = "asc",
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers.FirstOrDefaultAsync(o => o.UserId == userId && o.TenantId == id);
+
+                if(tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+
+                var query = _userdbcontext.Companies
+                    .Include(o => o.Tenant)
+                    .Where(c => c.TenantId == tenantManager.TenantId);
+
+                // Create pagination filter from page and pageSize parameters
+                var filter = _filterService.CreateFilter(page, pageSize, search, sort, order);
+
+
+
+                // Apply search if provided
+                if (!string.IsNullOrEmpty(filter.SearchTerm))
+                {
+                    // Search in company name, email, description, and tenant name
+                    query = query.Where(uc =>
+                        uc.Name.Contains(filter.SearchTerm) ||
+                        uc.Email.Contains(filter.SearchTerm) ||
+                        uc.Description.Contains(filter.SearchTerm));
+                }
+                // Map to view model before pagination to ensure proper sorting
+                var viewModelQuery = query.Select(company => new CompanyViewDto(company));
+
+                // Get paged result
+                var pagedResult = await _filterService.CreatePagedResult(viewModelQuery, filter);
+
+                return Ok(pagedResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving managed tenant companies");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error retrieving managed tenant companies: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+
+        [HttpGet("tenants/managed/{tenantid}/companies/{companyid}")]
+        public async Task<IActionResult> GetMyManagedTenantCompanyDetails(Guid tenantid, Guid companyid)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+                var company = await _userdbcontext.Companies
+                    .Include(c => c.Tenant)
+                    .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
+                if (company == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+                var companyDetails = new CompanyViewDto(company);
+                return Ok(ApiResult<object>.Success(companyDetails, "Managed tenant company details retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving managed tenant company details");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error retrieving managed tenant company details: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        [HttpGet("tenants/managed/{tenantid}/companies/{companyid}/users")]
+        public async Task<IActionResult> GetMyManagedTenantCompanyUsersTableData(Guid tenantid, Guid companyid,
+            [FromQuery] string search = null,
+            [FromQuery] string sort = null,
+            [FromQuery] string order = "asc",
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+
+                var company = await _userdbcontext.Companies
+                   .Include(c => c.Tenant)
+                   .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
+                if (company == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+
+                var query = _userdbcontext.UserCompanies
+                    .Include(uc => uc.Company)
+                    .Include(uc => uc.User)
+                    .Where(uc => uc.CompanyId == company.Id && uc.Company.TenantId == tenantManager.TenantId);
+
+                // Create pagination filter from page and pageSize parameters
+                var filter = _filterService.CreateFilter(page, pageSize, search, sort, order);
+                // Apply search if provided
+                if (!string.IsNullOrEmpty(filter.SearchTerm))
+                {
+                    // Search in user name, email, and company name
+                    query = query.Where(uc =>
+                        uc.User.UserName.Contains(filter.SearchTerm) ||
+                        uc.User.Email.Contains(filter.SearchTerm) ||
+                        uc.Company.Name.Contains(filter.SearchTerm));
+                }
+                // Map to view model before pagination to ensure proper sorting
+                var viewModelQuery = query.Select(userCompany => new UserViewDto(userCompany.User));
+                // Get paged result
+                var pagedResult = await _filterService.CreatePagedResult(viewModelQuery, filter);
+                return Ok(pagedResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving managed tenant company users");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error retrieving managed tenant company users: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
         [HttpGet("companies")]
         public async Task<IActionResult> GetMyCompaniesTableData(
             [FromQuery] string search = null, 
