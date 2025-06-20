@@ -23,7 +23,7 @@ namespace Codx.Auth.ViewModels
         [Required]
         public Guid UserId { get; set; }
         [StringLength(100)]
-        public string Tenant { get; set; }
+        public string TenantName { get; set; }
         [CustomEmailAddress]
         [StringLength(100)]
         public string UserEmail { get; set; }
