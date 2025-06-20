@@ -3,6 +3,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
 using Codx.Auth.Models.Common;
+using Codx.Auth.Models.DTOs;
 using Codx.Auth.Services.Interfaces;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -91,6 +92,8 @@ namespace Codx.Auth.Controllers.API
             }
         }
 
+
+
         [HttpGet("roles")]
         public async Task<IActionResult> GetMyRolesTableData(
             [FromQuery] string search = null, 
@@ -166,12 +169,7 @@ namespace Codx.Auth.Controllers.API
                 }
 
                 // Map to view model before pagination to ensure proper sorting
-                var viewModelQuery = query.Select(userCompany => new TenantManagerDetailsViewModel
-                {
-                    UserId = userCompany.UserId,                    
-                    TenantId = userCompany.TenantId,
-                    TenantName = userCompany.Tenant.Name
-                });
+                var viewModelQuery = query.Select(managedTenant => new TenantViewDto(managedTenant.Tenant));
 
                 // Get paged result
                 var pagedResult = await _filterService.CreatePagedResult(viewModelQuery, filter);
@@ -218,14 +216,7 @@ namespace Codx.Auth.Controllers.API
                 }
 
                 // Map to view model before pagination to ensure proper sorting
-                var viewModelQuery = query.Select(userCompany => new UserCompanyDetailsViewModel
-                {
-                    UserId = userCompany.UserId,
-                    CompanyId = userCompany.CompanyId,
-                    CompanyName = userCompany.Company.Name,
-                    TenantId = userCompany.Company.TenantId,
-                    TenantName = userCompany.Company.Tenant.Name
-                });
+                var viewModelQuery = query.Select(userCompany => new CompanyViewDto(userCompany.Company));
 
                 // Get paged result
                 var pagedResult = await _filterService.CreatePagedResult(viewModelQuery, filter);
@@ -238,6 +229,32 @@ namespace Codx.Auth.Controllers.API
                 return StatusCode(
                     StatusCodes.Status500InternalServerError, 
                     ApiResult<object>.Fail($"Error retrieving companies: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        [HttpGet("companies/{id}")]
+        public async Task<IActionResult> GetCompanyDetails(Guid id)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var userCompany = await _userdbcontext.UserCompanies
+                    .Include(uc => uc.Company)
+                    .ThenInclude(c => c.Tenant)
+                    .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.CompanyId == id);
+                if (userCompany == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+                var companyDetails = new CompanyViewDto(userCompany.Company);
+                return Ok(ApiResult<object>.Success(companyDetails, "Company details retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving company details");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error retrieving company details: {ex.Message}", StatusCodes.Status500InternalServerError));
             }
         }
 
