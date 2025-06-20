@@ -185,6 +185,33 @@ namespace Codx.Auth.Controllers.API
             }
         }
 
+        [HttpGet("tenants/managed/{id}")]
+        public async Task<ActionResult> GetMyManagedTenantDetails(Guid id)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .Include(tm => tm.Tenant)
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == id);
+
+                if (tenantManager == null || tenantManager.Tenant == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+
+                var tenantDetails = new TenantViewDto(tenantManager.Tenant);
+                return Ok(ApiResult<object>.Success(tenantDetails, "Managed tenant details retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving managed tenant details");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error retrieving managed tenant details: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
         [HttpGet("companies")]
         public async Task<IActionResult> GetMyCompaniesTableData(
             [FromQuery] string search = null, 
