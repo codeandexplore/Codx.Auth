@@ -327,6 +327,7 @@ namespace Codx.Auth.Controllers.API
                     return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
                 }
                 var existingCompany = await _userdbcontext.Companies
+                    .Include(c => c.Tenant)
                     .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
                 if (existingCompany == null)
                 {
