@@ -357,7 +357,7 @@ namespace Codx.Auth.Controllers.API
         }
 
         [HttpPost("tenants/managed/{tenantid}/companies/{companyid}/users")]
-        public async Task<IActionResult> AddMyManagedTenantCompanyUser(Guid tenantid, Guid companyid, [FromBody] CompanyUserCreateDto companyUser)
+        public async Task<IActionResult> AddMyManagedTenantCompanyUser(Guid tenantid, Guid companyid, [FromBody] CompanyUserAddDto companyUser)
         {
             try
             {
