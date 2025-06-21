@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Threading.Tasks;
 using static Duende.IdentityServer.IdentityServerConstants;
@@ -351,6 +352,48 @@ namespace Codx.Auth.Controllers.API
                 return StatusCode(
                     StatusCodes.Status500InternalServerError,
                     ApiResult<object>.Fail($"Error retrieving managed tenant company users: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        [HttpGet("tenants/managed/{tenantid}/companies/{companyid}/users/{userid}")]
+        public async Task<IActionResult> GetMyManagedTenantCompanyUserDetails(Guid tenantid, Guid companyid, Guid userid)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+
+                var company = await _userdbcontext.Companies
+                   .Include(c => c.Tenant)
+                   .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
+                if (company == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+
+                var userCompany = await _userdbcontext.UserCompanies
+                    .Include(uc => uc.Company)
+                    .Include(uc => uc.User)
+                    .FirstOrDefaultAsync(uc => uc.UserId == userid && uc.CompanyId == company.Id && uc.Company.TenantId == tenantManager.TenantId);
+                if(userCompany == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("User not found in the specified company", StatusCodes.Status404NotFound));
+                }
+             
+                var userDetails = new UserViewDto(userCompany.User);
+                return Ok(ApiResult<object>.Success(userDetails, "Managed tenant company user details retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving managed tenant company user details");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error retrieving managed tenant company user details: {ex.Message}", StatusCodes.Status500InternalServerError));
             }
         }
 
