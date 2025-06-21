@@ -379,14 +379,14 @@ namespace Codx.Auth.Controllers.API
                 var findByEmail = await _userManager.FindByEmailAsync(companyUser.EmailAddress);
                 if (findByEmail == null)
                 {
-                    return BadRequest(ApiResult<object>.Fail("User with this email do not exist."));
+                    return UnprocessableEntity(ApiResult<object>.Fail("User with this email does not exist.", StatusCodes.Status422UnprocessableEntity));
                 }
 
                 // Check if user already exists
                 var existingCompanyUser = await _userdbcontext.UserCompanies.FirstOrDefaultAsync(o => o.User.Email == findByEmail.Email && o.CompanyId == company.Id);
                 if (existingCompanyUser != null)
                 {
-                    return BadRequest(ApiResult<object>.Fail("User with this email already exists"));
+                    return Conflict(ApiResult<object>.Fail("User with this email already exists", StatusCodes.Status409Conflict));
                 }
 
                 // Create new company user
@@ -414,7 +414,11 @@ namespace Codx.Auth.Controllers.API
                         ApiResult<object>.Fail("Failed to add user to the company", StatusCodes.Status500InternalServerError));
                 }
 
-                return Ok(ApiResult<object>.Success(null, "User added to managed tenant company successfully"));
+                return CreatedAtAction(
+                    nameof(GetMyManagedTenantCompanyUserDetails),
+                    new { tenantid, companyid, userid = findByEmail.Id },
+                    ApiResult<object>.Success(null, "User added to managed tenant company successfully")
+                );
             }
             catch (Exception ex)
             {
@@ -468,7 +472,7 @@ namespace Codx.Auth.Controllers.API
                     }
                 }
 
-                return Ok(ApiResult<object>.Success(null, "User removed from managed tenant company successfully"));
+                return NoContent();
 
             }
             catch (Exception ex)
