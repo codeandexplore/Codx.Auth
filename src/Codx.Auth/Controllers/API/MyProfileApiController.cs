@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
+using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
 using Codx.Auth.Models.Common;
 using Codx.Auth.Models.DTOs;
@@ -355,6 +356,131 @@ namespace Codx.Auth.Controllers.API
             }
         }
 
+        [HttpPost("tenants/managed/{tenantid}/companies/{companyid}/users")]
+        public async Task<IActionResult> AddMyManagedTenantCompanyUser(Guid tenantid, Guid companyid, [FromBody] CompanyUserCreateDto companyUser)
+        {
+            try
+            {
+                var userId = User.GetUserId(); 
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+                var company = await _userdbcontext.Companies
+                   .Include(c => c.Tenant)
+                   .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
+                if (company == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+
+                var findByEmail = await _userManager.FindByEmailAsync(companyUser.EmailAddress);
+                if (findByEmail == null)
+                {
+                    return BadRequest(ApiResult<object>.Fail("User with this email do not exist."));
+                }
+
+                // Check if user already exists
+                var existingCompanyUser = await _userdbcontext.UserCompanies.FirstOrDefaultAsync(o => o.User.Email == findByEmail.Email && o.CompanyId == company.Id);
+                if (existingCompanyUser != null)
+                {
+                    return BadRequest(ApiResult<object>.Fail("User with this email already exists"));
+                }
+
+                // Create new company user
+                var record = new UserCompany
+                {
+                    UserId = findByEmail.Id,
+                    CompanyId = company.Id,
+                    Company = company
+                };
+
+                await _userdbcontext.UserCompanies.AddAsync(record).ConfigureAwait(false);
+
+                if (!record.User.DefaultCompanyId.HasValue)
+                {
+                    record.User.DefaultCompanyId = record.CompanyId;
+                    _userdbcontext.Users.Update(record.User);
+                }
+
+                var result = await _userdbcontext.SaveChangesAsync().ConfigureAwait(false);
+
+                if (result <= 0)
+                {
+                    return StatusCode(
+                        StatusCodes.Status500InternalServerError,
+                        ApiResult<object>.Fail("Failed to add user to the company", StatusCodes.Status500InternalServerError));
+                }
+
+                return Ok(ApiResult<object>.Success(null, "User added to managed tenant company successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding user to managed tenant company");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error adding user to managed tenant company: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+           
+        }
+
+
+        [HttpDelete("tenants/managed/{tenantid}/companies/{companyid}/users/{userid}")]
+        public async Task<IActionResult> DeleteMyManagedTenantCompanyUser(Guid tenantid, Guid companyid, Guid userid)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+                var company = await _userdbcontext.Companies
+                   .Include(c => c.Tenant)
+                   .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
+                if (company == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+
+                var record = await _userdbcontext.UserCompanies.Include(uc => uc.User).FirstOrDefaultAsync(o => o.CompanyId == company.Id && o.UserId == userId);
+                if (record != null)
+                {
+                    if(record.User.DefaultCompanyId == record.CompanyId)
+                    {                       
+                        record.User.DefaultCompanyId = null;
+                        _userdbcontext.Users.Update(record.User);
+                    }
+
+                    _userdbcontext.UserCompanies.Remove(record);
+
+                    var result = await _userdbcontext.SaveChangesAsync().ConfigureAwait(false);
+
+                    if (result <= 0)
+                    {
+                        return StatusCode(
+                            StatusCodes.Status500InternalServerError,
+                            ApiResult<object>.Fail("Failed to remove user from the company", StatusCodes.Status500InternalServerError));
+                    }
+                }
+
+                return Ok(ApiResult<object>.Success(null, "User removed from managed tenant company successfully"));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing user from managed tenant company");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error removing user from managed tenant company: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+
+        }
+
         [HttpGet("tenants/managed/{tenantid}/companies/{companyid}/users/{userid}")]
         public async Task<IActionResult> GetMyManagedTenantCompanyUserDetails(Guid tenantid, Guid companyid, Guid userid)
         {
@@ -396,6 +522,8 @@ namespace Codx.Auth.Controllers.API
                     ApiResult<object>.Fail($"Error retrieving managed tenant company user details: {ex.Message}", StatusCodes.Status500InternalServerError));
             }
         }
+
+
 
         [HttpGet("companies")]
         public async Task<IActionResult> GetMyCompaniesTableData(
