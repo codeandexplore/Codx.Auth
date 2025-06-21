@@ -267,6 +267,133 @@ namespace Codx.Auth.Controllers.API
             }
         }
 
+        [HttpPost("tenants/managed/{tenantid}/companies")]
+        public async Task<IActionResult> AddMyManagedTenantCompany(Guid tenantid, [FromBody] CompanyAddDto company)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .Include(o => o.Tenant)
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+                var newCompany = new Company
+                {
+                    Name = company.Name,
+                    Email = company.Email,
+                    Phone = company.Phone,
+                    Address = company.Address,
+                    Logo = company.Logo,
+                    Theme = company.Theme,
+                    Description = company.Description,
+                    TenantId = tenantManager.TenantId
+                };
+                await _userdbcontext.Companies.AddAsync(newCompany);
+                var result = await _userdbcontext.SaveChangesAsync();
+                if (result <= 0)
+                {
+                    return StatusCode(
+                        StatusCodes.Status500InternalServerError,
+                        ApiResult<object>.Fail("Failed to add company", StatusCodes.Status500InternalServerError));
+                }
+                newCompany.Tenant = tenantManager.Tenant;
+                return CreatedAtAction(
+                    nameof(GetMyManagedTenantCompanyDetails),
+                    new { tenantid, companyid = newCompany.Id },
+                    ApiResult<object>.Success(new CompanyViewDto(newCompany), "Managed tenant company added successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding managed tenant company");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error adding managed tenant company: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        [HttpPut("tenants/managed/{tenantid}/companies/{companyid}")]
+        public async Task<IActionResult> UpdateMyManagedTenantCompany(Guid tenantid, Guid companyid, [FromBody] CompanyEditDto company)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+                var existingCompany = await _userdbcontext.Companies
+                    .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
+                if (existingCompany == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+                existingCompany.Name = company.Name;
+                existingCompany.Email = company.Email;
+                existingCompany.Phone = company.Phone;
+                existingCompany.Address = company.Address;
+                existingCompany.Logo = company.Logo;
+                existingCompany.Theme = company.Theme;
+                existingCompany.Description = company.Description;
+                _userdbcontext.Companies.Update(existingCompany);
+                var result = await _userdbcontext.SaveChangesAsync();
+                if (result <= 0)
+                {
+                    return StatusCode(
+                        StatusCodes.Status500InternalServerError,
+                        ApiResult<object>.Fail("Failed to update company", StatusCodes.Status500InternalServerError));
+                }
+                return Ok(ApiResult<object>.Success(new CompanyViewDto(existingCompany), "Managed tenant company updated successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating managed tenant company");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error updating managed tenant company: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        [HttpDelete("tenants/managed/{tenantid}/companies/{companyid}")]
+        public async Task<IActionResult> DeleteMyManagedTenantCompany(Guid tenantid, Guid companyid)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == tenantid);
+                if (tenantManager == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+                var company = await _userdbcontext.Companies
+                    .FirstOrDefaultAsync(c => c.Id == companyid && c.TenantId == tenantManager.TenantId);
+                if (company == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
+                }
+                _userdbcontext.Companies.Remove(company);
+                var result = await _userdbcontext.SaveChangesAsync();
+                if (result <= 0)
+                {
+                    return StatusCode(
+                        StatusCodes.Status500InternalServerError,
+                        ApiResult<object>.Fail("Failed to delete company", StatusCodes.Status500InternalServerError));
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting managed tenant company");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error deleting managed tenant company: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
 
         [HttpGet("tenants/managed/{tenantid}/companies/{companyid}")]
         public async Task<IActionResult> GetMyManagedTenantCompanyDetails(Guid tenantid, Guid companyid)

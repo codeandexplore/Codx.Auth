@@ -38,9 +38,16 @@ namespace Codx.Auth.Models.DTOs
         public string Description { get; set; }
     }
 
-    public class  CompanyAddDto
+    public class CompanyAddDto : CompanyBaseDto { }
+    public class CompanyEditDto: CompanyBaseDto
     {
         public Guid Id { get; set; }
+        
+    }
+
+    public class CompanyBaseDto
+    {
+        public Guid TenantId { get; set; }
         [Required]
         [StringLength(100)]
         public string Name { get; set; }
