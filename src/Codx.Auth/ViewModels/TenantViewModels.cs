@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Codx.Auth.Helpers.CustomAttributes;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Codx.Auth.ViewModels
@@ -23,6 +24,7 @@ namespace Codx.Auth.ViewModels
         [StringLength(100)]
         public string Name { get; set; }
         [StringLength(100)]
+        [CustomEmailAddress]
         public string Email { get; set; }
         [StringLength(15)]
         public string Phone { get; set; }
