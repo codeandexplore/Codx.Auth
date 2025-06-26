@@ -25,8 +25,7 @@ namespace Codx.Auth.Models.DTOs
             Theme = company.Theme;
             Description = company.Description;
         }
-        public Guid Id { get; set; }
-        [Required]
+        public Guid Id { get; set; }      
         public Guid TenantId { get; set; }
         public string TenantName { get; set; }
         public string Name { get; set; }

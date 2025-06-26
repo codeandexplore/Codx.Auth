@@ -24,7 +24,7 @@ namespace Codx.Auth.ViewModels
         public Guid UserId { get; set; }
         [StringLength(100)]
         public string TenantName { get; set; }
-        [CustomEmailAddress]
+        [CustomEmailAddress(ErrorMessage = "Please enter a valid email address")]
         [StringLength(100)]
         public string UserEmail { get; set; }
         [StringLength(100)]

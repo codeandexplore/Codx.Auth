@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Drawing.Printing;
 using System.Linq;
 using System.Threading.Tasks;
 using static Duende.IdentityServer.IdentityServerConstants;
@@ -214,6 +213,52 @@ namespace Codx.Auth.Controllers.API
             }
         }
 
+        [HttpPut("tenants/managed/{id}")]
+        public async Task<IActionResult> UpdateMyManagedTenantDetails(Guid id, [FromBody] TenantEditDto tenant)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var tenantManager = await _userdbcontext.TenantManagers
+                    .Include(tm => tm.Tenant)
+                    .FirstOrDefaultAsync(tm => tm.UserId == userId && tm.TenantId == id);
+                if (tenantManager == null || tenantManager.Tenant == null)
+                {
+                    return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
+                }
+
+                if (tenant.Id != id)
+                {
+                    return BadRequest(ApiResult<object>.Fail("Unauthorized", StatusCodes.Status401Unauthorized));
+                }
+
+                // Update tenant properties
+                tenantManager.Tenant.Name = tenant.Name;
+                tenantManager.Tenant.Email = tenant.Email;
+                tenantManager.Tenant.Phone = tenant.Phone;
+                tenantManager.Tenant.Address = tenant.Address;
+                tenantManager.Tenant.Logo = tenant.Logo;
+                tenantManager.Tenant.Theme = tenant.Theme;
+                tenantManager.Tenant.Description = tenant.Description;
+                _userdbcontext.Tenants.Update(tenantManager.Tenant);
+                var result = await _userdbcontext.SaveChangesAsync();
+                if (result <= 0)
+                {
+                    return StatusCode(
+                        StatusCodes.Status500InternalServerError,
+                        ApiResult<object>.Fail("Failed to update managed tenant", StatusCodes.Status500InternalServerError));
+                }
+                return Ok(ApiResult<object>.Success(new TenantViewDto(tenantManager.Tenant), "Managed tenant updated successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating managed tenant details");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error updating managed tenant details: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
         [HttpGet("tenants/managed/{id}/companies")]
         public async Task<IActionResult> GetMyManagedTenantCompaniesTableData(Guid id,
             [FromQuery] string search = null,
@@ -333,6 +378,12 @@ namespace Codx.Auth.Controllers.API
                 {
                     return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
                 }
+
+                if (existingCompany.Id != companyid)
+                {
+                    return BadRequest(ApiResult<object>.Fail("Unauthorized", StatusCodes.Status401Unauthorized));
+                }
+
                 existingCompany.Name = company.Name;
                 existingCompany.Email = company.Email;
                 existingCompany.Phone = company.Phone;

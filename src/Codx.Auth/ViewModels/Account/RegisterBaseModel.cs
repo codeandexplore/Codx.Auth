@@ -13,8 +13,8 @@ namespace Codx.Auth.ViewModels.Account
         [Display(Name = "Middle Name")]
         public string LastName { get; set; }
 
-        [Required]
-        [CustomEmailAddress]
+        [Required(ErrorMessage = "Email address is required")]
+        [CustomEmailAddress(ErrorMessage = "Please enter a valid email address")]
         [Display(Name = "Email Address")]
         public string Email { get; set; }
 

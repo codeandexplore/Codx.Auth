@@ -24,7 +24,7 @@ namespace Codx.Auth.ViewModels
         [StringLength(100)]
         public string Name { get; set; }
         [StringLength(100)]
-        [CustomEmailAddress]
+        [CustomEmailAddress(ErrorMessage = "Please enter a valid email address")]
         public string Email { get; set; }
         [StringLength(15)]
         public string Phone { get; set; }

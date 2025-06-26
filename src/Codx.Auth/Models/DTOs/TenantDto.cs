@@ -1,4 +1,5 @@
 ﻿using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Helpers.CustomAttributes;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -23,11 +24,29 @@ namespace Codx.Auth.Models.DTOs
             Description = tenant.Description;
         }
 
+        public Guid Id { get; set; }     
+        public string Name { get; set; }      
+        public string Email { get; set; }    
+        public string Phone { get; set; }       
+        public string Address { get; set; }       
+        public string Logo { get; set; }    
+        public string Theme { get; set; }       
+        public string Description { get; set; }
+    }
+
+    public class TenantAddDto : TenantBaseDto { }
+    public class TenantEditDto : TenantBaseDto
+    {
         public Guid Id { get; set; }
+    }
+
+    public class TenantBaseDto
+    {
         [Required]
         [StringLength(100)]
         public string Name { get; set; }
         [StringLength(100)]
+        [CustomEmailAddress]
         public string Email { get; set; }
         [StringLength(15)]
         public string Phone { get; set; }
@@ -40,5 +59,4 @@ namespace Codx.Auth.Models.DTOs
         [StringLength(500)]
         public string Description { get; set; }
     }
-
 }
