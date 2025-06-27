@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static Duende.IdentityServer.IdentityServerConstants;
@@ -279,12 +280,10 @@ namespace Codx.Auth.Controllers.API
 
                 var query = _userdbcontext.Companies
                     .Include(o => o.Tenant)
-                    .Where(c => c.TenantId == tenantManager.TenantId);
+                    .Where(c => c.TenantId == tenantManager.TenantId && !c.IsDeleted);
 
                 // Create pagination filter from page and pageSize parameters
                 var filter = _filterService.CreateFilter(page, pageSize, search, sort, order);
-
-
 
                 // Apply search if provided
                 if (!string.IsNullOrEmpty(filter.SearchTerm))
@@ -325,6 +324,15 @@ namespace Codx.Auth.Controllers.API
                 {
                     return NotFound(ApiResult<object>.Fail("Managed tenant not found", StatusCodes.Status404NotFound));
                 }
+
+                var existingCompany = await _userdbcontext.Companies
+                    .FirstOrDefaultAsync(c => c.Name == company.Name && c.TenantId == tenantManager.TenantId);
+
+                if (existingCompany != null)
+                {
+                    return Conflict(ApiResult<object>.Fail("Company with this name already exists", StatusCodes.Status409Conflict));
+                }
+
                 var newCompany = new Company
                 {
                     Name = company.Name,
@@ -334,8 +342,12 @@ namespace Codx.Auth.Controllers.API
                     Logo = company.Logo,
                     Theme = company.Theme,
                     Description = company.Description,
-                    TenantId = tenantManager.TenantId
+                    TenantId = tenantManager.TenantId                  ,
                 };
+
+                var newCompanyUser = new UserCompany { UserId = userId };
+                newCompany.UserCompanies = new List<UserCompany> { newCompanyUser };
+
                 await _userdbcontext.Companies.AddAsync(newCompany);
                 var result = await _userdbcontext.SaveChangesAsync();
                 if (result <= 0)
@@ -383,6 +395,14 @@ namespace Codx.Auth.Controllers.API
                 {
                     return BadRequest(ApiResult<object>.Fail("Unauthorized", StatusCodes.Status401Unauthorized));
                 }
+                        
+                var duplicateCompany = await _userdbcontext.Companies
+                    .FirstOrDefaultAsync(c => c.Name == company.Name && c.TenantId == tenantManager.TenantId && c.Id != companyid);
+                if (duplicateCompany != null)
+                {
+                    return Conflict(ApiResult<object>.Fail("Company with this name already exists", StatusCodes.Status409Conflict));
+                }
+
 
                 existingCompany.Name = company.Name;
                 existingCompany.Email = company.Email;
