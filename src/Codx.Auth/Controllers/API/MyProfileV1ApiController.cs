@@ -24,22 +24,22 @@ namespace Codx.Auth.Controllers.API
     [Route("api/v1/my-profile")]
     [Authorize(LocalApi.PolicyName)]
     [ApiController]
-    public class MyProfileApiController : ControllerBase
+    public class MyProfileV1ApiController : ControllerBase
     {
         protected readonly UserDbContext _userdbcontext;
         private readonly SignInManager<ApplicationUser> _signInManager;
         protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly IMapper _mapper;
         protected readonly IFilterService _filterService;
-        private readonly ILogger<MyProfileApiController> _logger;
+        private readonly ILogger<MyProfileV1ApiController> _logger;
 
-        public MyProfileApiController(
+        public MyProfileV1ApiController(
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager, 
             UserDbContext userdbcontext, 
             IMapper mapper,
             IFilterService filterService,
-            ILogger<MyProfileApiController> logger)
+            ILogger<MyProfileV1ApiController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -650,7 +650,7 @@ namespace Codx.Auth.Controllers.API
                     return NotFound(ApiResult<object>.Fail("Company not found", StatusCodes.Status404NotFound));
                 }
 
-                var record = await _userdbcontext.UserCompanies.Include(uc => uc.User).FirstOrDefaultAsync(o => o.CompanyId == company.Id && o.UserId == userId);
+                var record = await _userdbcontext.UserCompanies.Include(uc => uc.User).FirstOrDefaultAsync(o => o.CompanyId == company.Id && o.UserId == userid);
                 if (record != null)
                 {
                     if(record.User.DefaultCompanyId == record.CompanyId)
