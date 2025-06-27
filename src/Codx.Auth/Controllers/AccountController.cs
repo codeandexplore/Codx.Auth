@@ -1,11 +1,19 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
+using Codx.Auth.Services;
 using Codx.Auth.ViewModels;
-using IdentityModel;
+using Codx.Auth.ViewModels.Account;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Events;
+using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
+using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,41 +21,32 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Events;
-using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer;
-using System.Security.Policy;
-using Codx.Auth.Data.Contexts;
-using Codx.Auth.Data.Entities.Enterprise;
-using System.Collections.Generic;
 
 namespace Codx.Auth.Controllers
 {
     [AllowAnonymous]
     public class AccountController : Controller
     {
-        private readonly UserDbContext _context;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAccountService _accountService;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
 
         public AccountController(
-            UserDbContext context,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            IAccountService accountService,
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events)
         {
-            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
+            _accountService = accountService;
             _interaction = interaction;
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
@@ -69,59 +68,19 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Username, Email = model.Username };
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
+                var registerRequest = new RegisterRequest
                 {
-                    await _userManager.AddToRoleAsync(user, "User");
-                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("given_name", model.FirstName));
-                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("family_name", model.LastName));
-                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", model.Username));
-                    await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("name", EmailHelper.GetEmailUsername(model.Username)));
+                    Email = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Password = model.Password,
+                    ConfirmPassword = model.ConfirmPassword,
+                };
+                
+                var (result, user) = await _accountService.RegisterAsync(registerRequest);
 
-                    var defaultTenant = new Tenant
-                    {
-                        Name = "Default",
-                        Description = "Default Tenant",
-                        Email = model.Username,
-                        CreatedAt = DateTime.Now,
-                        CreatedBy = user.Id,
-                        IsDeleted = false,
-                        IsActive = true,
-                        TenantManagers = new List<TenantManager>
-                        {
-                            new TenantManager
-                            {
-                                UserId = user.Id,
-                            }
-                        },
-                        Companies = new List<Company>
-                        {
-                            new Company
-                            {
-                                Name = "Default",
-                                Description = "Default Company",
-                                CreatedAt = DateTime.Now,
-                                CreatedBy = user.Id,
-                                IsDeleted = false,
-                                IsActive = true,
-                                UserCompanies = new List<UserCompany>
-                                {
-                                    new UserCompany
-                                    {
-                                        UserId = user.Id,
-                                    }
-                                }
-                            }
-                        }
-
-                    };
-
-                    await _context.Tenants.AddAsync(defaultTenant);
-                    user.DefaultCompanyId = defaultTenant.Companies.FirstOrDefault().Id;
-                    await _context.SaveChangesAsync();
-
+                if (result.Success)
+                {                    
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
                     // Handle returnUrl after registration
@@ -150,7 +109,7 @@ namespace Codx.Auth.Controllers
 
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    ModelState.AddModelError(string.Empty, error);
                 }
             }
 

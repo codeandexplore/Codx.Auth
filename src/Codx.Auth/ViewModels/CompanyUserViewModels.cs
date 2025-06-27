@@ -22,7 +22,7 @@ namespace Codx.Auth.ViewModels
         public Guid CompanyId { get; set; }
         [Required]
         public Guid UserId { get; set; }
-        [CustomEmailAddress]
+        [CustomEmailAddress(ErrorMessage = "Please enter a valid email address")]
         [StringLength(100)]
         public string UserEmail { get; set; }
         [StringLength(100)]

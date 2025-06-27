@@ -9,7 +9,7 @@ namespace Codx.Auth.Helpers.CustomAttributes
         {
             if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
             {
-                return new ValidationResult("Email address is required.");
+                return ValidationResult.Success;
             }
 
             var email = value.ToString();

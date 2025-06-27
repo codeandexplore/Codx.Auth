@@ -157,8 +157,5 @@ namespace Codx.Auth.Controllers.API
         }
     }
 
-    public class SwitchCompanyModel
-    { 
-        public string CompanyId { get; set; }
-    }
+    
 }
