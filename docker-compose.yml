@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  codx-auth:
+    build: 
+      context: .
+      dockerfile: src/Codx.Auth/Dockerfile
+    container_name: codx-auth
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "127.0.0.1:8080:8080"  # Only bind to localhost for security
+    volumes:
+      - ./data/keys:/app/keys  # Persist data protection keys
+    restart: unless-stopped
+    networks:
+      - identityserver-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - codx-auth
+    restart: unless-stopped
+    networks:
+      - identityserver-network
+
+networks:
+  identityserver-network:
+    driver: bridge
+
+volumes:
+  keys-data:
+    driver: local
