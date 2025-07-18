@@ -10,10 +10,13 @@ using Duende.IdentityServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Net;
 
 namespace Codx.Auth
 {
@@ -45,7 +48,13 @@ namespace Codx.Auth
                        
             services.AddControllersWithViews();
 
+            // Configure data protection for Docker
+            //services.AddDataProtection()
+            //    .PersistKeysToFileSystem(new System.IO.DirectoryInfo("/app/keys"))
+            //    .SetApplicationName("Codx.Auth");
+
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            
             services.AddIdentityServer()
                 .AddConfigurationStore(options =>
                 {
@@ -65,7 +74,18 @@ namespace Codx.Auth
             services.AddAuthentication()
                 .AddCookie(options => {
                     options.ExpireTimeSpan = new TimeSpan(0, 15, 0);
+                    options.Cookie.SameSite = SameSiteMode.Lax;
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 });
+
+            // Configure cookie policy for Docker compatibility
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.MinimumSameSitePolicy = SameSiteMode.Lax;
+                options.Secure = CookieSecurePolicy.SameAsRequest;
+            });
 
             services.AddLocalApiAuthentication();
 
@@ -87,7 +107,8 @@ namespace Codx.Auth
                 {
                     builder.WithOrigins(allowedOrigins)
                            .AllowAnyMethod()
-                           .AllowAnyHeader();
+                           .AllowAnyHeader()
+                           .AllowCredentials();
                 });
             });
         }
@@ -108,13 +129,33 @@ namespace Codx.Auth
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            // Configure forwarded headers for Docker/proxy scenarios
+            var forwardedHeadersOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost,
+                RequireHeaderSymmetry = false,
+                ForwardLimit = null
+            };
+            
+            // Configure known networks and proxies for Docker
+            forwardedHeadersOptions.KnownNetworks.Clear();
+            forwardedHeadersOptions.KnownProxies.Clear();
+            forwardedHeadersOptions.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(
+                System.Net.IPAddress.Parse("0.0.0.0"), 0));
+            
+            app.UseForwardedHeaders(forwardedHeadersOptions);
+
+            // Only redirect to HTTPS in development environment
+            // In production Docker, the reverse proxy should handle HTTPS
+            if (env.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+            
             app.UseStaticFiles();
 
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+            // Add cookie policy middleware
+            app.UseCookiePolicy();
 
             app.UseRouting();
 
