@@ -4,6 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <ApplicationInsightsResourceId>/subscriptions/ab2f2c4d-386d-4919-a627-7c94453d81e8/resourceGroups/dscodelab-rg/providers/microsoft.insights/components/dscodelab-auth-7180</ApplicationInsightsResourceId>
+    <UserSecretsId>d5443fac-9dc7-4a12-a8c5-0040bb5be061</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +22,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
   </ItemGroup>
 
