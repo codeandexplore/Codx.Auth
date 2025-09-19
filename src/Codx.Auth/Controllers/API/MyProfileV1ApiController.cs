@@ -742,7 +742,7 @@ namespace Codx.Auth.Controllers.API
                 var query = _userdbcontext.UserCompanies
                     .Include(o => o.Company)
                     .ThenInclude(c => c.Tenant)
-                    .Where(o => o.UserId == userId);
+                    .Where(o => o.UserId == userId && !o.Company.IsDeleted);
 
                 // Create pagination filter from page and pageSize parameters
                 var filter = _filterService.CreateFilter(page, pageSize, search, sort, order);
