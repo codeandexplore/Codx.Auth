@@ -1,5 +1,6 @@
 ﻿using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
+using Codx.Auth.Services;
 using IdentityModel;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Events;
@@ -28,6 +29,7 @@ namespace Codx.Auth.Controllers
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
         private readonly ILogger<ExternalController> _logger;
+        private readonly IAccountService _accountService;
 
         public ExternalController(
             UserManager<ApplicationUser> userManager,
@@ -35,7 +37,8 @@ namespace Codx.Auth.Controllers
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IEventService events,
-            ILogger<ExternalController> logger)
+            ILogger<ExternalController> logger,
+            IAccountService accountService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -43,6 +46,7 @@ namespace Codx.Auth.Controllers
             _clientStore = clientStore;
             _events = events;
             _logger = logger;
+            _accountService = accountService;
         }
 
         /// <summary>
@@ -104,7 +108,7 @@ namespace Codx.Auth.Controllers
                 user = await AutoProvisionUserAsync(provider, providerUserId, claims);
             }
 
-            // this allows us to collect any additional claims or properties
+            // this allows us to to collect any additional claims or properties
             // for the specific protocols used and store them in the local auth cookie.
             // this is typically used to store data needed for signout from those protocols.
             var additionalLocalClaims = new List<Claim>();
@@ -177,59 +181,54 @@ namespace Codx.Auth.Controllers
 
         private async Task<ApplicationUser> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims)
         {
-            // create a list of claims that we want to transfer into our store
-            var filtered = new List<Claim>();
-
-            // user's display name
-            var name = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)?.Value ??
-                claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-            if (name != null)
-            {
-                filtered.Add(new Claim(JwtClaimTypes.Name, name));
-            }
-            else
-            {
-                var first = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.GivenName)?.Value ??
-                    claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
-                var last = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.FamilyName)?.Value ??
-                    claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
-                if (first != null && last != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, first + " " + last));
-                }
-                else if (first != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, first));
-                }
-                else if (last != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, last));
-                }
-            }
-
-            // email
+            // Extract user information from external provider claims
             var email = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Email)?.Value ??
-               claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-            if (email != null)
+                       claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+
+            var firstName = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.GivenName)?.Value ??
+                           claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
+
+            var lastName = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.FamilyName)?.Value ??
+                          claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
+
+            // If no separate first/last name, try to extract from full name
+            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName))
             {
-                filtered.Add(new Claim(JwtClaimTypes.Email, email));
+                var fullName = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)?.Value ??
+                              claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
+
+                if (!string.IsNullOrEmpty(fullName))
+                {
+                    var nameParts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (nameParts.Length > 0)
+                    {
+                        firstName = nameParts[0];
+                        if (nameParts.Length > 1)
+                        {
+                            lastName = string.Join(" ", nameParts.Skip(1));
+                        }
+                    }
+                }
             }
 
-            var user = new ApplicationUser
-            {
-                UserName = Guid.NewGuid().ToString(),
-            };
-            var identityResult = await _userManager.CreateAsync(user);
-            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
+            // Use AccountService to register the external user with proper initialization
+            var (result, user) = await _accountService.RegisterExternalUserAsync(
+                email, 
+                firstName, 
+                lastName, 
+                provider, 
+                providerUserId);
 
-            if (filtered.Any())
+            if (!result.Success)
             {
-                identityResult = await _userManager.AddClaimsAsync(user, filtered);
-                if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
+                var errorMessage = result.Errors?.Any() == true 
+                    ? string.Join(", ", result.Errors) 
+                    : "Failed to create external user account";
+                throw new Exception($"External user registration failed: {errorMessage}");
             }
 
-            identityResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerUserId, provider));
-            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
+            _logger.LogInformation("Successfully auto-provisioned external user {UserId} from provider {Provider}", 
+                user.Id, provider);
 
             return user;
         }
