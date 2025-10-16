@@ -9,6 +9,26 @@
 <div class="row">
     <div class="col-lg-12">
 
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
         <div class="card">
             <div class="card-header">
                 <nav>
@@ -163,8 +183,52 @@
                     </div>
 
                     <div class="tab-pane fade" id="nav-manage" role="tabpanel" aria-labelledby="nav-manage-tab">
-                        <br />  <br />
+                        <br />  <br />                        
+                                             
                         <a asp-action="ChangePassword" asp-controller="MyProfile" class="btn btn-outline-primary">Change Password</a>
+                        
+                        @if (Model.IsGoogleAuthEnabled)
+                        {
+                            <br /><br />
+                            <h5>Google Account</h5>
+                            @if (Model.HasGoogleAccount)
+                            {
+                                <button type="button" class="btn btn-outline-success" disabled>
+                                    <i class="fab fa-google"></i> Google Account Connected
+                                </button>
+                                <a asp-action="DisconnectGoogle" asp-controller="MyProfile" class="btn btn-outline-danger ml-2">
+                                    Disconnect Google
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="ConnectGoogle" asp-controller="MyProfile" class="btn btn-outline-primary">
+                                    <i class="fab fa-google"></i> Link Google Account
+                                </a>
+                            }
+                        }
+
+                        @if (Model.IsMicrosoftAuthEnabled)
+                        {
+                            <br /><br />
+                            <h5>Microsoft Account</h5>
+                            @if (Model.HasMicrosoftAccount)
+                            {
+                                <button type="button" class="btn btn-outline-success" disabled>
+                                    <i class="fab fa-microsoft"></i> Microsoft Account Connected
+                                </button>
+                                <a asp-action="DisconnectMicrosoft" asp-controller="MyProfile" class="btn btn-outline-danger ml-2">
+                                    Disconnect Microsoft
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="ConnectMicrosoft" asp-controller="MyProfile" class="btn btn-outline-primary">
+                                    <i class="fab fa-microsoft"></i> Link Microsoft Account
+                                </a>
+                            }
+                        }
+
                     </div>
                 </div>
             </div>

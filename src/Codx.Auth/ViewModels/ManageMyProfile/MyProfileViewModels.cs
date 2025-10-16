@@ -13,5 +13,13 @@ namespace Codx.Auth.ViewModels
 
         public string TenantName { get; set; }
         public string CompanyName { get; set; }
+        
+        // External Authentication Properties
+        public bool IsGoogleAuthEnabled { get; set; }
+        public bool HasGoogleAccount { get; set; }
+        
+        // Microsoft Authentication Properties
+        public bool IsMicrosoftAuthEnabled { get; set; }
+        public bool HasMicrosoftAccount { get; set; }
     }
 }
