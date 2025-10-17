@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Codx.Auth.Configuration;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
@@ -71,7 +72,11 @@ namespace Codx.Auth
 
             services.AddScoped<ITenantResolver, TenantResolver>();
 
-            services.AddAuthentication()
+            // Configure external authentication providers
+            var externalAuthConfig = new ExternalAuthConfiguration();
+            Configuration.GetSection("Authentication").Bind(externalAuthConfig);
+
+            var authBuilder = services.AddAuthentication()
                 .AddCookie(options => {
                     options.ExpireTimeSpan = new TimeSpan(0, 15, 0);
                     options.Cookie.SameSite = SameSiteMode.Lax;
@@ -79,6 +84,39 @@ namespace Codx.Auth
                     options.Cookie.HttpOnly = true;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 });
+
+            // Google Authentication
+            if (externalAuthConfig.Google.IsConfigured)
+            {
+                authBuilder.AddGoogle(options =>
+                {
+                    options.ClientId = externalAuthConfig.Google.ClientId;
+                    options.ClientSecret = externalAuthConfig.Google.ClientSecret;
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                });
+            }
+
+            // Facebook Authentication
+            if (externalAuthConfig.Facebook.IsConfigured)
+            {
+                authBuilder.AddFacebook(options =>
+                {
+                    options.AppId = externalAuthConfig.Facebook.AppId;
+                    options.AppSecret = externalAuthConfig.Facebook.AppSecret;
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                });
+            }
+
+            // Microsoft Authentication
+            if (externalAuthConfig.Microsoft.IsConfigured)
+            {
+                authBuilder.AddMicrosoftAccount(options =>
+                {
+                    options.ClientId = externalAuthConfig.Microsoft.ClientId;
+                    options.ClientSecret = externalAuthConfig.Microsoft.ClientSecret;
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                });
+            }
 
             // Configure cookie policy for Docker compatibility
             services.Configure<CookiePolicyOptions>(options =>

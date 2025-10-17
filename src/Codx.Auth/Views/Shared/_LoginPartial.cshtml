@@ -5,7 +5,7 @@
 @inject UserManager<ApplicationUser> UserManager
 
 <ul class="navbar-nav">
-    @if (SignInManager.IsSignedIn(User))
+    @if (User.Identity.IsAuthenticated)
     {
         <li class="nav-item">
             <a asp-controller="MyProfile" asp-action="Index" class="nav-link text-dark" title="Manage">Hello @User.GetUserDisplayName()</a>
@@ -16,4 +16,4 @@
             </form>
         </li>
     }
-    </ul>
+</ul>
