@@ -45,6 +45,9 @@ namespace Codx.Auth
             
             services.AddTransient<IAccountService, AccountService>();
 
+            // Add Email Services
+            services.AddEmailServices(Configuration);
+
             services.AddAspNetIdentity();
                        
             services.AddControllersWithViews();
