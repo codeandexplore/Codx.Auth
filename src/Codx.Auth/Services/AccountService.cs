@@ -100,7 +100,7 @@ namespace Codx.Auth.Services
             if (!string.IsNullOrEmpty(email))
             {
                 claims.Add(new Claim("email", email));
-                claims.Add(new Claim("name", EmailHelper.GetEmailUsername(email)));
+                claims.Add(new Claim("name", EmailAddressHelper.GetEmailUsername(email)));
             }
             else
             {

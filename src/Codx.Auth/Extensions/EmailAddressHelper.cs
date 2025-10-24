@@ -2,7 +2,7 @@
 
 namespace Codx.Auth.Extensions
 {
-    public static class EmailHelper
+    public static class EmailAddressHelper
     {
         public static (string Username, string Domain) GetEmailParts(string email)
         {
