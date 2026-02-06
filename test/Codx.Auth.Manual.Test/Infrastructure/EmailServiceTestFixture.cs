@@ -76,8 +76,11 @@ namespace Codx.Auth.Manual.Test.Infrastructure
         /// <returns>Console email service instance</returns>
         public IEmailService CreateConsoleEmailService()
         {
+            var emailSettings = Configuration.GetSection(EmailSettings.SectionName).Get<EmailSettings>();
             var logger = GetService<ILogger<ConsoleEmailService>>();
-            return new ConsoleEmailService(logger);
+            var options = Microsoft.Extensions.Options.Options.Create(emailSettings!);
+            
+            return new ConsoleEmailService(logger, options);
         }
 
         public void Dispose()

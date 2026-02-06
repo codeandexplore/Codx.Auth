@@ -154,5 +154,53 @@ namespace Codx.Auth.Manual.Test.EmailService
             Assert.NotEmpty(result.MessageId);
             Assert.Contains("console", result.MessageId);
         }
+
+        [Fact]
+        public async Task SendEmailMailGun_WithoutFromAddress_ShouldUseDefaults()
+        {
+            // Arrange
+            var emailService = _fixture.CreateMailgunEmailService();
+            var emailMessage = new EmailMessage
+            {
+                // Note: From and FromName are NOT set - should use defaults from config
+                To = _mailGunToEmail,
+                Subject = "Test Default From Address",
+                Body = "This email should use the default From address from configuration.",
+                IsHtml = false
+            };
+
+            // Act
+            var result = await emailService.SendEmailAsync(emailMessage);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success, $"Email sending failed: {result.Message}");
+            Assert.NotNull(result.MessageId);
+            Assert.NotEmpty(result.MessageId);
+        }
+
+        [Fact]
+        public async Task SendEmailConsole_WithoutFromAddress_ShouldUseDefaults()
+        {
+            // Arrange
+            var emailService = _fixture.CreateConsoleEmailService();
+            var emailMessage = new EmailMessage
+            {
+                // Note: From and FromName are NOT set - should use defaults from config
+                To = "console@example.com",
+                Subject = "Test Default From Address",
+                Body = "This email should use the default From address from configuration.",
+                IsHtml = false
+            };
+
+            // Act
+            var result = await emailService.SendEmailAsync(emailMessage);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success, $"Email sending failed: {result.Message}");
+            Assert.NotNull(result.MessageId);
+            Assert.NotEmpty(result.MessageId);
+        }
     }
 }

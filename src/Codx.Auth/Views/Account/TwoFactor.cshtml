@@ -1,0 +1,142 @@
+@model Codx.Auth.ViewModels.Account.TwoFactorViewModel
+@{
+    ViewData["Title"] = "Two-Factor Authentication";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Two-Factor Authentication
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                    {
+                        <div class="alert @(Model.IsError ? "alert-danger" : "alert-info") alert-dismissible fade show" role="alert">
+                            <i class="fas @(Model.IsError ? "fa-exclamation-triangle" : "fa-info-circle") me-2"></i>
+                            @Model.Message
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <div class="text-center mb-4">
+                        <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                        <p class="text-muted">
+                            We've sent a 6-digit verification code to:
+                        </p>
+                        <p class="fw-bold text-primary">@Model.Email</p>
+                        <p class="small text-muted">
+                            Enter the code below to complete your login. The code will expire in 10 minutes.
+                        </p>
+                    </div>
+
+                    <form asp-action="TwoFactor" method="post" id="twoFactorForm">
+                        <input type="hidden" asp-for="ReturnUrl" />
+                        <input type="hidden" asp-for="RememberLogin" />
+                        <input type="hidden" asp-for="Email" />
+
+                        <div class="mb-4">
+                            <label asp-for="Code" class="form-label fw-bold">Verification Code</label>
+                            <input asp-for="Code" 
+                                   class="form-control form-control-lg text-center" 
+                                   style="letter-spacing: 5px; font-size: 1.5rem; font-weight: bold;"
+                                   placeholder="000000"
+                                   maxlength="6"
+                                   autocomplete="off"
+                                   autofocus
+                                   id="codeInput" />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" name="button" value="verify" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-check me-2"></i>
+                                Verify Code
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-muted mb-2">Didn't receive the code?</p>
+                            <button type="submit" name="button" value="resend" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo me-2"></i>
+                                Resend Code
+                            </button>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="text-center">
+                            <a asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-link">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Back to Login
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <p class="text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Having trouble? Contact support for assistance.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('codeInput');
+            const form = document.getElementById('twoFactorForm');
+            
+            // Auto-format input to only allow numbers
+            codeInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                if (value.length > 6) {
+                    value = value.slice(0, 6); // Limit to 6 digits
+                }
+                e.target.value = value;
+                
+                // Auto-submit when 6 digits are entered
+                if (value.length === 6) {
+                    // Small delay to allow user to see the complete code
+                    setTimeout(function() {
+                        const submitBtn = form.querySelector('button[value="verify"]');
+                        submitBtn.click();
+                    }, 500);
+                }
+            });
+            
+            // Prevent non-numeric characters
+            codeInput.addEventListener('keypress', function(e) {
+                if (!/\d/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter'].includes(e.key)) {
+                    e.preventDefault();
+                }
+            });
+            
+            // Handle paste events
+            codeInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const paste = (e.clipboardData || window.clipboardData).getData('text');
+                const digits = paste.replace(/\D/g, '').slice(0, 6);
+                e.target.value = digits;
+                
+                // Auto-submit if 6 digits were pasted
+                if (digits.length === 6) {
+                    setTimeout(function() {
+                        const submitBtn = form.querySelector('button[value="verify"]');
+                        submitBtn.click();
+                    }, 500);
+                }
+            });
+        });
+    </script>
+}

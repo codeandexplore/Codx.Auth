@@ -48,6 +48,9 @@ namespace Codx.Auth
             // Add Email Services
             services.AddEmailServices(Configuration);
 
+            // Add Two-Factor Authentication Service
+            services.AddScoped<ITwoFactorService, TwoFactorService>();
+
             services.AddAspNetIdentity();
                        
             services.AddControllersWithViews();

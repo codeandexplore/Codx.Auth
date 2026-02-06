@@ -187,6 +187,57 @@
                                              
                         <a asp-action="ChangePassword" asp-controller="MyProfile" class="btn btn-outline-primary">Change Password</a>
                         
+                        @* Two-Factor Authentication Section *@
+                        @if (Model.CanUseTwoFactor)
+                        {
+                            <br /><br />
+                            <h5>Two-Factor Authentication</h5>
+                            <p class="text-muted">Add an extra layer of security to your account with two-factor authentication.</p>
+                            
+                            @if (Model.TwoFactorEnabled)
+                            {
+                                <div class="alert alert-success d-inline-flex align-items-center">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    <span>Two-Factor Authentication is <strong>enabled</strong></span>
+                                </div>
+                                <br />
+                                <form asp-action="DisableTwoFactor" asp-controller="MyProfile" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-outline-danger" 
+                                            onclick="return confirm('Are you sure you want to disable Two-Factor Authentication? This will make your account less secure.')">
+                                        <i class="fas fa-shield-alt"></i> Disable 2FA
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning d-inline-flex align-items-center">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <span>Two-Factor Authentication is <strong>disabled</strong></span>
+                                </div>
+                                <br />
+                                <form asp-action="EnableTwoFactor" asp-controller="MyProfile" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-outline-success">
+                                        <i class="fas fa-shield-alt"></i> Enable 2FA
+                                    </button>
+                                </form>
+                                <br /><br />
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    When enabled, you'll receive a verification code via email each time you log in.
+                                </small>
+                            }
+                        }
+                        else
+                        {
+                            <br /><br />
+                            <h5>Two-Factor Authentication</h5>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Two-Factor Authentication is not available for external login accounts. 
+                                Your external provider (Google, Microsoft, etc.) handles authentication security.
+                            </div>
+                        }
+                        
                         @if (Model.IsGoogleAuthEnabled)
                         {
                             <br /><br />

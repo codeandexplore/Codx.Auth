@@ -27,14 +27,15 @@ namespace Codx.Auth.Extensions
             services.AddSingleton<IEmailService>(serviceProvider =>
             {
                 var emailSettings = serviceProvider.GetRequiredService<IOptions<EmailSettings>>().Value;
+                var emailSettingsOptions = serviceProvider.GetRequiredService<IOptions<EmailSettings>>();
                 var logger = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<MailgunEmailService>>();
                 var consoleLogger = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ConsoleEmailService>>();
 
                 return emailSettings.Provider.ToLowerInvariant() switch
                 {
-                    "mailgun" => new MailgunEmailService(serviceProvider.GetRequiredService<IOptions<EmailSettings>>(), logger),
-                    "console" => new ConsoleEmailService(consoleLogger),
-                    _ => new ConsoleEmailService(consoleLogger) // Default to console for unknown providers
+                    "mailgun" => new MailgunEmailService(emailSettingsOptions, logger),
+                    "console" => new ConsoleEmailService(consoleLogger, emailSettingsOptions),
+                    _ => new ConsoleEmailService(consoleLogger, emailSettingsOptions) // Default to console for unknown providers
                 };
             });
 

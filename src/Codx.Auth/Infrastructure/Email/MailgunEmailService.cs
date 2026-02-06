@@ -57,6 +57,20 @@ namespace Codx.Auth.Infrastructure.Email
                     return EmailResult.FailureResult(error);
                 }
 
+                // Set default From if not provided
+                if (string.IsNullOrWhiteSpace(message.From))
+                {
+                    message.From = _emailSettings.DefaultFromEmail;
+                    _logger.LogDebug("Using default From email: {From}", message.From);
+                }
+
+                // Set default FromName if not provided
+                if (string.IsNullOrWhiteSpace(message.FromName))
+                {
+                    message.FromName = _emailSettings.DefaultFromName;
+                    _logger.LogDebug("Using default FromName: {FromName}", message.FromName);
+                }
+
                 var request = CreateMailgunRequest(message);
                 var response = await _restClient.ExecuteAsync(request);
 

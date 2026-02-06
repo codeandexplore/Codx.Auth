@@ -36,6 +36,9 @@ namespace Codx.Auth.Services
 
             if (result.Succeeded)
             {
+                // Enable 2FA for internal users (users created with passwords)
+                await _userManager.SetTwoFactorEnabledAsync(user, true);
+                
                 await InitializeNewUserAsync(user, request.Email, request.FirstName, request.LastName);
                 return (new RegisterResponse { Success = true }, user);
             }
@@ -63,6 +66,9 @@ namespace Codx.Auth.Services
 
             if (result.Succeeded)
             {
+                // Do NOT enable 2FA for external users - they use their provider's 2FA
+                await _userManager.SetTwoFactorEnabledAsync(user, false);
+                
                 // Add external login
                 var addLoginResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerUserId, provider));
                 if (!addLoginResult.Succeeded)
