@@ -628,5 +628,328 @@ namespace Codx.Auth.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet]
+        public IActionResult ConnectGoogle()
+        {
+            // Check if Google authentication is enabled
+            var externalAuthConfig = new ExternalAuthConfiguration();
+            _configuration.GetSection("Authentication").Bind(externalAuthConfig);
+
+            if (!externalAuthConfig.Google.IsConfigured)
+            {
+                TempData["ErrorMessage"] = "Google authentication is not configured.";
+                return RedirectToAction("Index");
+            }
+
+            // Create direct challenge for account linking (bypass ExternalController)
+            var returnUrl = Url.Action("ConnectGoogleCallback", "MyProfile");
+            var props = new AuthenticationProperties
+            {
+                RedirectUri = returnUrl,
+                Items =
+                {
+                    { "returnUrl", returnUrl },
+                    { "scheme", "Google" },
+                    { "action", "link" } // Add marker to distinguish from login
+                }
+            };
+
+            return Challenge(props, "Google");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConnectGoogleCallback()
+        {
+            try
+            {
+                // Read external identity from the temporary cookie (same as ExternalController)
+                var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                if (result?.Succeeded != true)
+                {
+                    TempData["ErrorMessage"] = "Error loading external login information during account linking.";
+                    return RedirectToAction("Index");
+                }
+
+                // Extract provider info
+                var externalUser = result.Principal;
+                var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
+                                  externalUser.FindFirst(ClaimTypes.NameIdentifier);
+
+                if (userIdClaim == null)
+                {
+                    TempData["ErrorMessage"] = "Unable to retrieve external user information.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                var provider = result.Properties.Items["scheme"];
+                var providerUserId = userIdClaim.Value;
+
+                // Get current authenticated user
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "You must be logged in to link accounts.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                // Check if this Google account is already linked to another user
+                var existingUser = await _userManager.FindByLoginAsync(provider, providerUserId);
+                if (existingUser != null && existingUser.Id != user.Id)
+                {
+                    TempData["ErrorMessage"] = "This Google account is already linked to another user account.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                // Check if already linked to current user
+                if (existingUser != null && existingUser.Id == user.Id)
+                {
+                    TempData["ErrorMessage"] = "This Google account is already linked to your account.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                // Add the external login to current user
+                var loginInfo = new UserLoginInfo(provider, providerUserId, provider);
+                var addLoginResult = await _userManager.AddLoginAsync(user, loginInfo);
+
+                // Clean up the external authentication cookie
+                await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+
+                if (addLoginResult.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "Google account has been successfully linked to your account.";
+                }
+                else
+                {
+                    var errors = string.Join(", ", addLoginResult.Errors.Select(e => e.Description));
+                    TempData["ErrorMessage"] = $"Failed to link Google account: {errors}";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Clean up the external authentication cookie in case of any error
+                try
+                {
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
+
+                TempData["ErrorMessage"] = "An error occurred while linking your Google account. Please try again.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DisconnectGoogle()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Index");
+            }
+
+            // Get user logins
+            var userLogins = await _userManager.GetLoginsAsync(user);
+            var googleLogin = userLogins.FirstOrDefault(l => l.LoginProvider == "Google");
+
+            if (googleLogin == null)
+            {
+                TempData["ErrorMessage"] = "No Google account is linked to your profile.";
+                return RedirectToAction("Index");
+            }
+
+            // Ensure user has a password or another way to login
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+            var otherLogins = userLogins.Where(l => l.LoginProvider != "Google").Count();
+
+            if (!hasPassword && otherLogins == 0)
+            {
+                TempData["ErrorMessage"] = "Cannot disconnect Google account. You must set a password or link another external account first.";
+                return RedirectToAction("Index");
+            }
+
+            // Remove the Google login
+            var result = await _userManager.RemoveLoginAsync(user, googleLogin.LoginProvider, googleLogin.ProviderKey);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Google account has been successfully disconnected from your account.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to disconnect Google account. Please try again.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public IActionResult ConnectMicrosoft()
+        {
+            // Check if Microsoft authentication is enabled
+            var externalAuthConfig = new ExternalAuthConfiguration();
+            _configuration.GetSection("Authentication").Bind(externalAuthConfig);
+
+            if (!externalAuthConfig.Microsoft.IsConfigured)
+            {
+                TempData["ErrorMessage"] = "Microsoft authentication is not configured.";
+                return RedirectToAction("Index");
+            }
+
+            // Create direct challenge for account linking (bypass ExternalController)
+            var returnUrl = Url.Action("ConnectMicrosoftCallback", "MyProfile");
+            var props = new AuthenticationProperties
+            {
+                RedirectUri = returnUrl,
+                Items =
+                {
+                    { "returnUrl", returnUrl },
+                    { "scheme", "Microsoft" },
+                    { "action", "link" } // Add marker to distinguish from login
+                }
+            };
+
+            return Challenge(props, "Microsoft");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConnectMicrosoftCallback()
+        {
+            try
+            {
+                // Read external identity from the temporary cookie (same as ExternalController)
+                var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                if (result?.Succeeded != true)
+                {
+                    TempData["ErrorMessage"] = "Error loading external login information during account linking.";
+                    return RedirectToAction("Index");
+                }
+
+                // Extract provider info
+                var externalUser = result.Principal;
+                var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
+                                  externalUser.FindFirst(ClaimTypes.NameIdentifier);
+
+                if (userIdClaim == null)
+                {
+                    TempData["ErrorMessage"] = "Unable to retrieve external user information.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                var provider = result.Properties.Items["scheme"];
+                var providerUserId = userIdClaim.Value;
+
+                // Get current authenticated user
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "You must be logged in to link accounts.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                // Check if this Microsoft account is already linked to another user
+                var existingUser = await _userManager.FindByLoginAsync(provider, providerUserId);
+                if (existingUser != null && existingUser.Id != user.Id)
+                {
+                    TempData["ErrorMessage"] = "This Microsoft account is already linked to another user account.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                // Check if already linked to current user
+                if (existingUser != null && existingUser.Id == user.Id)
+                {
+                    TempData["ErrorMessage"] = "This Microsoft account is already linked to your account.";
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                    return RedirectToAction("Index");
+                }
+
+                // Add the external login to current user
+                var loginInfo = new UserLoginInfo(provider, providerUserId, provider);
+                var addLoginResult = await _userManager.AddLoginAsync(user, loginInfo);
+
+                // Clean up the external authentication cookie
+                await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+
+                if (addLoginResult.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "Microsoft account has been successfully linked to your account.";
+                }
+                else
+                {
+                    var errors = string.Join(", ", addLoginResult.Errors.Select(e => e.Description));
+                    TempData["ErrorMessage"] = $"Failed to link Microsoft account: {errors}";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Clean up the external authentication cookie in case of any error
+                try
+                {
+                    await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
+
+                TempData["ErrorMessage"] = "An error occurred while linking your Microsoft account. Please try again.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DisconnectMicrosoft()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Index");
+            }
+
+            // Get user logins
+            var userLogins = await _userManager.GetLoginsAsync(user);
+            var microsoftLogin = userLogins.FirstOrDefault(l => l.LoginProvider == "Microsoft");
+
+            if (microsoftLogin == null)
+            {
+                TempData["ErrorMessage"] = "No Microsoft account is linked to your profile.";
+                return RedirectToAction("Index");
+            }
+
+            // Ensure user has a password or another way to login
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+            var otherLogins = userLogins.Where(l => l.LoginProvider != "Microsoft").Count();
+
+            if (!hasPassword && otherLogins == 0)
+            {
+                TempData["ErrorMessage"] = "Cannot disconnect Microsoft account. You must set a password or link another external account first.";
+                return RedirectToAction("Index");
+            }
+
+            // Remove the Microsoft login
+            var result = await _userManager.RemoveLoginAsync(user, microsoftLogin.LoginProvider, microsoftLogin.ProviderKey);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Microsoft account has been successfully disconnected from your account.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to disconnect Microsoft account. Please try again.";
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }
