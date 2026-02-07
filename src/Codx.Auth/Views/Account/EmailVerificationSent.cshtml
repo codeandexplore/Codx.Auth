@@ -1,0 +1,85 @@
+@model Codx.Auth.ViewModels.Account.EmailVerificationViewModel
+@{
+    ViewData["Title"] = "Email Verification Sent";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow mt-5">
+                <div class="card-header bg-info text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>
+                        Email Verification Sent
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert @(Model.IsError ? "alert-danger" : "alert-info") alert-dismissible fade show" role="alert">
+                        <i class="fas @(Model.IsError ? "fa-exclamation-triangle" : "fa-info-circle") me-2"></i>
+                        @Model.Message
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    @if (!Model.IsError)
+                    {
+                        <div class="text-center mb-4">
+                            <i class="fas fa-envelope-open-text fa-4x text-info mb-3"></i>
+                            <h5>Check Your Email</h5>
+                            <p class="text-muted">
+                                We've sent a verification link to:
+                            </p>
+                            <p class="fw-bold text-primary">@Model.Email</p>
+                        </div>
+
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-info-circle me-2"></i>Next Steps:</h6>
+                                <ol class="mb-0">
+                                    <li>Check your inbox for an email from Codx Auth</li>
+                                    <li>Click the verification link in the email</li>
+                                    <li>Return here to sign in</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <strong><i class="fas fa-exclamation-triangle me-2"></i>Note:</strong>
+                            <ul class="mb-0">
+                                <li>The verification link will expire in 24 hours</li>
+                                <li>Check your spam/junk folder if you don't see the email</li>
+                            </ul>
+                        </div>
+                    }
+
+                    <div class="text-center mt-4">
+                        <form asp-action="ResendEmailVerification" method="post" class="d-inline">
+                            <input type="hidden" name="email" value="@Model.Email" />
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo me-2"></i>
+                                Resend Verification Email
+                            </button>
+                        </form>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <a asp-action="Login" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Go to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <p class="text-muted small">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Email verification helps keep your account secure.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

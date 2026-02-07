@@ -26,6 +26,7 @@ namespace Codx.Auth.Data.Contexts
         public DbSet<TenantManager> TenantManagers { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<UserCompany> UserCompanies { get; set; }
+        public DbSet<TwoFactorCode> TwoFactorCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -98,6 +99,25 @@ namespace Codx.Auth.Data.Contexts
                 entity.Property(e => e.Logo).HasMaxLength(200);
                 entity.Property(e => e.Theme).HasMaxLength(50);
                 entity.Property(e => e.Description).HasMaxLength(500);
+            });
+
+            // Two-Factor Authentication Code entity configuration
+            builder.Entity<TwoFactorCode>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Code).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.ExpiresAt).IsRequired();
+                entity.Property(e => e.IsUsed).HasDefaultValue(false);
+                
+                // Index for faster lookups
+                entity.HasIndex(e => new { e.UserId, e.Code, e.ExpiresAt });
+                
+                // Foreign key relationship
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
         }

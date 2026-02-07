@@ -79,6 +79,13 @@ namespace Codx.Auth.Controllers
                 viewModel.HasMicrosoftAccount = microsoftLogins.Any(l => l.LoginProvider == "Microsoft");
             }
 
+            // Two-Factor Authentication
+            viewModel.TwoFactorEnabled = user.TwoFactorEnabled;
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+            var userLogins = await _userManager.GetLoginsAsync(user);
+            // Can use 2FA if user has a password (not external-only accounts)
+            viewModel.CanUseTwoFactor = hasPassword;
+
             return View(viewModel);
         }
 
@@ -551,13 +558,83 @@ namespace Codx.Auth.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Enable Two-Factor Authentication for the current user
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> EnableTwoFactor()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Index");
+            }
+
+            // Check if user has external logins only
+            var userLogins = await _userManager.GetLoginsAsync(user);
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+
+            if (!hasPassword && userLogins.Any())
+            {
+                TempData["ErrorMessage"] = "Two-Factor Authentication is not available for external login accounts. Your external provider (Google, Microsoft, etc.) handles authentication security.";
+                return RedirectToAction("Index");
+            }
+
+            if (!hasPassword)
+            {
+                TempData["ErrorMessage"] = "You must set a password before enabling Two-Factor Authentication.";
+                return RedirectToAction("Index");
+            }
+
+            var result = await _userManager.SetTwoFactorEnabledAsync(user, true);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Two-Factor Authentication has been enabled for your account. You will receive a verification code via email on your next login.";
+            }
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                TempData["ErrorMessage"] = $"Failed to enable Two-Factor Authentication: {errors}";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        /// <summary>
+        /// Disable Two-Factor Authentication for the current user
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> DisableTwoFactor()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Index");
+            }
+
+            var result = await _userManager.SetTwoFactorEnabledAsync(user, false);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Two-Factor Authentication has been disabled for your account.";
+            }
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                TempData["ErrorMessage"] = $"Failed to disable Two-Factor Authentication: {errors}";
+            }
+
+            return RedirectToAction("Index");
+        }
+
         [HttpGet]
         public IActionResult ConnectGoogle()
         {
             // Check if Google authentication is enabled
             var externalAuthConfig = new ExternalAuthConfiguration();
             _configuration.GetSection("Authentication").Bind(externalAuthConfig);
-            
+
             if (!externalAuthConfig.Google.IsConfigured)
             {
                 TempData["ErrorMessage"] = "Google authentication is not configured.";
@@ -569,8 +646,8 @@ namespace Codx.Auth.Controllers
             var props = new AuthenticationProperties
             {
                 RedirectUri = returnUrl,
-                Items = 
-                { 
+                Items =
+                {
                     { "returnUrl", returnUrl },
                     { "scheme", "Google" },
                     { "action", "link" } // Add marker to distinguish from login
@@ -597,7 +674,7 @@ namespace Codx.Auth.Controllers
                 var externalUser = result.Principal;
                 var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
                                   externalUser.FindFirst(ClaimTypes.NameIdentifier);
-                
+
                 if (userIdClaim == null)
                 {
                     TempData["ErrorMessage"] = "Unable to retrieve external user information.";
@@ -637,10 +714,10 @@ namespace Codx.Auth.Controllers
                 // Add the external login to current user
                 var loginInfo = new UserLoginInfo(provider, providerUserId, provider);
                 var addLoginResult = await _userManager.AddLoginAsync(user, loginInfo);
-                
+
                 // Clean up the external authentication cookie
                 await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
-                
+
                 if (addLoginResult.Succeeded)
                 {
                     TempData["SuccessMessage"] = "Google account has been successfully linked to your account.";
@@ -662,7 +739,7 @@ namespace Codx.Auth.Controllers
                 {
                     // Ignore cleanup errors
                 }
-                
+
                 TempData["ErrorMessage"] = "An error occurred while linking your Google account. Please try again.";
             }
 
@@ -719,7 +796,7 @@ namespace Codx.Auth.Controllers
             // Check if Microsoft authentication is enabled
             var externalAuthConfig = new ExternalAuthConfiguration();
             _configuration.GetSection("Authentication").Bind(externalAuthConfig);
-            
+
             if (!externalAuthConfig.Microsoft.IsConfigured)
             {
                 TempData["ErrorMessage"] = "Microsoft authentication is not configured.";
@@ -731,8 +808,8 @@ namespace Codx.Auth.Controllers
             var props = new AuthenticationProperties
             {
                 RedirectUri = returnUrl,
-                Items = 
-                { 
+                Items =
+                {
                     { "returnUrl", returnUrl },
                     { "scheme", "Microsoft" },
                     { "action", "link" } // Add marker to distinguish from login
@@ -759,7 +836,7 @@ namespace Codx.Auth.Controllers
                 var externalUser = result.Principal;
                 var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
                                   externalUser.FindFirst(ClaimTypes.NameIdentifier);
-                
+
                 if (userIdClaim == null)
                 {
                     TempData["ErrorMessage"] = "Unable to retrieve external user information.";
@@ -799,10 +876,10 @@ namespace Codx.Auth.Controllers
                 // Add the external login to current user
                 var loginInfo = new UserLoginInfo(provider, providerUserId, provider);
                 var addLoginResult = await _userManager.AddLoginAsync(user, loginInfo);
-                
+
                 // Clean up the external authentication cookie
                 await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
-                
+
                 if (addLoginResult.Succeeded)
                 {
                     TempData["SuccessMessage"] = "Microsoft account has been successfully linked to your account.";
@@ -824,7 +901,7 @@ namespace Codx.Auth.Controllers
                 {
                     // Ignore cleanup errors
                 }
-                
+
                 TempData["ErrorMessage"] = "An error occurred while linking your Microsoft account. Please try again.";
             }
 

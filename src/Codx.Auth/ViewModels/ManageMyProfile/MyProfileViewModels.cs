@@ -21,5 +21,9 @@ namespace Codx.Auth.ViewModels
         // Microsoft Authentication Properties
         public bool IsMicrosoftAuthEnabled { get; set; }
         public bool HasMicrosoftAccount { get; set; }
+        
+        // Two-Factor Authentication Properties
+        public bool TwoFactorEnabled { get; set; }
+        public bool CanUseTwoFactor { get; set; } // True if user has password (not external-only)
     }
 }

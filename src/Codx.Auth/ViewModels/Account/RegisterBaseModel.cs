@@ -10,7 +10,7 @@ namespace Codx.Auth.ViewModels.Account
         [Display(Name = "First Name")]
         public string FirstName { get; set; }
         [StringLength(100)]
-        [Display(Name = "Middle Name")]
+        [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
         [Required(ErrorMessage = "Email address is required")]
