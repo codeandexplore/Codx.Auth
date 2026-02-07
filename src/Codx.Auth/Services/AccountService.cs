@@ -45,10 +45,7 @@ namespace Codx.Auth.Services
             var result = await _userManager.CreateAsync(user, request.Password);
 
             if (result.Succeeded)
-            {
-                // Enable 2FA for internal users (users created with passwords)
-                await _userManager.SetTwoFactorEnabledAsync(user, true);
-                
+            {               
                 await InitializeNewUserAsync(user, request.Email, request.FirstName, request.LastName);
                 return (new RegisterResponse { Success = true }, user);
             }

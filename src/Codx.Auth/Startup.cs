@@ -51,6 +51,9 @@ namespace Codx.Auth
             // Add Two-Factor Authentication Service
             services.AddScoped<ITwoFactorService, TwoFactorService>();
 
+            // Configure Authentication Settings
+            services.Configure<AuthenticationSettings>(Configuration.GetSection(AuthenticationSettings.SectionName));
+
             services.AddAspNetIdentity();
                        
             services.AddControllersWithViews();

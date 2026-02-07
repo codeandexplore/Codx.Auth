@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using Codx.Auth.Configuration;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,6 +38,7 @@ namespace Codx.Auth.Controllers
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
+        private readonly AuthenticationSettings _authSettings;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -45,7 +48,8 @@ namespace Codx.Auth.Controllers
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
-            IEventService events)
+            IEventService events,
+            IOptions<AuthenticationSettings> authSettings)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -55,6 +59,7 @@ namespace Codx.Auth.Controllers
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
             _events = events;
+            _authSettings = authSettings.Value;
         }
 
         [HttpGet]
@@ -85,28 +90,42 @@ namespace Codx.Auth.Controllers
 
                 if (result.Success)
                 {
-                    // Generate email confirmation token
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    
-                    // Create callback URL for email confirmation
-                    var callbackUrl = Url.Action(
-                        "ConfirmEmail",
-                        "Account",
-                        new { userId = user.Id, token = token, returnUrl = model.ReturnUrl },
-                        protocol: Request.Scheme);
-                    
-                    // Send verification email
-                    var (emailSuccess, emailMessage) = await _accountService.SendEmailVerificationAsync(user, callbackUrl);
-                    
-                    if (emailSuccess)
+                    // Check if email verification is required
+                    if (_authSettings.RequireEmailVerification)
                     {
-                        // Redirect to email verification pending page
-                        return RedirectToAction("EmailVerificationSent", new { email = user.Email });
+                        // Generate email confirmation token
+                        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        
+                        // Create callback URL for email confirmation
+                        var callbackUrl = Url.Action(
+                            "ConfirmEmail",
+                            "Account",
+                            new { userId = user.Id, token = token, returnUrl = model.ReturnUrl },
+                            protocol: Request.Scheme);
+                        
+                        // Send verification email
+                        var (emailSuccess, emailMessage) = await _accountService.SendEmailVerificationAsync(user, callbackUrl);
+                        
+                        if (emailSuccess)
+                        {
+                            // Redirect to email verification pending page
+                            return RedirectToAction("EmailVerificationSent", new { email = user.Email });
+                        }
+                        else
+                        {
+                            // If email sending fails, still allow the user but show a warning
+                            ModelState.AddModelError(string.Empty, "Account created but failed to send verification email. Please contact support.");
+                        }
                     }
                     else
                     {
-                        // If email sending fails, still allow the user but show a warning
-                        ModelState.AddModelError(string.Empty, "Account created but failed to send verification email. Please contact support.");
+                        // Email verification not required - auto-confirm email and redirect to login
+                        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        await _userManager.ConfirmEmailAsync(user, token);
+                        
+                        // Redirect to login page with success message
+                        TempData["RegistrationSuccess"] = "Your account has been created successfully. You can now sign in.";
+                        return RedirectToAction("Login", new { returnUrl = model.ReturnUrl });
                     }
                 }
 
@@ -305,8 +324,8 @@ namespace Codx.Auth.Controllers
                         // Reset failed access count on successful password
                         await _userManager.ResetAccessFailedCountAsync(user);
                         
-                        // Check if email is confirmed
-                        if (!await _userManager.IsEmailConfirmedAsync(user))
+                        // Check if email verification is required and email is not confirmed
+                        if (_authSettings.RequireEmailVerification && !await _userManager.IsEmailConfirmedAsync(user))
                         {
                             // Add error message
                             ModelState.AddModelError(string.Empty, 
