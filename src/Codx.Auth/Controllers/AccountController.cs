@@ -84,31 +84,30 @@ namespace Codx.Auth.Controllers
                 var (result, user) = await _accountService.RegisterAsync(registerRequest);
 
                 if (result.Success)
-                {                    
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-
-                    // Handle returnUrl after registration
-                    if (!string.IsNullOrEmpty(model.ReturnUrl))
+                {
+                    // Generate email confirmation token
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    
+                    // Create callback URL for email confirmation
+                    var callbackUrl = Url.Action(
+                        "ConfirmEmail",
+                        "Account",
+                        new { userId = user.Id, token = token, returnUrl = model.ReturnUrl },
+                        protocol: Request.Scheme);
+                    
+                    // Send verification email
+                    var (emailSuccess, emailMessage) = await _accountService.SendEmailVerificationAsync(user, callbackUrl);
+                    
+                    if (emailSuccess)
                     {
-                        // Check for authorization context
-                        var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
-                        if (context != null)
-                        {
-                            if (context.IsNativeClient())
-                            {
-                                return this.LoadingPage("Redirect", model.ReturnUrl);
-                            }
-                            return Redirect(model.ReturnUrl);
-                        }
-
-                        // Check if the returnUrl is local to prevent open redirect attacks
-                        if (Url.IsLocalUrl(model.ReturnUrl))
-                        {
-                            return Redirect(model.ReturnUrl);
-                        }
+                        // Redirect to email verification pending page
+                        return RedirectToAction("EmailVerificationSent", new { email = user.Email });
                     }
-
-                    return RedirectToAction("Index", "MyProfile");
+                    else
+                    {
+                        // If email sending fails, still allow the user but show a warning
+                        ModelState.AddModelError(string.Empty, "Account created but failed to send verification email. Please contact support.");
+                    }
                 }
 
                 foreach (var error in result.Errors)
@@ -120,6 +119,108 @@ namespace Codx.Auth.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Show email verification sent confirmation page
+        /// </summary>
+        [HttpGet]
+        public IActionResult EmailVerificationSent(string email)
+        {
+            var model = new EmailVerificationViewModel
+            {
+                Email = email,
+                Message = "We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.",
+                IsError = false
+            };
+            
+            return View(model);
+        }
+
+        /// <summary>
+        /// Confirm email address
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token, string returnUrl = null)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return View("EmailConfirmed", new EmailConfirmedViewModel
+                {
+                    Success = false,
+                    Message = "Invalid email confirmation link.",
+                    ReturnUrl = returnUrl
+                });
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return View("EmailConfirmed", new EmailConfirmedViewModel
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    ReturnUrl = returnUrl
+                });
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            
+            var model = new EmailConfirmedViewModel
+            {
+                Success = result.Succeeded,
+                Message = result.Succeeded 
+                    ? "Thank you for confirming your email. You can now sign in to your account."
+                    : "Error confirming your email. The link may have expired or is invalid.",
+                ReturnUrl = returnUrl
+            };
+
+            return View("EmailConfirmed", model);
+        }
+
+        /// <summary>
+        /// Resend email verification
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ResendEmailVerification(string email, string returnUrl = null)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                // Don't reveal that the user doesn't exist
+                return RedirectToAction("EmailVerificationSent", new { email });
+            }
+
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return View("EmailVerificationSent", new EmailVerificationViewModel
+                {
+                    Email = email,
+                    Message = "Your email is already verified. You can sign in to your account.",
+                    IsError = false
+                });
+            }
+
+            // Generate new token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            
+            // Create callback URL
+            var callbackUrl = Url.Action(
+                "ConfirmEmail",
+                "Account",
+                new { userId = user.Id, token = token, returnUrl = returnUrl },
+                protocol: Request.Scheme);
+            
+            // Send verification email
+            var (success, message) = await _accountService.SendEmailVerificationAsync(user, callbackUrl);
+            
+            return View("EmailVerificationSent", new EmailVerificationViewModel
+            {
+                Email = email,
+                Message = success 
+                    ? "A new verification link has been sent to your email address."
+                    : "Failed to send verification email. Please try again later.",
+                IsError = !success
+            });
+        }
 
         /// <summary>
         /// Entry point into the login workflow
@@ -183,80 +284,118 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid)
             {
-                // Attempt to sign in without lockout first to check credentials
-                var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, false, lockoutOnFailure: false);
+                // Find the user first
+                var user = await _userManager.FindByNameAsync(model.Username);
                 
-                if (result.Succeeded)
+                if (user != null)
                 {
-                    var user = await _userManager.FindByNameAsync(model.Username);
-                    
-                    // Check if user has 2FA enabled using built-in ASP.NET Identity field
-                    if (user.TwoFactorEnabled)
+                    // Check if account is locked out
+                    if (await _userManager.IsLockedOutAsync(user))
                     {
-                        // Sign out the user temporarily and redirect to 2FA
-                        await _signInManager.SignOutAsync();
+                        ModelState.AddModelError(string.Empty, "Account is locked out. Please try again later.");
+                        var lockedVm = await BuildLoginViewModelAsync(model);
+                        return View(lockedVm);
+                    }
+                    
+                    // Validate password without signing in
+                    var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+                    
+                    if (passwordValid)
+                    {
+                        // Reset failed access count on successful password
+                        await _userManager.ResetAccessFailedCountAsync(user);
                         
-                        // Send 2FA code
-                        var displayName = user.GetDisplayName();
-                        var (success, code, message) = await _twoFactorService.SendVerificationCodeAsync(user.Id, user.Email, displayName);
-                        
-                        if (success)
+                        // Check if email is confirmed
+                        if (!await _userManager.IsEmailConfirmedAsync(user))
                         {
-                            // Store user info in temp data for 2FA verification
-                            TempData["2FA_UserId"] = user.Id.ToString();
-                            TempData["2FA_ReturnUrl"] = model.ReturnUrl;
-                            TempData["2FA_RememberLogin"] = model.RememberLogin;
+                            // Add error message
+                            ModelState.AddModelError(string.Empty, 
+                                "You must confirm your email before you can log in. Please check your email for the verification link.");
                             
-                            return RedirectToAction("TwoFactor", new { email = user.Email });
+                            // Log the failed attempt
+                            await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, 
+                                "email not confirmed", clientId: context?.Client.ClientId));
+                            
+                            // Store email for resend option
+                            TempData["UnverifiedEmail"] = user.Email;
+                            
+                            // Return to login page with error
+                            var loginVm = await BuildLoginViewModelAsync(model);
+                            return View(loginVm);
+                        }
+                        
+                        // Check if user has 2FA enabled using built-in ASP.NET Identity field
+                        if (user.TwoFactorEnabled)
+                        {
+                            // Send 2FA code
+                            var displayName = user.GetDisplayName();
+                            var (success, code, message) = await _twoFactorService.SendVerificationCodeAsync(user.Id, user.Email, displayName);
+                            
+                            if (success)
+                            {
+                                // Store user info in temp data for 2FA verification
+                                TempData["2FA_UserId"] = user.Id.ToString();
+                                TempData["2FA_ReturnUrl"] = model.ReturnUrl;
+                                TempData["2FA_RememberLogin"] = model.RememberLogin;
+                                
+                                return RedirectToAction("TwoFactor", new { email = user.Email });
+                            }
+                            else
+                            {
+                                ModelState.AddModelError(string.Empty, "Failed to send verification code. Please try again.");
+                            }
                         }
                         else
                         {
-                            ModelState.AddModelError(string.Empty, "Failed to send verification code. Please try again.");
+                            // Complete login for users without 2FA enabled
+                            await _signInManager.SignInAsync(user, model.RememberLogin);
+                            await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName, clientId: context?.Client.ClientId));
+
+                            if (context != null)
+                            {
+                                if (context.IsNativeClient())
+                                {
+                                    return this.LoadingPage("Redirect", model.ReturnUrl);
+                                }
+                                return Redirect(model.ReturnUrl);
+                            }
+
+                            if (Url.IsLocalUrl(model.ReturnUrl))
+                            {
+                                return Redirect(model.ReturnUrl);
+                            }
+                            else if (string.IsNullOrEmpty(model.ReturnUrl))
+                            {
+                                return RedirectToAction("Index", "MyProfile");
+                            }
+                            else
+                            {
+                                throw new Exception("invalid return URL");
+                            }
                         }
                     }
                     else
                     {
-                        // Complete login for users without 2FA enabled
-                        await _signInManager.SignInAsync(user, model.RememberLogin);
-                        await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName, clientId: context?.Client.ClientId));
-
-                        if (context != null)
+                        // Password is invalid - increment failed access count
+                        await _userManager.AccessFailedAsync(user);
+                        
+                        // Check if now locked out
+                        if (await _userManager.IsLockedOutAsync(user))
                         {
-                            if (context.IsNativeClient())
-                            {
-                                return this.LoadingPage("Redirect", model.ReturnUrl);
-                            }
-                            return Redirect(model.ReturnUrl);
-                        }
-
-                        if (Url.IsLocalUrl(model.ReturnUrl))
-                        {
-                            return Redirect(model.ReturnUrl);
-                        }
-                        else if (string.IsNullOrEmpty(model.ReturnUrl))
-                        {
-                            return RedirectToAction("Index", "MyProfile");
+                            ModelState.AddModelError(string.Empty, "Account is locked out. Please try again later.");
                         }
                         else
                         {
-                            throw new Exception("invalid return URL");
+                            await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId: context?.Client.ClientId));
+                            ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
                         }
                     }
                 }
                 else
                 {
-                    // Now attempt with lockout for failed attempts
-                    result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
-                    
-                    if (result.IsLockedOut)
-                    {
-                        ModelState.AddModelError(string.Empty, "Account is locked out. Please try again later.");
-                    }
-                    else
-                    {
-                        await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId: context?.Client.ClientId));
-                        ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
-                    }
+                    // User not found
+                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId: context?.Client.ClientId));
+                    ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
                 }
             }
 
