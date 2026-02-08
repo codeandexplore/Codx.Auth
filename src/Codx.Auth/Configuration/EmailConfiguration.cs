@@ -8,7 +8,7 @@ namespace Codx.Auth.Configuration
         public const string SectionName = "EmailSettings";
         
         /// <summary>
-        /// Email service provider (e.g., "Mailgun", "SendGrid", "SMTP")
+        /// Email service provider (e.g., "Mailgun", "Smtp", "Console")
         /// </summary>
         public string Provider { get; set; } = "Mailgun";
         
@@ -26,6 +26,11 @@ namespace Codx.Auth.Configuration
         /// Mailgun specific settings
         /// </summary>
         public MailgunSettings Mailgun { get; set; } = new();
+        
+        /// <summary>
+        /// SMTP specific settings
+        /// </summary>
+        public SmtpSettings Smtp { get; set; } = new();
         
         /// <summary>
         /// Whether to enable email sending (useful for development/testing)
@@ -57,5 +62,46 @@ namespace Codx.Auth.Configuration
         /// Whether this configuration is properly set up
         /// </summary>
         public bool IsConfigured => !string.IsNullOrWhiteSpace(ApiKey) && !string.IsNullOrWhiteSpace(Domain);
+    }
+
+    /// <summary>
+    /// SMTP specific configuration
+    /// </summary>
+    public class SmtpSettings
+    {
+        /// <summary>
+        /// SMTP server hostname
+        /// </summary>
+        public string Server { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// SMTP server port
+        /// </summary>
+        public int Port { get; set; } = 587;
+        
+        /// <summary>
+        /// SMTP username for authentication
+        /// </summary>
+        public string User { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// SMTP password for authentication
+        /// </summary>
+        public string Password { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Whether SMTP requires authentication
+        /// </summary>
+        public bool RequiresAuthentication { get; set; } = true;
+        
+        /// <summary>
+        /// Whether to use SSL/TLS
+        /// </summary>
+        public bool UseSsl { get; set; } = true;
+        
+        /// <summary>
+        /// Whether this configuration is properly set up
+        /// </summary>
+        public bool IsConfigured => !string.IsNullOrWhiteSpace(Server) && Port > 0;
     }
 }
