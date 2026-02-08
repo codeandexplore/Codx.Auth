@@ -28,12 +28,14 @@ namespace Codx.Auth.Extensions
             {
                 var emailSettings = serviceProvider.GetRequiredService<IOptions<EmailSettings>>().Value;
                 var emailSettingsOptions = serviceProvider.GetRequiredService<IOptions<EmailSettings>>();
-                var logger = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<MailgunEmailService>>();
+                var mailgunLogger = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<MailgunEmailService>>();
                 var consoleLogger = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ConsoleEmailService>>();
+                var smtpLogger = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<SmtpEmailService>>();
 
                 return emailSettings.Provider.ToLowerInvariant() switch
                 {
-                    "mailgun" => new MailgunEmailService(emailSettingsOptions, logger),
+                    "mailgun" => new MailgunEmailService(emailSettingsOptions, mailgunLogger),
+                    "smtp" => new SmtpEmailService(emailSettingsOptions, smtpLogger),
                     "console" => new ConsoleEmailService(consoleLogger, emailSettingsOptions),
                     _ => new ConsoleEmailService(consoleLogger, emailSettingsOptions) // Default to console for unknown providers
                 };
