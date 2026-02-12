@@ -7,6 +7,7 @@ using Codx.Auth.Extensions;
 using Codx.Auth.Mappings;
 using Codx.Auth.Services;
 using Codx.Auth.Services.Interfaces;
+using Codx.Auth.Infrastructure.Theming;
 using Duende.IdentityServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -55,8 +56,14 @@ namespace Codx.Auth
             services.Configure<AuthenticationSettings>(Configuration.GetSection(AuthenticationSettings.SectionName));
 
             services.AddAspNetIdentity();
-                       
-            services.AddControllersWithViews();
+
+            services.Configure<ThemeOptions>(Configuration.GetSection(ThemeOptions.SectionName));
+
+            services.AddControllersWithViews()
+                .AddRazorOptions(options =>
+                {
+                    options.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
+                });
 
             // Configure data protection for Docker
             //services.AddDataProtection()

@@ -1,16 +1,30 @@
-﻿<!DOCTYPE html>
+﻿@using Codx.Auth.Configuration
+@using Microsoft.Extensions.Options
+@inject IOptions<ThemeOptions> ThemeOptions
+@{
+    var theme = ThemeOptions.Value;
+    var isActive = theme?.IsActive == true;
+    var themeCssPath = isActive ? $"~/themes/{theme!.Name.ToLowerInvariant()}/theme.css" : null;
+    var brandName = isActive && !string.IsNullOrWhiteSpace(theme!.BrandName) ? theme.BrandName : "Codx.Auth";
+    var bodyClass = isActive ? $"theme-{theme!.Name.ToLowerInvariant()}" : string.Empty;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Codx.Auth</title>
+    <title>@ViewData["Title"] - @brandName</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link href="~/lib/fontawesome-free/css/fontawesome.min.css" rel="stylesheet" />
     <link href="~/lib/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link href="~/lib/bootstrap-table/dist/bootstrap-table.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" />
+    @if (themeCssPath is not null)
+    {
+        <link rel="stylesheet" href="@themeCssPath" asp-append-version="true" />
+    }
 </head>
-<body>
+<body class="@bodyClass">
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -19,7 +33,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; @DateTime.Now.Year - Codx.Auth - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; @DateTime.Now.Year - @brandName - Codx.Auth <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
