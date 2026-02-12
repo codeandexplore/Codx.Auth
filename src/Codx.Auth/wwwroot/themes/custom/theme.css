@@ -1,0 +1,111 @@
+/* ============================================================
+   Custom Theme
+   ============================================================ */
+
+:root {
+  --theme-primary: #56C393;
+  --theme-primary-dark: #4A9F7B;
+  --theme-accent: #0f172a;
+  --theme-background: #f8fafc;
+}
+
+/* ------- Global ------- */
+
+.theme-custom {
+  background-image: url('/themes/custom/images/login-background.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.theme-custom::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 128, 0, 0.5);
+  z-index: -1;
+}
+
+/* ------- Navbar ------- */
+
+.theme-custom .navbar {
+  background-color: var(--theme-accent) !important;
+}
+
+.theme-custom .navbar .navbar-brand,
+.theme-custom .navbar .navbar-brand span,
+.theme-custom .navbar .nav-link {
+  color: #f8fafc !important;
+}
+
+.theme-custom .navbar .nav-link:hover {
+  color: #e2e8f0 !important;
+}
+
+/* ------- Brand icon ------- */
+
+.brand-icon {
+  height: 28px;
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+/* ------- Footer ------- */
+
+.theme-custom .footer {
+  background-color: #ffffff;
+}
+
+/* ------- Login page ------- */
+
+.theme-custom .login_wrapper {
+  position: relative;
+  z-index: 1;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+
+.theme-custom .card {
+  border-color: var(--theme-primary);
+  border-radius: 15px;
+}
+
+.theme-custom .card-header {
+  background-color: var(--theme-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top-left-radius: 15px !important;
+  border-top-right-radius: 15px !important;
+}
+
+.theme-custom .centered-title {
+  text-align: center;
+  margin: 20px 0px 40px 0px;
+  color: var(--theme-primary-dark);
+}
+
+.theme-custom .btn-login {
+  background-color: var(--theme-primary);
+  border-color: var(--theme-primary);
+  width: 100%;
+  color: white;
+}
+
+.theme-custom .btn-login:hover {
+  background-color: var(--theme-primary-dark);
+  border-color: var(--theme-primary-dark);
+  color: white;
+}
+
+.theme-custom .form-control {
+  border-color: var(--theme-primary);
+}
+
+.theme-custom .form-control:focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 0.2rem rgba(86, 195, 147, 0.25);
+}

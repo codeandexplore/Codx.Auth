@@ -256,11 +256,6 @@ namespace Codx.Auth.Controllers
                 return RedirectToAction("Challenge", "External", new { scheme = vm.ExternalLoginScheme, returnUrl });
             }
 
-            if(vm.ClientId == "tuos-ui")
-            {
-                return View("LoginTuosUI", vm);
-            }
-
             return View(vm);
         }
 
