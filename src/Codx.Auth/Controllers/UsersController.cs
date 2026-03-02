@@ -208,5 +208,56 @@ namespace Codx.Auth.Controllers
             return View(viewmodel);
         }
 
+        // Reset Password
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string id)
+        {
+            var record = await _userManager.FindByIdAsync(id);
+
+            if (record == null)
+            {
+                return NotFound();
+            }
+
+            var viewmodel = new UserResetPasswordViewModel
+            {
+                Id = record.Id,
+                UserName = record.UserName
+            };
+
+            return View(viewmodel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(UserResetPasswordViewModel viewmodel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(viewmodel);
+            }
+
+            var record = await _userManager.FindByIdAsync(viewmodel.Id.ToString());
+
+            if (record == null)
+            {
+                return NotFound();
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(record);
+            var result = await _userManager.ResetPasswordAsync(record, token, viewmodel.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(Details), new { id = viewmodel.Id });
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(viewmodel);
+        }
+
     }
 }

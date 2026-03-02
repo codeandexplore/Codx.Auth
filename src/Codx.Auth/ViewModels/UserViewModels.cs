@@ -30,6 +30,22 @@ namespace Codx.Auth.ViewModels
         public List<SelectListItem> CompanySelectOptions { get; set; }
     }
 
+    public class UserResetPasswordViewModel
+    {
+        public Guid Id { get; set; }
+
+        public string UserName { get; set; }
+
+        [Required]
+        [StringLength(256)]
+        public string NewPassword { get; set; }
+
+        [Required]
+        [StringLength(256)]
+        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; }
+    }
+
     public class BaseUserEditViewModel
     {
 
