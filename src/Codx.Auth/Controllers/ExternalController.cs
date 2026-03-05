@@ -213,10 +213,11 @@ namespace Codx.Auth.Controllers
 
             // Use AccountService to register the external user with proper initialization
             var (result, user) = await _accountService.RegisterExternalUserAsync(
-                email, 
-                firstName, 
-                lastName, 
-                provider, 
+                email,
+                firstName,
+                middleName: null,
+                lastName,
+                provider,
                 providerUserId);
 
             if (!result.Success)

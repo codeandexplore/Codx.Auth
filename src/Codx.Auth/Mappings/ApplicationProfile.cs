@@ -124,12 +124,25 @@ namespace Codx.Auth.Mappings
             CreateMap<ApplicationRole, RoleEditViewModel>().ReverseMap();
             CreateMap<ApplicationRole, RoleEditViewModel>();
 
-            CreateMap<ApplicationUser, UserDetailsViewModel>();
-            CreateMap<ApplicationUser, UserAddViewModel>().ReverseMap();
-            CreateMap<ApplicationUser, UserEditViewModel>().ReverseMap();
-            CreateMap<ApplicationUser, UserEditViewModel>();
+            CreateMap<ApplicationUser, UserDetailsViewModel>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.GivenName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.FamilyName));
+            CreateMap<ApplicationUser, UserAddViewModel>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.GivenName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.FamilyName))
+                .ReverseMap()
+                .ForMember(dest => dest.GivenName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.FamilyName, opt => opt.MapFrom(src => src.LastName));
+            CreateMap<ApplicationUser, UserEditViewModel>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.GivenName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.FamilyName))
+                .ReverseMap()
+                .ForMember(dest => dest.GivenName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.FamilyName, opt => opt.MapFrom(src => src.LastName));
 
-            CreateMap<ApplicationUser, MyProfileViewModel>();
+            CreateMap<ApplicationUser, MyProfileViewModel>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.GivenName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.FamilyName));
 
             CreateMap<ApplicationUserClaim, UserClaimDetailsViewModel>();
             CreateMap<ApplicationUserClaim, UserClaimAddViewModel>().ReverseMap();

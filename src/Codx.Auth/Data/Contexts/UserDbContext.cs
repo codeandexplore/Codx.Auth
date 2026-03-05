@@ -46,6 +46,12 @@ namespace Codx.Auth.Data.Contexts
                 .IsRequired();
             });
 
+            builder.Entity<ApplicationUser>(b => {
+                b.Property(e => e.GivenName).HasMaxLength(100);
+                b.Property(e => e.MiddleName).HasMaxLength(100);
+                b.Property(e => e.FamilyName).HasMaxLength(100);
+            });
+
             builder.Entity<ApplicationRole>(b => {
                 b.HasMany(e => e.UserRoles)
                 .WithOne(e => e.Role)
