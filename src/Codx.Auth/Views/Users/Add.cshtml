@@ -41,6 +41,21 @@
                         <input asp-for="@Model.Email" class="form-control" />
                     </div>
 
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label asp-for="@Model.FirstName"></label>
+                            <input asp-for="@Model.FirstName" class="form-control" />
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="@Model.MiddleName"></label>
+                            <input asp-for="@Model.MiddleName" class="form-control" />
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="@Model.LastName"></label>
+                            <input asp-for="@Model.LastName" class="form-control" />
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label>Password</label>
                         <input asp-for="@Model.Password" type="password" class="form-control" />

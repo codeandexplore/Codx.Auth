@@ -107,7 +107,10 @@ namespace Codx.Auth.Controllers
             var record = new ApplicationUser
             {
                 UserName = model.UserName,
-                Email = model.Email
+                Email = model.Email,
+                GivenName = model.FirstName,
+                MiddleName = model.MiddleName,
+                FamilyName = model.LastName
             };
 
             var result = await _userManager.CreateAsync(record, model.Password).ConfigureAwait(false);
@@ -143,6 +146,9 @@ namespace Codx.Auth.Controllers
                 UserName = record.UserName,
                 Email = record.Email,
                 DefaultCompanyId = record.DefaultCompanyId,
+                FirstName = record.GivenName,
+                MiddleName = record.MiddleName,
+                LastName = record.FamilyName,
                 CompanySelectOptions = companySelectOptions
             };
 
@@ -158,6 +164,9 @@ namespace Codx.Auth.Controllers
             {
                 record.Email = viewmodel.Email;
                 record.DefaultCompanyId = viewmodel.DefaultCompanyId;
+                record.GivenName = viewmodel.FirstName;
+                record.MiddleName = viewmodel.MiddleName;
+                record.FamilyName = viewmodel.LastName;
                 var result = await _userManager.UpdateAsync(record);
 
                 if (result.Succeeded)

@@ -48,13 +48,24 @@ namespace Codx.Auth.ViewModels
 
     public class BaseUserEditViewModel
     {
-
         [Required]
         [StringLength(256)]
         public string UserName { get; set; }
 
         [StringLength(256)]
         public string Email { get; set; }
+
+        [StringLength(100)]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [StringLength(100)]
+        [Display(Name = "Middle Name")]
+        public string MiddleName { get; set; }
+
+        [StringLength(100)]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
 
         [StringLength(256)]
         public string PhoneNumber { get; set; }

@@ -81,6 +81,7 @@ namespace Codx.Auth.Controllers
                 {
                     Email = model.Email,
                     FirstName = model.FirstName,
+                    MiddleName = model.MiddleName,
                     LastName = model.LastName,
                     Password = model.Password,
                     ConfirmPassword = model.ConfirmPassword,

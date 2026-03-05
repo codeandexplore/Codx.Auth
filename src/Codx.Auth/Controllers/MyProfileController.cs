@@ -49,8 +49,6 @@ namespace Codx.Auth.Controllers
             var user = _userManager.Users.FirstOrDefault(o => o.Id == User.GetUserId());
 
             var viewModel = _mapper.Map<MyProfileViewModel>(user);
-            viewModel.FirstName = User.GetUserFirstName();
-            viewModel.LastName = User.GetUserLastName();
 
             if(user.DefaultCompanyId.HasValue)
             {
