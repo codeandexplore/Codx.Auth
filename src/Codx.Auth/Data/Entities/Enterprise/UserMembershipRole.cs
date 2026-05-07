@@ -8,6 +8,8 @@ namespace Codx.Auth.Data.Entities.Enterprise
         public Guid MembershipId { get; set; }
         public int RoleId { get; set; }
         public string Status { get; set; }
+        public DateTime? StatusChangedAt { get; set; }
+        public Guid? StatusChangedBy { get; set; }
         public DateTime AssignedAt { get; set; }
         public Guid AssignedByUserId { get; set; }
 

@@ -17,5 +17,8 @@ namespace Codx.Auth.Data.Entities.AspNet
         public string GivenName { get; set; }
         public string MiddleName { get; set; }
         public string FamilyName { get; set; }
+        public string Status { get; set; }
+        public DateTime? StatusChangedAt { get; set; }
+        public Guid? StatusChangedBy { get; set; }
     }
 }

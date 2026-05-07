@@ -1,5 +1,6 @@
 ﻿using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
 using IdentityModel;
 using Duende.IdentityServer;
@@ -111,6 +112,15 @@ namespace Codx.Auth.Controllers
             // this allows us to to collect any additional claims or properties
             // for the specific protocols used and store them in the local auth cookie.
             // this is typically used to store data needed for signout from those protocols.
+
+            // Check user lifecycle status — suspended or deactivated users may not log in
+            if (user.Status != LifecycleStatus.User.Active)
+            {
+                await _events.RaiseAsync(new UserLoginFailureEvent(user.UserName, "account not active"));
+                await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             var additionalLocalClaims = new List<Claim>();
             var localSignInProps = new AuthenticationProperties();
             ProcessLoginCallback(result, additionalLocalClaims, localSignInProps);

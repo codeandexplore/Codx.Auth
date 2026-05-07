@@ -1,5 +1,6 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
 using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Http;
@@ -154,9 +155,9 @@ namespace Codx.Auth.Extensions
                             return;
                         }
 
-                        var existingRoleCodes = await _db.UserMembershipRoles.AsNoTracking()
-                            .Where(umr => umr.MembershipId == existingMembership.Id && umr.Status == "Active")
-                            .Join(_db.WorkspaceRoleDefinitions.Where(wrd => wrd.IsActive),
+            var existingRoleCodes = await _db.UserMembershipRoles.AsNoTracking()
+                            .Where(umr => umr.MembershipId == existingMembership.Id && umr.Status == LifecycleStatus.MembershipRole.Active)
+                            .Join(_db.WorkspaceRoleDefinitions.Where(wrd => wrd.Status == LifecycleStatus.RoleDefinition.Active),
                                 umr => umr.RoleId,
                                 wrd => wrd.Id,
                                 (umr, wrd) => wrd.Code)
@@ -220,9 +221,9 @@ namespace Codx.Auth.Extensions
             }
 
             // --- Validate tenant exists and is Active ---
-            // Check both Status (new) and IsActive (legacy) so tenants created either way are accepted.
+            // Check Status (new lifecycle column) so only Active tenants are accepted.
             var tenant = await _db.Tenants.AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Id == tenantId && (t.Status == "Active" || t.IsActive));
+                .FirstOrDefaultAsync(t => t.Id == tenantId && t.Status == LifecycleStatus.Tenant.Active);
 
             if (tenant == null)
             {
@@ -244,7 +245,7 @@ namespace Codx.Auth.Extensions
                 companyId = parsedCompanyId;
             }
 
-            // --- Cross-tenant ownership check when company context is requested ---
+            // --- Validate company is Active when company context is requested ---
             if (companyId.HasValue && workspaceContextType == "company")
             {
                 var company = await _db.Companies.AsNoTracking()
@@ -254,6 +255,15 @@ namespace Codx.Auth.Extensions
                 {
                     await _audit.LogAsync("TokenIssuanceFailed", userId: userId, tenantId: tenantId,
                         companyId: companyId, details: "Company does not belong to requested tenant",
+                        clientId: clientId);
+                    Fail(context, "access_denied");
+                    return;
+                }
+
+                if (company.Status != LifecycleStatus.Company.Active)
+                {
+                    await _audit.LogAsync("TokenIssuanceFailed", userId: userId, tenantId: tenantId,
+                        companyId: companyId, details: "Company is not Active",
                         clientId: clientId);
                     Fail(context, "access_denied");
                     return;
@@ -288,8 +298,8 @@ namespace Codx.Auth.Extensions
 
             // --- Resolve workspace role codes ---
             var roleCodes = await _db.UserMembershipRoles.AsNoTracking()
-                .Where(umr => umr.MembershipId == membership.Id && umr.Status == "Active")
-                .Join(_db.WorkspaceRoleDefinitions.Where(wrd => wrd.IsActive),
+                .Where(umr => umr.MembershipId == membership.Id && umr.Status == LifecycleStatus.MembershipRole.Active)
+                .Join(_db.WorkspaceRoleDefinitions.Where(wrd => wrd.Status == LifecycleStatus.RoleDefinition.Active),
                     umr => umr.RoleId,
                     wrd => wrd.Id,
                     (umr, wrd) => wrd.Code)
@@ -407,7 +417,7 @@ namespace Codx.Auth.Extensions
                         string.Join(", ", requestedScopes));
 
                     appIds = await _db.EnterpriseApplications
-                        .Where(a => a.IsActive && requestedScopes.Contains(a.Id))
+                        .Where(a => a.Status == LifecycleStatus.Application.Active && requestedScopes.Contains(a.Id))
                         .Select(a => a.Id)
                         .ToListAsync();
                 }
@@ -436,7 +446,7 @@ namespace Codx.Auth.Extensions
                 var defaultRoles = await _db.EnterpriseApplicationRoles
                     .Where(r =>
                         appsWithoutRoles.Contains(r.ApplicationId) &&
-                        r.IsActive &&
+                        r.Status == LifecycleStatus.AppRole.Active &&
                         r.IsDefault)
                     .ToListAsync();
 

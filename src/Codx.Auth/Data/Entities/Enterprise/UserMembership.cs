@@ -11,6 +11,8 @@ namespace Codx.Auth.Data.Entities.Enterprise
         public Guid TenantId { get; set; }
         public Guid? CompanyId { get; set; }
         public string Status { get; set; }
+        public DateTime? StatusChangedAt { get; set; }
+        public Guid? StatusChangedBy { get; set; }
         public DateTime JoinedAt { get; set; }
 
         public ApplicationUser User { get; set; }

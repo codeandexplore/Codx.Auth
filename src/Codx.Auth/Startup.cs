@@ -8,6 +8,7 @@ using Codx.Auth.Mappings;
 using Codx.Auth.Services;
 using Codx.Auth.Services.Interfaces;
 using Codx.Auth.Infrastructure;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Infrastructure.Theming;
 using Duende.IdentityServer;
 using Microsoft.AspNetCore.Builder;
@@ -102,6 +103,10 @@ namespace Codx.Auth
             services.AddScoped<IInvitationService, InvitationService>();
             services.AddScoped<IWorkspaceInitializationService, WorkspaceInitializationService>();
             services.AddHostedService<InvitationExpiryService>();
+
+            // Lifecycle infrastructure (spec 004)
+            services.AddSingleton<LifecycleTransitionGuard>();
+            services.AddScoped<ILifecycleCascadeService, LifecycleCascadeService>();
             services.AddProblemDetails();
 
             // Configure external authentication providers

@@ -4,6 +4,7 @@ using Codx.Auth.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Codx.Auth.Data.Migrations.Users
 {
     [DbContext(typeof(UserDbContext))]
-    partial class UserDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506143745_MakeStatusColumnsNotNull")]
+    partial class MakeStatusColumnsNotNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -378,7 +381,9 @@ namespace Codx.Auth.Data.Migrations.Users
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId", "TemplateType")
-                        .HasDatabaseName("IX_EmailTemplates_TenantId_TemplateType");
+                        .IsUnique()
+                        .HasDatabaseName("IX_EmailTemplates_TenantId_TemplateType")
+                        .HasFilter("[TenantId] IS NOT NULL");
 
                     b.HasIndex("TemplateType", "TenantId", "Status")
                         .HasDatabaseName("IX_EmailTemplates_Active");

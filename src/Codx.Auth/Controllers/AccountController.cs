@@ -5,6 +5,7 @@ using Codx.Auth.Configuration;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
 using Codx.Auth.Services.Interfaces;
 using Codx.Auth.ViewModels;
@@ -478,7 +479,17 @@ namespace Codx.Auth.Controllers
                         var lockedVm = await BuildLoginViewModelAsync(model);
                         return View(lockedVm);
                     }
-                    
+
+                    // Check user lifecycle status — suspended or deactivated users may not log in
+                    if (user.Status != LifecycleStatus.User.Active)
+                    {
+                        await _events.RaiseAsync(new UserLoginFailureEvent(model.Username,
+                            "account not active", clientId: context?.Client.ClientId));
+                        ModelState.AddModelError(string.Empty, "Your account is not active. Please contact support.");
+                        var statusVm = await BuildLoginViewModelAsync(model);
+                        return View(statusVm);
+                    }
+
                     // Validate password without signing in
                     var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
                     

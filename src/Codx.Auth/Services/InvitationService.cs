@@ -1,6 +1,7 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Models;
 using Codx.Auth.Models.Email;
 using Codx.Auth.Services.Interfaces;
@@ -56,7 +57,7 @@ namespace Codx.Auth.Services
 
             // Validate all role IDs exist and are active
             var roles = await _context.WorkspaceRoleDefinitions
-                .Where(r => roleIds.Contains(r.Id) && r.IsActive)
+                .Where(r => roleIds.Contains(r.Id) && r.Status == LifecycleStatus.RoleDefinition.Active)
                 .ToListAsync();
             if (roles.Count != roleIds.Count)
                 return (false, "One or more role IDs are invalid or inactive.");
@@ -200,13 +201,13 @@ namespace Codx.Auth.Services
                     UserId = userId,
                     TenantId = invitation.TenantId,
                     CompanyId = invitation.CompanyId,
-                    Status = "Active",
+                    Status = LifecycleStatus.Membership.Active,
                     JoinedAt = DateTime.UtcNow,
                     MembershipRoles = invitation.InvitationRoles.Select(ir => new UserMembershipRole
                     {
                         Id = Guid.NewGuid(),
                         RoleId = ir.RoleId,
-                        Status = "Active",
+                        Status = LifecycleStatus.MembershipRole.Active,
                         AssignedAt = DateTime.UtcNow,
                         AssignedByUserId = invitation.InvitedByUserId
                     }).ToList()

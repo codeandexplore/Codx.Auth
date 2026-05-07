@@ -1,5 +1,6 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -42,21 +43,23 @@ namespace Codx.Auth.Services
         {
             var typeString = type.ToString();
 
-            // 1. Tenant override
+            // 1. Tenant override — Active templates only
             if (tenantId.HasValue)
             {
                 var tenantTemplate = await _context.EmailTemplates
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString, ct);
+                    .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString
+                        && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
 
                 if (tenantTemplate is not null)
                     return ApplyPlaceholders(tenantTemplate.Body, context);
             }
 
-            // 2. Global default
+            // 2. Global default — Active templates only
             var globalTemplate = await _context.EmailTemplates
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString, ct);
+                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString
+                    && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
 
             if (globalTemplate is not null)
                 return ApplyPlaceholders(globalTemplate.Body, context);
@@ -72,7 +75,8 @@ namespace Codx.Auth.Services
             var typeString = type.ToString();
             return await _context.EmailTemplates
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString, ct);
+                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString
+                    && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
         }
 
         public async Task<EmailTemplate> UpsertGlobalTemplateAsync(
@@ -81,41 +85,48 @@ namespace Codx.Auth.Services
             AssertValid(type, body);
 
             var typeString = type.ToString();
-            var existing = await _context.EmailTemplates
-                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString, ct);
 
-            if (existing is null)
+            await using var tx = await _context.Database.BeginTransactionAsync(ct);
+
+            // Archive the current Active template, if one exists
+            var existing = await _context.EmailTemplates
+                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString
+                    && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
+
+            if (existing is not null)
             {
-                existing = new EmailTemplate
-                {
-                    Id          = Guid.NewGuid(),
-                    TenantId    = null,
-                    TemplateType = typeString,
-                    Body        = body,
-                    CreatedBy   = actorUserId,
-                    CreatedAt   = DateTime.UtcNow
-                };
-                _context.EmailTemplates.Add(existing);
-            }
-            else
-            {
-                existing.Body      = body;
+                existing.Status    = LifecycleStatus.EmailTemplate.Archived;
                 existing.UpdatedBy = actorUserId;
                 existing.UpdatedAt = DateTime.UtcNow;
             }
 
+            // Insert the new Active template
+            var newTemplate = new EmailTemplate
+            {
+                Id           = Guid.NewGuid(),
+                TenantId     = null,
+                TemplateType = typeString,
+                Body         = body,
+                Status       = LifecycleStatus.EmailTemplate.Active,
+                CreatedBy    = actorUserId,
+                CreatedAt    = DateTime.UtcNow
+            };
+            _context.EmailTemplates.Add(newTemplate);
+
             await _context.SaveChangesAsync(ct);
-            return existing;
+            await tx.CommitAsync(ct);
+            return newTemplate;
         }
 
         public async Task DeleteGlobalTemplateAsync(EmailTemplateType type, CancellationToken ct = default)
         {
             var typeString = type.ToString();
             var template = await _context.EmailTemplates
-                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString, ct);
+                .FirstOrDefaultAsync(t => t.TenantId == null && t.TemplateType == typeString
+                    && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
 
             if (template is null)
-                throw new InvalidOperationException($"No global template found for type '{typeString}'.");
+                throw new InvalidOperationException($"No active global template found for type '{typeString}'.");
 
             _context.EmailTemplates.Remove(template);
             await _context.SaveChangesAsync(ct);
@@ -129,7 +140,8 @@ namespace Codx.Auth.Services
             var typeString = type.ToString();
             return await _context.EmailTemplates
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString, ct);
+                .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString
+                    && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
         }
 
         public async Task<EmailTemplate> UpsertTenantTemplateAsync(
@@ -138,31 +150,37 @@ namespace Codx.Auth.Services
             AssertValid(type, body);
 
             var typeString = type.ToString();
-            var existing = await _context.EmailTemplates
-                .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString, ct);
 
-            if (existing is null)
+            await using var tx = await _context.Database.BeginTransactionAsync(ct);
+
+            // Archive the current Active tenant template, if one exists
+            var existing = await _context.EmailTemplates
+                .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString
+                    && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
+
+            if (existing is not null)
             {
-                existing = new EmailTemplate
-                {
-                    Id           = Guid.NewGuid(),
-                    TenantId     = tenantId,
-                    TemplateType = typeString,
-                    Body         = body,
-                    CreatedBy    = actorUserId,
-                    CreatedAt    = DateTime.UtcNow
-                };
-                _context.EmailTemplates.Add(existing);
-            }
-            else
-            {
-                existing.Body      = body;
+                existing.Status    = LifecycleStatus.EmailTemplate.Archived;
                 existing.UpdatedBy = actorUserId;
                 existing.UpdatedAt = DateTime.UtcNow;
             }
 
+            // Insert the new Active template
+            var newTemplate = new EmailTemplate
+            {
+                Id           = Guid.NewGuid(),
+                TenantId     = tenantId,
+                TemplateType = typeString,
+                Body         = body,
+                Status       = LifecycleStatus.EmailTemplate.Active,
+                CreatedBy    = actorUserId,
+                CreatedAt    = DateTime.UtcNow
+            };
+            _context.EmailTemplates.Add(newTemplate);
+
             await _context.SaveChangesAsync(ct);
-            return existing;
+            await tx.CommitAsync(ct);
+            return newTemplate;
         }
 
         public async Task DeleteTenantTemplateAsync(
@@ -170,10 +188,11 @@ namespace Codx.Auth.Services
         {
             var typeString = type.ToString();
             var template = await _context.EmailTemplates
-                .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString, ct);
+                .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TemplateType == typeString
+                    && t.Status == LifecycleStatus.EmailTemplate.Active, ct);
 
             if (template is null)
-                throw new InvalidOperationException($"No tenant template found for type '{typeString}' and tenant '{tenantId}'.");
+                throw new InvalidOperationException($"No active tenant template found for type '{typeString}' and tenant '{tenantId}'.");
 
             _context.EmailTemplates.Remove(template);
             await _context.SaveChangesAsync(ct);

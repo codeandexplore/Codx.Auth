@@ -1,5 +1,6 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Models;
 using Codx.Auth.Services;
 using Codx.Auth.ViewModels.EmailTemplates;
@@ -96,7 +97,7 @@ namespace Codx.Auth.Controllers
             string? tenantName = null;
             if (tenantId.HasValue)
                 tenantName = (await _db.Tenants.AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Id == tenantId.Value && !t.IsDeleted, ct))?.Name;
+                    .FirstOrDefaultAsync(t => t.Id == tenantId.Value && t.Status != LifecycleStatus.Tenant.Cancelled, ct))?.Name;
 
             return View(new EmailTemplateIndexViewModel
             {
@@ -218,7 +219,7 @@ namespace Codx.Auth.Controllers
             string? tenantName = null;
             if (tenantId.HasValue)
                 tenantName = (await _db.Tenants.AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Id == tenantId.Value && !t.IsDeleted, ct))?.Name ?? string.Empty;
+                    .FirstOrDefaultAsync(t => t.Id == tenantId.Value && t.Status != LifecycleStatus.Tenant.Cancelled, ct))?.Name ?? string.Empty;
 
             return View(new EmailTemplateDeleteViewModel
             {
@@ -301,9 +302,9 @@ namespace Codx.Auth.Controllers
                 m.UserId == userId
                 && m.TenantId == tenantId.Value
                 && m.CompanyId == null
-                && m.Status == "Active"
+                && m.Status == LifecycleStatus.Membership.Active
                 && m.MembershipRoles.Any(r =>
-                    r.Status == "Active" &&
+                    r.Status == LifecycleStatus.MembershipRole.Active &&
                     (r.RoleDefinition.Code == "TENANT_OWNER" || r.RoleDefinition.Code == "TENANT_ADMIN")));
         }
 

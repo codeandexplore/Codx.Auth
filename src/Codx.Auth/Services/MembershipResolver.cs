@@ -1,5 +1,6 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -25,16 +26,16 @@ namespace Codx.Auth.Services
                     m.UserId == userId &&
                     m.TenantId == tenantId &&
                     m.CompanyId == companyId &&
-                    m.Status == "Active");
+                    m.Status == LifecycleStatus.Membership.Active);
         }
 
         public async Task<IReadOnlyList<string>> ResolveWorkspaceRolesAsync(Guid membershipId)
         {
             var codes = await _context.UserMembershipRoles
                 .AsNoTracking()
-                .Where(umr => umr.MembershipId == membershipId && umr.Status == "Active")
+                .Where(umr => umr.MembershipId == membershipId && umr.Status == LifecycleStatus.MembershipRole.Active)
                 .Join(
-                    _context.WorkspaceRoleDefinitions.Where(wrd => wrd.IsActive),
+                    _context.WorkspaceRoleDefinitions.Where(wrd => wrd.Status == LifecycleStatus.RoleDefinition.Active),
                     umr => umr.RoleId,
                     wrd => wrd.Id,
                     (umr, wrd) => wrd.Code)
@@ -47,7 +48,7 @@ namespace Codx.Auth.Services
         {
             var memberships = await _context.UserMemberships
                 .AsNoTracking()
-                .Where(m => m.UserId == userId && m.Status == "Active")
+                .Where(m => m.UserId == userId && m.Status == LifecycleStatus.Membership.Active)
                 .Include(m => m.MembershipRoles)
                     .ThenInclude(mr => mr.RoleDefinition)
                 .ToListAsync();
