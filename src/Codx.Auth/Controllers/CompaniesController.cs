@@ -2,6 +2,7 @@ using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,10 +19,13 @@ namespace Codx.Auth.Controllers
     {
         private readonly UserDbContext _context;
         protected readonly IMapper _mapper;
-        public CompaniesController(UserDbContext context, IMapper mapper)
+        private readonly ILifecycleCascadeService _cascade;
+
+        public CompaniesController(UserDbContext context, IMapper mapper, ILifecycleCascadeService cascade)
         {
             _context = context;
             _mapper = mapper;
+            _cascade = cascade;
         }
 
         public IActionResult GetCompaniesTableData(Guid tenantid, string search, string sort, string order, int offset, int limit)
@@ -74,6 +78,7 @@ namespace Codx.Auth.Controllers
                 var record = _mapper.Map<Company>(viewModel);
                 record.IsActive = true;
                 record.IsDeleted = false;
+                record.Status = LifecycleStatus.Company.Active;
                 record.CreatedBy = userId;
                 record.CreatedAt = DateTime.Now;
                       
@@ -151,27 +156,22 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(CompanyEditViewModel viewModel)
         {
-            var isRecordFound = _context.Companies.Any(o => o.Id == viewModel.Id && !o.IsDeleted);
-            if (ModelState.IsValid && isRecordFound)
+            var record = _context.Companies.FirstOrDefault(o => o.Id == viewModel.Id && !o.IsDeleted);
+            if (ModelState.IsValid && record != null)
             {
-                var record = _context.Companies.FirstOrDefault(o => o.Id == viewModel.Id && !o.IsDeleted);
                 record.IsDeleted = true;
                 record.IsActive = false;
-                record.Status = "Cancelled";
-                record.UpdatedAt = DateTime.Now;
+                record.Status = LifecycleStatus.Company.Cancelled;
+                record.UpdatedAt = DateTime.UtcNow;
                 record.UpdatedBy = User.GetUserId();
 
-                _context.Companies.Update(record);
+                // Cascade: cancel memberships, membership roles, and workspace sessions under this company
+                await _cascade.CancelCompanyAsync(record.Id, User.GetUserId(), default);
 
-                var result = await _context.SaveChangesAsync().ConfigureAwait(false);
-                if (result > 0)
-                {
-                    return RedirectToAction("Details", "Tenants", new { id = viewModel.TenantId });
-                }
-
-                ModelState.AddModelError("", "Failed");
+                return RedirectToAction("Details", "Tenants", new { id = viewModel.TenantId });
             }
 
+            ModelState.AddModelError("", "Failed");
             return View(viewModel);
         }
     }

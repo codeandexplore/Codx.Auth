@@ -12,6 +12,7 @@ namespace Codx.Auth.Data.Entities.Enterprise
         public DateTime CreatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public string Status { get; set; }
 
         public Tenant Tenant { get; set; }
     }

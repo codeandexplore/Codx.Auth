@@ -1,5 +1,6 @@
 ﻿using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,10 +39,10 @@ namespace Codx.Auth.Controllers.API
 
             var memberships = await _db.UserMemberships
                 .Where(m => m.UserId == userId
-                         && m.Status == "Active"
+                         && m.Status == LifecycleStatus.Membership.Active
                          && m.CompanyId.HasValue
-                         && m.Tenant.Status == "Active"
-                         && m.Company.Status == "Active")
+                         && m.Tenant.Status == LifecycleStatus.Tenant.Active
+                         && m.Company.Status == LifecycleStatus.Company.Active)
                 .Include(m => m.Tenant)
                 .Include(m => m.Company)
                 .Include(m => m.MembershipRoles)
@@ -139,7 +140,7 @@ namespace Codx.Auth.Controllers.API
                 .Where(m =>
                     m.CompanyId == companyId &&
                     m.TenantId == tenantId &&
-                    m.Status == "Active")
+                    m.Status == LifecycleStatus.Membership.Active)
                 .Include(m => m.User)
                 .AsNoTracking()
                 .Select(m => new

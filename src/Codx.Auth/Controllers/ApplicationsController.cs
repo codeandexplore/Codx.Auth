@@ -1,5 +1,6 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
 using Codx.Auth.ViewModels.Applications;
 using Microsoft.AspNetCore.Authorization;
@@ -57,7 +58,7 @@ namespace Codx.Auth.Controllers
                 .ToListAsync();
 
             var allTenants = await _db.Tenants
-                .Where(t => t.IsActive)
+                .Where(t => t.Status == LifecycleStatus.Tenant.Active)
                 .OrderBy(t => t.Name)
                 .ToListAsync();
 
@@ -106,6 +107,7 @@ namespace Codx.Auth.Controllers
                 Description = model.Description,
                 AllowSelfRegistration = model.AllowSelfRegistration,
                 IsActive = true,
+                Status = LifecycleStatus.Application.Active,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = actorId
             };
@@ -140,6 +142,7 @@ namespace Codx.Auth.Controllers
                 Name = model.Name,
                 Description = model.Description,
                 IsActive = true,
+                Status = LifecycleStatus.AppRole.Active,
                 IsDefault = model.IsDefault,
                 CreatedAt = DateTime.UtcNow
             };
@@ -161,6 +164,7 @@ namespace Codx.Auth.Controllers
             if (role == null) return NotFound();
 
             role.IsActive = false;
+            role.Status = LifecycleStatus.AppRole.Inactive;
             await _db.SaveChangesAsync();
 
             return RedirectToAction("Details", new { id });
@@ -214,6 +218,7 @@ namespace Codx.Auth.Controllers
             role.Description = model.Description;
             role.IsDefault = model.IsDefault;
             role.IsActive = model.IsActive;
+            role.Status = model.IsActive ? LifecycleStatus.AppRole.Active : LifecycleStatus.AppRole.Inactive;
 
             await _db.SaveChangesAsync();
 
@@ -237,7 +242,7 @@ namespace Codx.Auth.Controllers
                 .Where(m =>
                     m.CompanyId == companyId &&
                     m.TenantId == tenantId &&
-                    m.Status == "Active")
+                    m.Status == LifecycleStatus.Membership.Active)
                 .Include(m => m.User)
                 .AsNoTracking()
                 .Select(m => new
@@ -264,7 +269,8 @@ namespace Codx.Auth.Controllers
                 .Where(uar =>
                     uar.ApplicationId == appId &&
                     uar.TenantId == tenantId &&
-                    uar.CompanyId == companyId)
+                    uar.CompanyId == companyId &&
+                    uar.Status == LifecycleStatus.RoleAssignment.Active)
                 .Include(uar => uar.Role)
                 .AsNoTracking()
                 .ToListAsync();
@@ -316,7 +322,7 @@ namespace Codx.Auth.Controllers
 
             // Validate role belongs to this app and is active
             var roleExists = await _db.EnterpriseApplicationRoles
-                .AnyAsync(r => r.Id == model.RoleId && r.ApplicationId == appId && r.IsActive);
+                .AnyAsync(r => r.Id == model.RoleId && r.ApplicationId == appId && r.Status == LifecycleStatus.AppRole.Active);
             if (!roleExists)
             {
                 TempData["AssignError"] = "Selected role not found or inactive.";

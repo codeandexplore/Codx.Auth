@@ -12,6 +12,9 @@ namespace Codx.Auth.Data.Entities.Enterprise
         public Guid RoleId { get; set; }
         public DateTime AssignedAt { get; set; }
         public Guid AssignedByUserId { get; set; }
+        public string Status { get; set; }
+        public DateTime? RevokedAt { get; set; }
+        public Guid? RevokedByUserId { get; set; }
 
         public EnterpriseApplicationRole Role { get; set; }
     }

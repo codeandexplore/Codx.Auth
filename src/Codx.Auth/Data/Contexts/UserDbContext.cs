@@ -68,6 +68,7 @@ namespace Codx.Auth.Data.Contexts
                 b.Property(e => e.GivenName).HasMaxLength(100);
                 b.Property(e => e.MiddleName).HasMaxLength(100);
                 b.Property(e => e.FamilyName).HasMaxLength(100);
+                b.Property(e => e.Status).HasMaxLength(20).IsRequired();
             });
 
             builder.Entity<Codx.Auth.Data.Entities.AspNet.ApplicationRole>(b => {
@@ -95,7 +96,8 @@ namespace Codx.Auth.Data.Contexts
                 entity.Property(e => e.Name).HasMaxLength(100);
                 entity.Property(e => e.Slug).HasMaxLength(100);
                 entity.HasIndex(e => e.Slug).IsUnique();
-                entity.Property(e => e.Status).HasMaxLength(20);
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+                entity.HasIndex(e => e.Status).HasDatabaseName("IX_Tenants_Status");
                 entity.Property(e => e.Email).HasMaxLength(100);
                 entity.Property(e => e.Phone).HasMaxLength(15);
                 entity.Property(e => e.Address).HasMaxLength(200);
@@ -120,7 +122,8 @@ namespace Codx.Auth.Data.Contexts
             builder.Entity<Company>(entity =>
             {
                 entity.Property(e => e.Name).HasMaxLength(100);
-                entity.Property(e => e.Status).HasMaxLength(20);
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+                entity.HasIndex(e => new { e.Status, e.TenantId }).HasDatabaseName("IX_Companies_Status_Tenant");
                 entity.Property(e => e.Email).HasMaxLength(100);
                 entity.Property(e => e.Phone).HasMaxLength(15);
                 entity.Property(e => e.Address).HasMaxLength(200);
@@ -155,6 +158,7 @@ namespace Codx.Auth.Data.Contexts
                 entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
                 entity.Property(e => e.ScopeType).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
                 entity.HasIndex(e => e.Code).IsUnique();
             });
 
@@ -163,6 +167,7 @@ namespace Codx.Auth.Data.Contexts
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+                entity.HasIndex(e => new { e.UserId, e.Status, e.TenantId }).HasDatabaseName("IX_UserMemberships_Status_User");
                 entity.HasIndex(e => new { e.UserId, e.TenantId, e.CompanyId }).IsUnique();
 
                 entity.HasOne(e => e.User)
@@ -238,6 +243,7 @@ namespace Codx.Auth.Data.Contexts
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasMaxLength(100);
                 entity.Property(e => e.DisplayName).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
             });
 
             // --- EnterpriseApplicationRole ---
@@ -246,6 +252,7 @@ namespace Codx.Auth.Data.Contexts
                 entity.ToTable("EnterpriseApplicationRoles");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
                 entity.HasIndex(e => new { e.ApplicationId, e.Name }).IsUnique();
 
                 entity.HasOne(e => e.Application)
@@ -258,6 +265,8 @@ namespace Codx.Auth.Data.Contexts
             builder.Entity<UserApplicationRole>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+                entity.HasIndex(e => new { e.UserId, e.TenantId, e.CompanyId, e.Status }).HasDatabaseName("IX_UserApplicationRoles_Status_User");
                 entity.HasIndex(e => new { e.UserId, e.TenantId, e.CompanyId, e.ApplicationId, e.RoleId }).IsUnique();
 
                 entity.HasOne(e => e.Role)
@@ -305,9 +314,12 @@ namespace Codx.Auth.Data.Contexts
                     .HasColumnType("nvarchar(max)")
                     .IsRequired();
 
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
                 entity.HasIndex(e => new { e.TenantId, e.TemplateType })
-                    .IsUnique()
                     .HasDatabaseName("IX_EmailTemplates_TenantId_TemplateType");
+
+                entity.HasIndex(e => new { e.TemplateType, e.TenantId, e.Status })
+                    .HasDatabaseName("IX_EmailTemplates_Active");
 
                 entity.HasOne(e => e.Tenant)
                     .WithMany()
