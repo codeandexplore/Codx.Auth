@@ -3,6 +3,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Models.Common;
 using Codx.Auth.Models.DTOs;
 using Codx.Auth.Services.Interfaces;
@@ -280,7 +281,7 @@ namespace Codx.Auth.Controllers.API
 
                 var query = _userdbcontext.Companies
                     .Include(o => o.Tenant)
-                    .Where(c => c.TenantId == tenantManager.TenantId && !c.IsDeleted);
+                    .Where(c => c.TenantId == tenantManager.TenantId && c.Status != LifecycleStatus.Company.Cancelled);
 
                 // Create pagination filter from page and pageSize parameters
                 var filter = _filterService.CreateFilter(page, pageSize, search, sort, order);
@@ -742,7 +743,7 @@ namespace Codx.Auth.Controllers.API
                 var query = _userdbcontext.UserCompanies
                     .Include(o => o.Company)
                     .ThenInclude(c => c.Tenant)
-                    .Where(o => o.UserId == userId && !o.Company.IsDeleted);
+                    .Where(o => o.UserId == userId && o.Company.Status != LifecycleStatus.Company.Cancelled);
 
                 // Create pagination filter from page and pageSize parameters
                 var filter = _filterService.CreateFilter(page, pageSize, search, sort, order);

@@ -4,6 +4,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer;
 using IdentityModel;
@@ -235,7 +236,7 @@ namespace Codx.Auth.Controllers
                 return RedirectToAction("Index");
             }
 
-            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -250,7 +251,7 @@ namespace Codx.Auth.Controllers
             if (!HasTenantRole(id, "TENANT_OWNER", "TENANT_ADMIN"))
                 return Forbid();
 
-            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -265,7 +266,7 @@ namespace Codx.Auth.Controllers
             if (!HasTenantRole(viewModel.Id, "TENANT_OWNER", "TENANT_ADMIN"))
                 return Forbid();
 
-            var isRecordFound = await _userdbcontext.Tenants.AsNoTracking().AnyAsync(u => u.Id == viewModel.Id && !u.IsDeleted);
+            var isRecordFound = await _userdbcontext.Tenants.AsNoTracking().AnyAsync(u => u.Id == viewModel.Id && u.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (ModelState.IsValid && isRecordFound)
             {
@@ -294,7 +295,7 @@ namespace Codx.Auth.Controllers
             if (!HasTenantRole(id, "TENANT_OWNER"))
                 return Forbid();
 
-            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -310,7 +311,7 @@ namespace Codx.Auth.Controllers
             if (!HasTenantRole(viewModel.Id, "TENANT_OWNER"))
                 return Forbid();
 
-            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == viewModel.Id && !o.IsDeleted);
+            var record = _userdbcontext.Tenants.FirstOrDefault(o => o.Id == viewModel.Id && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -320,9 +321,7 @@ namespace Codx.Auth.Controllers
                 var now = DateTime.Now;
 
                 // Soft-delete the tenant
-                record.IsDeleted = true;
-                record.IsActive = false;
-                record.Status = "Cancelled";
+                record.Status = LifecycleStatus.Tenant.Cancelled;
                 record.UpdatedAt = now;
                 record.UpdatedBy = userId;
                 _userdbcontext.Tenants.Update(record);
@@ -333,9 +332,7 @@ namespace Codx.Auth.Controllers
                     .ToListAsync().ConfigureAwait(false);
                 foreach (var company in companies)
                 {
-                    company.IsDeleted = true;
-                    company.IsActive = false;
-                    company.Status = "Cancelled";
+                    company.Status = LifecycleStatus.Company.Cancelled;
                     company.UpdatedAt = now;
                     company.UpdatedBy = userId;
                 }
@@ -401,7 +398,7 @@ namespace Codx.Auth.Controllers
             if (!HasTenantRole(tenantid, "TENANT_OWNER", "TENANT_ADMIN", "TENANT_MANAGER"))
                 return Forbid();
 
-            var query = _userdbcontext.Companies.Where(o => !o.IsDeleted && o.TenantId == tenantid);
+            var query = _userdbcontext.Companies.Where(o => o.Status != LifecycleStatus.Company.Cancelled && o.TenantId == tenantid);
             var data = query.OrderBy(o => o.Name).Skip(offset).Take(limit).ToList();
 
             var viewModel = _mapper.Map<List<CompanyDetailsViewModel>>(data);
@@ -415,7 +412,7 @@ namespace Codx.Auth.Controllers
 
         public IActionResult ManageTenantCompanyDetails(Guid id)
         {
-            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Company.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -430,7 +427,7 @@ namespace Codx.Auth.Controllers
 
         public async Task<IActionResult> ManageTenantCompanyAdd(Guid tenantid)
         {
-            var tenant = await _userdbcontext.Tenants.FirstOrDefaultAsync(o => o.Id == tenantid && !o.IsDeleted);
+            var tenant = await _userdbcontext.Tenants.FirstOrDefaultAsync(o => o.Id == tenantid && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (tenant == null) return NotFound();
 
@@ -455,8 +452,7 @@ namespace Codx.Auth.Controllers
                 var userId = User.GetUserId();
 
                 var record = _mapper.Map<Company>(viewModel);
-                record.IsActive = true;
-                record.IsDeleted = false;
+                record.Status = LifecycleStatus.Company.Active;
                 record.CreatedBy = userId;
                 record.CreatedAt = DateTime.Now;
 
@@ -477,7 +473,7 @@ namespace Codx.Auth.Controllers
 
         public async Task<IActionResult> ManageTenantCompanyEdit(Guid id)
         {
-            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Company.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -492,7 +488,7 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> ManageTenantCompanyEdit(CompanyEditViewModel viewModel)
         {
-            var existingRecord = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(u => u.Id == viewModel.Id && !u.IsDeleted);
+            var existingRecord = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(u => u.Id == viewModel.Id && u.Status != LifecycleStatus.Company.Cancelled);
             var isRecordFound = existingRecord != null;
 
             if (isRecordFound && !HasTenantRole(existingRecord.TenantId, "TENANT_OWNER", "TENANT_ADMIN"))
@@ -523,7 +519,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> ManageTenantCompanyDelete(Guid id)
         {
-            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Company.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -538,7 +534,7 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> ManageTenantCompanyDelete(CompanyEditViewModel viewModel)
         {
-            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == viewModel.Id && !o.IsDeleted);
+            var record = _userdbcontext.Companies.FirstOrDefault(o => o.Id == viewModel.Id && o.Status != LifecycleStatus.Company.Cancelled);
             var isRecordFound = record != null;
 
             if (isRecordFound && !HasTenantRole(record.TenantId, "TENANT_OWNER", "TENANT_ADMIN"))
@@ -546,9 +542,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                record.IsDeleted = true;
-                record.IsActive = false;
-                record.Status = "Cancelled";
+                record.Status = LifecycleStatus.Company.Cancelled;
                 record.UpdatedAt = DateTime.Now;
                 record.UpdatedBy = User.GetUserId();
 
@@ -568,7 +562,7 @@ namespace Codx.Auth.Controllers
 
         public IActionResult GetManageTenantCompanyUsersTableData(Guid companyid, string search, string sort, string order, int offset, int limit)
         {
-            var company = _userdbcontext.Companies.AsNoTracking().FirstOrDefault(o => o.Id == companyid && !o.IsDeleted);
+            var company = _userdbcontext.Companies.AsNoTracking().FirstOrDefault(o => o.Id == companyid && o.Status != LifecycleStatus.Company.Cancelled);
             if (company == null) return NotFound();
 
             if (!HasTenantRole(company.TenantId, "TENANT_OWNER", "TENANT_ADMIN", "TENANT_MANAGER")
@@ -589,7 +583,7 @@ namespace Codx.Auth.Controllers
 
         public async Task<IActionResult> ManageTenantCompanyUserAdd(Guid companyid)
         {
-            var company = await _userdbcontext.Companies.FirstOrDefaultAsync(o => o.Id == companyid && !o.IsDeleted);
+            var company = await _userdbcontext.Companies.FirstOrDefaultAsync(o => o.Id == companyid && o.Status != LifecycleStatus.Company.Cancelled);
 
             if (company == null) return NotFound();
 
@@ -607,7 +601,7 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> ManageTenantCompanyUserAdd(CompanyUserAddViewModel viewModel, string action)
         {
-            var company = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(o => o.Id == viewModel.CompanyId && !o.IsDeleted);
+            var company = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(o => o.Id == viewModel.CompanyId && o.Status != LifecycleStatus.Company.Cancelled);
             if (company == null) return NotFound();
 
             if (!HasTenantRole(company.TenantId, "TENANT_OWNER", "TENANT_ADMIN")
@@ -677,7 +671,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> ManageTenantCompanyUserDelete(Guid companyid, Guid userid)
         {
-            var company = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(o => o.Id == companyid && !o.IsDeleted);
+            var company = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(o => o.Id == companyid && o.Status != LifecycleStatus.Company.Cancelled);
             if (company == null) return NotFound();
 
             if (!HasTenantRole(company.TenantId, "TENANT_OWNER", "TENANT_ADMIN")
@@ -694,7 +688,7 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> ManageTenantCompanyUserDelete(CompanyUserEditViewModel viewModel)
         {
-            var company = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(o => o.Id == viewModel.CompanyId && !o.IsDeleted);
+            var company = await _userdbcontext.Companies.AsNoTracking().FirstOrDefaultAsync(o => o.Id == viewModel.CompanyId && o.Status != LifecycleStatus.Company.Cancelled);
             if (company == null) return NotFound();
 
             if (!HasTenantRole(company.TenantId, "TENANT_OWNER", "TENANT_ADMIN")

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Codx.Auth.Data.Contexts;
+using Microsoft.AspNetCore.Http;
 using Codx.Auth.Extensions;
 using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
@@ -54,6 +55,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/tenants/{id}/status
         [HttpPatch("tenants/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchTenantStatus(Guid id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -89,6 +94,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/companies/{id}/status
         [HttpPatch("companies/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchCompanyStatus(Guid id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -125,6 +134,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/memberships/{id}/status
         [HttpPatch("memberships/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchMembershipStatus(Guid id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -155,6 +168,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/membership-roles/{id}/status
         [HttpPatch("membership-roles/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchMembershipRoleStatus(Guid id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -177,6 +194,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/users/{id}/status
         [HttpPatch("users/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchUserStatus(Guid id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -206,6 +227,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/enterprise-applications/{id}/status
         [HttpPatch("enterprise-applications/{id}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchEnterpriseApplicationStatus(string id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -217,7 +242,6 @@ namespace Codx.Auth.Controllers.API
             if (!guardResult.IsValid) return InvalidTransition("EnterpriseApplication", app.Status, request.Status);
 
             app.Status = request.Status;
-            app.IsActive = request.Status == LifecycleStatus.Application.Active;
 
             await _db.SaveChangesAsync(ct);
 
@@ -226,6 +250,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/enterprise-application-roles/{id}/status
         [HttpPatch("enterprise-application-roles/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchEnterpriseApplicationRoleStatus(Guid id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -237,7 +265,6 @@ namespace Codx.Auth.Controllers.API
             if (!guardResult.IsValid) return InvalidTransition("EnterpriseApplicationRole", role.Status, request.Status);
 
             role.Status = request.Status;
-            role.IsActive = request.Status == LifecycleStatus.AppRole.Active;
 
             await _db.SaveChangesAsync(ct);
 
@@ -246,6 +273,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/workspace-role-definitions/{id}/status
         [HttpPatch("workspace-role-definitions/{id:int}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchWorkspaceRoleDefinitionStatus(int id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -257,7 +288,6 @@ namespace Codx.Auth.Controllers.API
             if (!guardResult.IsValid) return InvalidTransition("WorkspaceRoleDefinition", roleDef.Status, request.Status);
 
             roleDef.Status = request.Status;
-            roleDef.IsActive = request.Status == LifecycleStatus.RoleDefinition.Active;
 
             await _db.SaveChangesAsync(ct);
 
@@ -266,6 +296,10 @@ namespace Codx.Auth.Controllers.API
 
         // PATCH /api/v1/admin/role-assignments/{id}/status
         [HttpPatch("role-assignments/{id:guid}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> PatchRoleAssignmentStatus(Guid id, [FromBody] StatusTransitionRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

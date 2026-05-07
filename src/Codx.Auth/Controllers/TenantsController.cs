@@ -34,7 +34,7 @@ namespace Codx.Auth.Controllers
 
         public IActionResult GetTenantsTableData(string search, string sort, string order, int offset, int limit)
         {
-            var tenants = _context.Tenants.Where(o => !o.IsDeleted);
+            var tenants = _context.Tenants.Where(o => o.Status != LifecycleStatus.Tenant.Cancelled);
             var tenantList = tenants.OrderBy(o => o.Name).Skip(offset).Take(limit).ToList();
             return Json(new
             {
@@ -46,7 +46,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public IActionResult Details(Guid id) 
         {
-            var record = _context.Tenants.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _context.Tenants.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -69,8 +69,6 @@ namespace Codx.Auth.Controllers
                 var userId = User.GetUserId();
 
                 var record = _mapper.Map<Tenant>(viewModel);
-                record.IsActive = true;
-                record.IsDeleted = false;
                 record.Status = LifecycleStatus.Tenant.Active;
                 record.CreatedBy = userId;
                 record.CreatedAt = DateTime.Now;
@@ -93,7 +91,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            var record = _context.Tenants.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _context.Tenants.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -105,7 +103,7 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(TenantEditViewModel viewModel)
         {
-            var record = await _context.Tenants.FirstOrDefaultAsync(u => u.Id == viewModel.Id && !u.IsDeleted);
+            var record = await _context.Tenants.FirstOrDefaultAsync(u => u.Id == viewModel.Id && u.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (ModelState.IsValid && record != null)
             {
@@ -137,7 +135,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var record = _context.Tenants.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _context.Tenants.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -149,13 +147,11 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(TenantEditViewModel viewModel)
         {
-            var record = _context.Tenants.FirstOrDefault(o => o.Id == viewModel.Id && !o.IsDeleted);
+            var record = _context.Tenants.FirstOrDefault(o => o.Id == viewModel.Id && o.Status != LifecycleStatus.Tenant.Cancelled);
             if (ModelState.IsValid && record != null)
             {
                 var userId = User.GetUserId();
 
-                record.IsDeleted = true;
-                record.IsActive = false;
                 record.Status = LifecycleStatus.Tenant.Cancelled;
                 record.UpdatedAt = DateTime.UtcNow;
                 record.UpdatedBy = userId;

@@ -106,7 +106,6 @@ namespace Codx.Auth.Controllers
                 DisplayName = model.DisplayName,
                 Description = model.Description,
                 AllowSelfRegistration = model.AllowSelfRegistration,
-                IsActive = true,
                 Status = LifecycleStatus.Application.Active,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = actorId
@@ -141,7 +140,6 @@ namespace Codx.Auth.Controllers
                 ApplicationId = id,
                 Name = model.Name,
                 Description = model.Description,
-                IsActive = true,
                 Status = LifecycleStatus.AppRole.Active,
                 IsDefault = model.IsDefault,
                 CreatedAt = DateTime.UtcNow
@@ -163,7 +161,6 @@ namespace Codx.Auth.Controllers
 
             if (role == null) return NotFound();
 
-            role.IsActive = false;
             role.Status = LifecycleStatus.AppRole.Inactive;
             await _db.SaveChangesAsync();
 
@@ -188,7 +185,6 @@ namespace Codx.Auth.Controllers
                 Name = role.Name,
                 Description = role.Description,
                 IsDefault = role.IsDefault,
-                IsActive = role.IsActive
             });
         }
 
@@ -217,8 +213,6 @@ namespace Codx.Auth.Controllers
             role.Name = model.Name;
             role.Description = model.Description;
             role.IsDefault = model.IsDefault;
-            role.IsActive = model.IsActive;
-            role.Status = model.IsActive ? LifecycleStatus.AppRole.Active : LifecycleStatus.AppRole.Inactive;
 
             await _db.SaveChangesAsync();
 

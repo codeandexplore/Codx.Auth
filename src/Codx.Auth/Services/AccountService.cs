@@ -179,8 +179,6 @@ namespace Codx.Auth.Services
                     Email = tenantEmail,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = user.Id,
-                    IsDeleted = false,
-                    IsActive = true,
                     Slug = slug,
                     Status = "Active",
                     Companies = new List<Company>
@@ -192,8 +190,6 @@ namespace Codx.Auth.Services
                             Description = $"{baseName}'s company",
                             CreatedAt = DateTime.UtcNow,
                             CreatedBy = user.Id,
-                            IsDeleted = false,
-                            IsActive = true,
                             Status = "Active",
                         }
                     }

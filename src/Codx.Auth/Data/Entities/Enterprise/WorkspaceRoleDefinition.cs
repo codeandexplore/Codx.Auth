@@ -9,7 +9,6 @@ namespace Codx.Auth.Data.Entities.Enterprise
         public string Code { get; set; }
         public string DisplayName { get; set; }
         public string ScopeType { get; set; }
-        public bool IsActive { get; set; }
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
 

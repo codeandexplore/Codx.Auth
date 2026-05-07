@@ -14,10 +14,8 @@ namespace Codx.Auth.Data.Entities.Enterprise
         public string Theme { get; set; }
         public string Description { get; set; }
         public string Slug { get; set; }
-        /// <summary>Active | Suspended | Cancelled. Replaces legacy IsActive/IsDeleted flags (kept until RemoveLegacyStatusColumns migration).</summary>
+        /// <summary>Active | Suspended | Cancelled.</summary>
         public string Status { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Guid CreatedBy { get; set; }

@@ -231,7 +231,7 @@
         firstApp = false;
         appRolesJson.Append($"\"{app.Id}\":[");
         bool firstRole = true;
-        foreach (var role in app.Roles?.Where(r => r.IsActive) ?? Enumerable.Empty<EnterpriseApplicationRole>())
+        foreach (var role in app.Roles?.Where(r => r.Status == "Active") ?? Enumerable.Empty<EnterpriseApplicationRole>())
         {
             if (!firstRole) appRolesJson.Append(",");
             firstRole = false;

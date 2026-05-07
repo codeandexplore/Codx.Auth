@@ -35,13 +35,6 @@
                 <p class="text-xs text-gray-500">Automatically assigned to new members who have no role yet for this application.</p>
             </div>
         </div>
-        <div class="flex items-start gap-x-3">
-            <input asp-for="IsActive" type="checkbox" class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600" />
-            <div>
-                <label asp-for="IsActive" class="text-sm/6 font-medium text-gray-900">Active</label>
-                <p class="text-xs text-gray-500">Inactive roles cannot be assigned to new users.</p>
-            </div>
-        </div>
         <div class="flex gap-x-3">
             <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">Save</button>
             <a asp-action="Details" asp-route-id="@Model.ApplicationId" class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Cancel</a>

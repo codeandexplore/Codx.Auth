@@ -13,3 +13,7 @@
 /src/Codx.Auth/node_modules
 /test/Codx.Auth.Manual.Test/obj
 /test/Codx.Auth.Manual.Test/bin
+/test/Codx.Auth.Integration.Test/obj
+/test/Codx.Auth.Integration.Test/bin
+/test/Codx.Auth.Unit.Test/obj
+/test/Codx.Auth.Unit.Test/bin
