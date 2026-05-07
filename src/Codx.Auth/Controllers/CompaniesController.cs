@@ -30,7 +30,7 @@ namespace Codx.Auth.Controllers
 
         public IActionResult GetCompaniesTableData(Guid tenantid, string search, string sort, string order, int offset, int limit)
         {
-            var query = _context.Companies.Where(o => !o.IsDeleted && o.TenantId == tenantid);
+            var query = _context.Companies.Where(o => o.Status != LifecycleStatus.Company.Cancelled && o.TenantId == tenantid);
             var data = query.OrderBy(o => o.Name).Skip(offset).Take(limit).ToList();
 
             var viewModel = _mapper.Map<List<CompanyDetailsViewModel>>(data);
@@ -45,7 +45,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public IActionResult Details(Guid id) 
         {
-            var record = _context.Companies.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _context.Companies.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Company.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -57,7 +57,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Add(Guid tenantid)
         {
-            var tenant = await _context.Tenants.FirstOrDefaultAsync(o => o.Id == tenantid && !o.IsDeleted);
+            var tenant = await _context.Tenants.FirstOrDefaultAsync(o => o.Id == tenantid && o.Status != LifecycleStatus.Tenant.Cancelled);
 
             if (tenant == null) return NotFound();
 
@@ -76,8 +76,6 @@ namespace Codx.Auth.Controllers
                 var userId = User.GetUserId();
 
                 var record = _mapper.Map<Company>(viewModel);
-                record.IsActive = true;
-                record.IsDeleted = false;
                 record.Status = LifecycleStatus.Company.Active;
                 record.CreatedBy = userId;
                 record.CreatedAt = DateTime.Now;
@@ -100,7 +98,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            var record = _context.Companies.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _context.Companies.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Company.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -112,7 +110,7 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(CompanyEditViewModel viewModel)
         {
-            var record = await _context.Companies.FirstOrDefaultAsync(u => u.Id == viewModel.Id && !u.IsDeleted);
+            var record = await _context.Companies.FirstOrDefaultAsync(u => u.Id == viewModel.Id && u.Status != LifecycleStatus.Company.Cancelled);
 
             if (ModelState.IsValid && record != null)
             {
@@ -144,7 +142,7 @@ namespace Codx.Auth.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var record = _context.Companies.FirstOrDefault(o => o.Id == id && !o.IsDeleted);
+            var record = _context.Companies.FirstOrDefault(o => o.Id == id && o.Status != LifecycleStatus.Company.Cancelled);
 
             if (record == null) return NotFound();
 
@@ -156,11 +154,9 @@ namespace Codx.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(CompanyEditViewModel viewModel)
         {
-            var record = _context.Companies.FirstOrDefault(o => o.Id == viewModel.Id && !o.IsDeleted);
+            var record = _context.Companies.FirstOrDefault(o => o.Id == viewModel.Id && o.Status != LifecycleStatus.Company.Cancelled);
             if (ModelState.IsValid && record != null)
             {
-                record.IsDeleted = true;
-                record.IsActive = false;
                 record.Status = LifecycleStatus.Company.Cancelled;
                 record.UpdatedAt = DateTime.UtcNow;
                 record.UpdatedBy = User.GetUserId();

@@ -40,7 +40,7 @@
                                 <td><code>@app.Id</code></td>
                                 <td>@app.DisplayName</td>
                                 <td>@(app.AllowSelfRegistration ? "Yes" : "No")</td>
-                                <td>@(app.IsActive ? "Yes" : "No")</td>
+                                <td>@app.Status</td>
                                 <td>
                                     <a href="/Applications/@app.Id" class="btn btn-outline-info btn-sm" title="Show record details"><i class="fa fa-file-alt"></i></a>
                                 </td>

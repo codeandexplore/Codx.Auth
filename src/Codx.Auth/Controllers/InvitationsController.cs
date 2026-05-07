@@ -1,6 +1,7 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
 using Codx.Auth.Services.Interfaces;
 using Codx.Auth.ViewModels.Invitations;
@@ -73,7 +74,7 @@ namespace Codx.Auth.Controllers
             bool isPlatformAdmin = User.IsInRole("PlatformAdministrator");
             bool isTenantOwner = !isPlatformAdmin && IsTenantOwnerForTenant(tenantId);
 
-            var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.IsActive);
+            var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.Status == LifecycleStatus.RoleDefinition.Active);
             if (companyId.HasValue)
                 rolesQuery = rolesQuery.Where(r => r.ScopeType == "Company");
             else
@@ -104,7 +105,7 @@ namespace Codx.Auth.Controllers
 
             if (!ModelState.IsValid)
             {
-                var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.IsActive);
+                var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.Status == LifecycleStatus.RoleDefinition.Active);
                 if (model.CompanyId.HasValue)
                     rolesQuery = rolesQuery.Where(r => r.ScopeType == "Company");
                 else
@@ -128,7 +129,7 @@ namespace Codx.Auth.Controllers
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, error);
-                var rolesQueryErr = _db.WorkspaceRoleDefinitions.Where(r => r.IsActive);
+                var rolesQueryErr = _db.WorkspaceRoleDefinitions.Where(r => r.Status == LifecycleStatus.RoleDefinition.Active);
                 if (model.CompanyId.HasValue)
                     rolesQueryErr = rolesQueryErr.Where(r => r.ScopeType == "Company");
                 else

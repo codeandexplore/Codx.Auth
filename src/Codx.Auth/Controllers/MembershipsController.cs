@@ -2,6 +2,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -78,7 +79,7 @@ namespace Codx.Auth.Controllers
                 return Forbid();
 
             var availableRoles = await _db.WorkspaceRoleDefinitions
-                .Where(r => r.IsActive)
+                .Where(r => r.Status == LifecycleStatus.RoleDefinition.Active)
                 .ToListAsync();
 
             ViewBag.AvailableRoles = availableRoles;
@@ -87,7 +88,7 @@ namespace Codx.Auth.Controllers
             if (membership.CompanyId.HasValue)
             {
                 var applications = await _db.EnterpriseApplications
-                    .Where(a => a.IsActive)
+                    .Where(a => a.Status == LifecycleStatus.Application.Active)
                     .Include(a => a.Roles)
                     .OrderBy(a => a.DisplayName)
                     .AsNoTracking()
@@ -239,7 +240,7 @@ namespace Codx.Auth.Controllers
 
             // Validate role belongs to app and is active
             var roleValid = await _db.EnterpriseApplicationRoles
-                .AnyAsync(r => r.Id == roleId && r.ApplicationId == applicationId && r.IsActive);
+                .AnyAsync(r => r.Id == roleId && r.ApplicationId == applicationId && r.Status == LifecycleStatus.AppRole.Active);
             if (!roleValid)
             {
                 TempData["Success"] = null;
@@ -512,7 +513,7 @@ namespace Codx.Auth.Controllers
             // TenantOwners may only grant tenant-scoped roles; always force the flag for them.
             if (isTenantOwner && !companyId.HasValue) tenantScopeOnly = true;
 
-            var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.IsActive);
+            var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.Status == LifecycleStatus.RoleDefinition.Active);
             if (companyId.HasValue)
                 rolesQuery = rolesQuery.Where(r => r.ScopeType == "Company");
             else if (isTenantOwner)
@@ -542,7 +543,7 @@ namespace Codx.Auth.Controllers
 
             if (isTenantOwner && !viewModel.CompanyId.HasValue) viewModel.TenantScopeOnly = true;
 
-            var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.IsActive);
+            var rolesQuery = _db.WorkspaceRoleDefinitions.Where(r => r.Status == LifecycleStatus.RoleDefinition.Active);
             if (viewModel.CompanyId.HasValue)
                 rolesQuery = rolesQuery.Where(r => r.ScopeType == "Company");
             else if (isTenantOwner)

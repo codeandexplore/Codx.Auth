@@ -1,5 +1,6 @@
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ namespace Codx.Auth.Controllers.API
                 return Problem(detail: $"Application '{appId}' not found.", statusCode: 404);
 
             var roles = await _db.EnterpriseApplicationRoles
-                .Where(r => r.ApplicationId == appId && r.IsActive)
+                .Where(r => r.ApplicationId == appId && r.Status == LifecycleStatus.AppRole.Active)
                 .Select(r => new { r.Id, r.Name, r.Description, r.IsDefault })
                 .ToListAsync();
 
@@ -94,7 +95,7 @@ namespace Codx.Auth.Controllers.API
 
             // Validate roleId belongs to this app and is active
             var role = await _db.EnterpriseApplicationRoles
-                .FirstOrDefaultAsync(r => r.Id == request.RoleId && r.ApplicationId == appId && r.IsActive);
+                .FirstOrDefaultAsync(r => r.Id == request.RoleId && r.ApplicationId == appId && r.Status == LifecycleStatus.AppRole.Active);
             if (role == null)
                 return Problem(detail: "Role not found or inactive.", statusCode: 404);
 

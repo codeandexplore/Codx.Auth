@@ -92,6 +92,5 @@ namespace Codx.Auth.ViewModels.Applications
         public string Description { get; set; }
 
         public bool IsDefault { get; set; }
-        public bool IsActive { get; set; }
     }
 }

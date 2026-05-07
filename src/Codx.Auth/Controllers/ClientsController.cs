@@ -1,5 +1,6 @@
 using AutoMapper;
 using Codx.Auth.Data.Contexts;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -61,7 +62,7 @@ namespace Codx.Auth.Controllers
         public async Task<IActionResult> Add()
         {
             var apps = await _userDb.EnterpriseApplications
-                .Where(a => a.IsActive)
+                .Where(a => a.Status == LifecycleStatus.Application.Active)
                 .OrderBy(a => a.DisplayName)
                 .Select(a => new { a.Id, a.DisplayName })
                 .ToListAsync();
@@ -112,7 +113,7 @@ namespace Codx.Auth.Controllers
             }
 
             var apps = await _userDb.EnterpriseApplications
-                .Where(a => a.IsActive)
+                .Where(a => a.Status == LifecycleStatus.Application.Active)
                 .OrderBy(a => a.DisplayName)
                 .Select(a => new { a.Id, a.DisplayName })
                 .ToListAsync();
@@ -136,7 +137,7 @@ namespace Codx.Auth.Controllers
             viewmodel.AllowSelfRegistration = props.FirstOrDefault(p => p.Key == "allow_self_registration")?.Value == "true";
 
             var apps = await _userDb.EnterpriseApplications
-                .Where(a => a.IsActive)
+                .Where(a => a.Status == LifecycleStatus.Application.Active)
                 .OrderBy(a => a.DisplayName)
                 .Select(a => new { a.Id, a.DisplayName })
                 .ToListAsync();
@@ -193,7 +194,7 @@ namespace Codx.Auth.Controllers
             }
 
             var apps = await _userDb.EnterpriseApplications
-                .Where(a => a.IsActive)
+                .Where(a => a.Status == LifecycleStatus.Application.Active)
                 .OrderBy(a => a.DisplayName)
                 .Select(a => new { a.Id, a.DisplayName })
                 .ToListAsync();

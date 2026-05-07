@@ -294,12 +294,6 @@ namespace Codx.Auth.Data.Migrations.Users
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Logo")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -409,9 +403,6 @@ namespace Codx.Auth.Data.Migrations.Users
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -436,9 +427,6 @@ namespace Codx.Auth.Data.Migrations.Users
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
@@ -550,12 +538,6 @@ namespace Codx.Auth.Data.Migrations.Users
                     b.Property<string>("Email")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Logo")
                         .HasMaxLength(200)
@@ -787,9 +769,6 @@ namespace Codx.Auth.Data.Migrations.Users
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<string>("ScopeType")
                         .IsRequired()

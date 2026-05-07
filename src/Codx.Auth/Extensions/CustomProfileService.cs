@@ -15,6 +15,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
+using Codx.Auth.Infrastructure.Lifecycle;
+
 namespace Codx.Auth.Extensions
 {
     public class CustomProfileService : IProfileService
@@ -254,7 +256,7 @@ namespace Codx.Auth.Extensions
                     uar.UserId == userId &&
                     uar.TenantId == tenantId &&
                     uar.CompanyId == companyId &&
-                    uar.Role.IsActive)
+                    uar.Role.Status == LifecycleStatus.AppRole.Active)
                 .Select(uar => uar.Role.Name)
                 .Distinct()
                 .ToListAsync();
@@ -354,7 +356,7 @@ namespace Codx.Auth.Extensions
             var roleCodes = await _userDb.UserMembershipRoles
                 .AsNoTracking()
                 .Where(umr => umr.MembershipId == membership.Id && umr.Status == "Active")
-                .Join(_userDb.WorkspaceRoleDefinitions.Where(wrd => wrd.IsActive),
+                .Join(_userDb.WorkspaceRoleDefinitions.Where(wrd => wrd.Status == LifecycleStatus.RoleDefinition.Active),
                     umr => umr.RoleId,
                     wrd => wrd.Id,
                     (umr, wrd) => wrd.Code)

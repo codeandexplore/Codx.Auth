@@ -145,7 +145,7 @@ namespace Codx.Auth.Controllers
             string? tenantName = null;
             if (tenantId.HasValue)
                 tenantName = (await _db.Tenants.AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Id == tenantId.Value && !t.IsDeleted, ct))?.Name ?? string.Empty;
+                    .FirstOrDefaultAsync(t => t.Id == tenantId.Value && t.Status != LifecycleStatus.Tenant.Cancelled, ct))?.Name ?? string.Empty;
 
             return View(new EmailTemplateEditViewModel
             {

@@ -29,7 +29,7 @@
             <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4"><dt class="text-sm font-medium text-gray-900">Display Name</dt><dd class="mt-1 text-sm text-gray-700 sm:col-span-2 sm:mt-0">@Model.Application.DisplayName</dd></div>
             <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4"><dt class="text-sm font-medium text-gray-900">Description</dt><dd class="mt-1 text-sm text-gray-700 sm:col-span-2 sm:mt-0">@Model.Application.Description</dd></div>
             <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4"><dt class="text-sm font-medium text-gray-900">Allow Self-Registration</dt><dd class="mt-1 text-sm text-gray-700 sm:col-span-2 sm:mt-0">@(Model.Application.AllowSelfRegistration ? "Yes" : "No")</dd></div>
-            <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4"><dt class="text-sm font-medium text-gray-900">Active</dt><dd class="mt-1 text-sm text-gray-700 sm:col-span-2 sm:mt-0">@(Model.Application.IsActive ? "Yes" : "No")</dd></div>
+            <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4"><dt class="text-sm font-medium text-gray-900">Status</dt><dd class="mt-1 text-sm text-gray-700 sm:col-span-2 sm:mt-0">@Model.Application.Status</dd></div>
         </dl>
     </div>
 
@@ -54,7 +54,7 @@
                     {
                         <tr class="hover:bg-gray-50">
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">@role.Name</td>
-                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">@(role.IsActive ? "Yes" : "No")</td>
+                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">@role.Status</td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                 <a asp-action="EditRole" asp-route-appId="@Model.Application.Id" asp-route-roleId="@role.Id" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                             </td>
@@ -232,7 +232,7 @@
                     <select name="RoleId"
                             class="mt-2 block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600">
                         <option value="">-- Select Role --</option>
-                        @foreach (var role in Model.Application.Roles?.Where(r => r.IsActive) ?? Enumerable.Empty<Codx.Auth.Data.Entities.Enterprise.EnterpriseApplicationRole>())
+                        @foreach (var role in Model.Application.Roles?.Where(r => r.Status == "Active") ?? Enumerable.Empty<Codx.Auth.Data.Entities.Enterprise.EnterpriseApplicationRole>())
                         {
                             <option value="@role.Id">@role.Name</option>
                         }

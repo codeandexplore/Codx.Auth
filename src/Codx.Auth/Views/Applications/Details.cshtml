@@ -48,8 +48,8 @@
                                     <input value="@(Model.Application.AllowSelfRegistration ? "Yes" : "No")" class="form-control" readonly />
                                 </div>
                                 <div class="form-group">
-                                    <label>Active</label>
-                                    <input value="@(Model.Application.IsActive ? "Yes" : "No")" class="form-control" readonly />
+                                    <label>Status</label>
+                                    <input value="@Model.Application.Status" class="form-control" readonly />
                                 </div>
                                 <div class="form-group">
                                     <label>Created</label>
@@ -80,11 +80,11 @@
                                         <td>@role.Name</td>
                                         <td>@role.Description</td>
                                         <td>@(role.IsDefault ? "✓" : "")</td>
-                                        <td>@(role.IsActive ? "Yes" : "No")</td>
+                                        <td>@role.Status</td>
                                         <td>
                                             <a href="@Url.Action("EditRole", new { appId = Model.Application.Id, roleId = role.Id })"
                                                class="btn btn-sm btn-outline-primary mr-1">Edit</a>
-                                            @if (role.IsActive)
+                                            @if (role.Status == "Active")
                                             {
                                                 <form asp-action="DeactivateRole"
                                                       asp-route-id="@Model.Application.Id"
@@ -192,7 +192,7 @@
                                     <label>Role</label>
                                     <select name="RoleId" class="form-control">
                                         <option value="">-- Select Role --</option>
-                                        @foreach (var role in Model.Application.Roles?.Where(r => r.IsActive) ?? Enumerable.Empty<Codx.Auth.Data.Entities.Enterprise.EnterpriseApplicationRole>())
+                                        @foreach (var role in Model.Application.Roles?.Where(r => r.Status == "Active") ?? Enumerable.Empty<Codx.Auth.Data.Entities.Enterprise.EnterpriseApplicationRole>())
                                         {
                                             <option value="@role.Id">@role.Name</option>
                                         }
