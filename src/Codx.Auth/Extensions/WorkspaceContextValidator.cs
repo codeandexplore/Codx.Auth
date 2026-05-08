@@ -155,12 +155,23 @@ namespace Codx.Auth.Extensions
                             return;
                         }
 
-            var existingRoleCodes = await _db.UserMembershipRoles.AsNoTracking()
-                            .Where(umr => umr.MembershipId == existingMembership.Id && umr.Status == LifecycleStatus.MembershipRole.Active)
+                        // Cascade: union roles from both the company-level membership and the
+                        // parent tenant-level membership (CompanyId == null) within this tenant.
+                        var existingRoleCodes = await _db.UserMemberships.AsNoTracking()
+                            .Where(m =>
+                                m.UserId == userId &&
+                                m.TenantId == existingSession.TenantId &&
+                                (m.CompanyId == existingSession.CompanyId || m.CompanyId == null) &&
+                                m.Status == LifecycleStatus.Membership.Active)
+                            .Join(_db.UserMembershipRoles.Where(umr => umr.Status == LifecycleStatus.MembershipRole.Active),
+                                m => m.Id,
+                                umr => umr.MembershipId,
+                                (m, umr) => umr)
                             .Join(_db.WorkspaceRoleDefinitions.Where(wrd => wrd.Status == LifecycleStatus.RoleDefinition.Active),
                                 umr => umr.RoleId,
                                 wrd => wrd.Id,
                                 (umr, wrd) => wrd.Code)
+                            .Distinct()
                             .ToListAsync();
 
                         // Renew the session so it stays alive across back-to-back token refreshes.
@@ -296,13 +307,24 @@ namespace Codx.Auth.Extensions
                 return;
             }
 
-            // --- Resolve workspace role codes ---
-            var roleCodes = await _db.UserMembershipRoles.AsNoTracking()
-                .Where(umr => umr.MembershipId == membership.Id && umr.Status == LifecycleStatus.MembershipRole.Active)
+            // --- Resolve workspace role codes (tenant-level cascade) ---
+            // Union roles from the company-level membership and the parent tenant-level membership
+            // (CompanyId == null within this tenant). Identical role codes are deduplicated.
+            var roleCodes = await _db.UserMemberships.AsNoTracking()
+                .Where(m =>
+                    m.UserId == userId &&
+                    m.TenantId == tenantId &&
+                    (m.CompanyId == companyId || m.CompanyId == null) &&
+                    m.Status == LifecycleStatus.Membership.Active)
+                .Join(_db.UserMembershipRoles.Where(umr => umr.Status == LifecycleStatus.MembershipRole.Active),
+                    m => m.Id,
+                    umr => umr.MembershipId,
+                    (m, umr) => umr)
                 .Join(_db.WorkspaceRoleDefinitions.Where(wrd => wrd.Status == LifecycleStatus.RoleDefinition.Active),
                     umr => umr.RoleId,
                     wrd => wrd.Id,
                     (umr, wrd) => wrd.Code)
+                .Distinct()
                 .ToListAsync();
 
             // --- Session exclusivity: revoke any existing active session, then create a new one ---
