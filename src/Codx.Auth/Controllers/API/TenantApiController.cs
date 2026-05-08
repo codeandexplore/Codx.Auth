@@ -1,11 +1,12 @@
 ﻿using Codx.Auth.Data.Contexts;
-using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Infrastructure.Lifecycle;
+using Codx.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using static Duende.IdentityServer.IdentityServerConstants;
 
@@ -17,56 +18,41 @@ namespace Codx.Auth.Controllers.API
     public class TenantApiController : ControllerBase
     {
         private readonly UserDbContext _db;
+        private readonly IMembershipQueryService _membershipQueryService;
 
-        public TenantApiController(UserDbContext db)
+        public TenantApiController(UserDbContext db, IMembershipQueryService membershipQueryService)
         {
             _db = db;
+            _membershipQueryService = membershipQueryService;
         }
 
         /// <summary>
         /// Returns all active company-scoped workspace memberships for the authenticated user.
-        /// Only includes memberships where the membership is Active, the company is Active,
-        /// and the tenant is Active. Tenant-scoped memberships (CompanyId = null) are excluded.
-        /// Source of truth for determining which workspaces a user may select in the SPA.
-        /// Called after initial login (no workspace context required).
+        /// Only includes memberships where the membership, company and tenant are all active.
+        /// Tenant-scoped memberships (CompanyId = null) are excluded from the list but their
+        /// workspace roles are merged into each matching company entry.
+        /// Source of truth for workspace selection — called after initial login.
         /// </summary>
         [HttpGet("/api/v1/memberships")]
-        public async Task<IActionResult> GetMemberships()
+        public async Task<IActionResult> GetMemberships(CancellationToken ct)
         {
             var subClaim = User.FindFirst("sub")?.Value;
             if (!Guid.TryParse(subClaim, out var userId))
                 return Unauthorized();
 
-            var memberships = await _db.UserMemberships
-                .Where(m => m.UserId == userId
-                         && m.Status == LifecycleStatus.Membership.Active
-                         && m.CompanyId.HasValue
-                         && m.Tenant.Status == LifecycleStatus.Tenant.Active
-                         && m.Company.Status == LifecycleStatus.Company.Active)
-                .Include(m => m.Tenant)
-                .Include(m => m.Company)
-                .Include(m => m.MembershipRoles)
-                    .ThenInclude(r => r.RoleDefinition)
-                .AsNoTracking()
-                .ToListAsync();
+            var memberships = await _membershipQueryService.GetCompanyMembershipsAsync(userId, ct: ct);
 
+            // Project to the workspace-select response shape (roles as string[] for compatibility)
             var result = memberships.Select(m => new
             {
-                membershipId = m.Id,
+                membershipId = m.MembershipId,
                 tenantId = m.TenantId,
-                tenantName = m.Tenant?.Name,
+                tenantName = m.TenantName,
                 companyId = m.CompanyId,
-                companyName = m.Company?.Name,
-                contextType = m.CompanyId.HasValue ? "company" : "tenant",
+                companyName = m.CompanyName,
+                contextType = m.ContextType,
                 joinedAt = m.JoinedAt,
-                roles = m.MembershipRoles
-                    .Where(r => r.RoleDefinition != null)
-                    .Select(r => new
-                    {
-                        code = r.RoleDefinition.Code,
-                        displayName = r.RoleDefinition.DisplayName,
-                        scopeType = r.RoleDefinition.ScopeType
-                    })
+                roles = m.WorkspaceRoles,
             });
 
             return Ok(result);

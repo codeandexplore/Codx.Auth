@@ -6,6 +6,9 @@ using Codx.Auth.Extensions;
 using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Models.Common;
 using Codx.Auth.Models.DTOs;
+using Codx.Auth.Models.Requests;
+using Codx.Auth.Models.Responses;
+using Codx.Auth.Services;
 using Codx.Auth.Services.Interfaces;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -33,6 +36,7 @@ namespace Codx.Auth.Controllers.API
         protected readonly IMapper _mapper;
         protected readonly IFilterService _filterService;
         private readonly ILogger<MyProfileV1ApiController> _logger;
+        private readonly IUserProfileService _profileService;
 
         public MyProfileV1ApiController(
             UserManager<ApplicationUser> userManager, 
@@ -40,7 +44,8 @@ namespace Codx.Auth.Controllers.API
             UserDbContext userdbcontext, 
             IMapper mapper,
             IFilterService filterService,
-            ILogger<MyProfileV1ApiController> logger)
+            ILogger<MyProfileV1ApiController> logger,
+            IUserProfileService profileService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -48,6 +53,7 @@ namespace Codx.Auth.Controllers.API
             _mapper = mapper;
             _filterService = filterService;
             _logger = logger;
+            _profileService = profileService;
         }
 
         [HttpGet("claims")]
@@ -862,6 +868,96 @@ namespace Codx.Auth.Controllers.API
                 return StatusCode(
                     StatusCodes.Status500InternalServerError, 
                     ApiResult<object>.Fail($"Error switching company: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        // ─── Profile Management Endpoints ─────────────────────────────────────
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ProfileResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var profile = await _profileService.GetProfileAsync(userId);
+                if (profile == null)
+                    return NotFound(ApiResult<object>.Fail("User not found", StatusCodes.Status404NotFound));
+
+                return Ok(ApiResult<ProfileResponse>.Success(profile, "Profile retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving profile");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error retrieving profile: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        [HttpPut]
+        [ProducesResponseType(typeof(ProfileResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Fail("Invalid request", StatusCodes.Status400BadRequest));
+
+            try
+            {
+                var userId = User.GetUserId();
+                var (success, errors, profile) = await _profileService.UpdateProfileAsync(userId, request);
+
+                if (!success)
+                {
+                    if (errors.Length == 1 && errors[0] == "User not found.")
+                        return NotFound(ApiResult<object>.Fail(errors[0], StatusCodes.Status404NotFound));
+
+                    return BadRequest(ApiResult<object>.Fail(string.Join("; ", errors), StatusCodes.Status400BadRequest));
+                }
+
+                return Ok(ApiResult<ProfileResponse>.Success(profile, "Profile updated successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating profile");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error updating profile: {ex.Message}", StatusCodes.Status500InternalServerError));
+            }
+        }
+
+        [HttpPost("change-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResult<object>.Fail("Invalid request", StatusCodes.Status400BadRequest));
+
+            try
+            {
+                var userId = User.GetUserId();
+                var (success, errors) = await _profileService.ChangePasswordAsync(userId, request);
+
+                if (!success)
+                {
+                    if (errors.Length == 1 && errors[0] == "User not found.")
+                        return NotFound(ApiResult<object>.Fail(errors[0], StatusCodes.Status404NotFound));
+
+                    // PasswordMismatch or policy violations → 422
+                    return UnprocessableEntity(ApiResult<object>.Fail(string.Join("; ", errors), StatusCodes.Status422UnprocessableEntity));
+                }
+
+                return Ok(ApiResult<object>.Success(null, "Password changed successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    ApiResult<object>.Fail($"Error changing password: {ex.Message}", StatusCodes.Status500InternalServerError));
             }
         }
     }
