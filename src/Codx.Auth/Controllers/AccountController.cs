@@ -206,7 +206,8 @@ namespace Codx.Auth.Controllers
                     Email = invitation.Email,
                     GivenName = model.FirstName,
                     MiddleName = model.MiddleName,
-                    FamilyName = model.LastName
+                    FamilyName = model.LastName,
+                    Status = LifecycleStatus.User.Active
                 };
                 var createResult = await _userManager.CreateAsync(newUser, model.Password);
                 if (!createResult.Succeeded)

@@ -2,6 +2,7 @@ using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Microsoft.EntityFrameworkCore;
 using Codx.Auth.Models;
 using Codx.Auth.Models.Email;
@@ -48,7 +49,7 @@ namespace Codx.Auth.Services
 
         public async Task<(RegisterResponse result, ApplicationUser user)> RegisterAsync(RegisterRequest request)
         {
-            var user = new ApplicationUser { UserName = request.Email, Email = request.Email, GivenName = request.FirstName, MiddleName = request.MiddleName, FamilyName = request.LastName };
+            var user = new ApplicationUser { UserName = request.Email, Email = request.Email, GivenName = request.FirstName, MiddleName = request.MiddleName, FamilyName = request.LastName, Status = LifecycleStatus.User.Active };
             var result = await _userManager.CreateAsync(user, request.Password);
 
             if (result.Succeeded)
@@ -76,7 +77,8 @@ namespace Codx.Auth.Services
                 Email = email,
                 GivenName = firstName,
                 MiddleName = middleName,
-                FamilyName = lastName
+                FamilyName = lastName,
+                Status = LifecycleStatus.User.Active
             };
 
             var result = await _userManager.CreateAsync(user);
