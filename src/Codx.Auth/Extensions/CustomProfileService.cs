@@ -353,13 +353,23 @@ namespace Codx.Auth.Extensions
 
             if (membership == null) return;
 
-            var roleCodes = await _userDb.UserMembershipRoles
-                .AsNoTracking()
-                .Where(umr => umr.MembershipId == membership.Id && umr.Status == "Active")
+            // Cascade: union roles from the company-level membership and the parent
+            // tenant-level membership (CompanyId == null) within this tenant.
+            var roleCodes = await _userDb.UserMemberships.AsNoTracking()
+                .Where(m =>
+                    m.UserId == user.Id &&
+                    m.TenantId == session.TenantId &&
+                    (m.CompanyId == session.CompanyId || m.CompanyId == null) &&
+                    m.Status == LifecycleStatus.Membership.Active)
+                .Join(_userDb.UserMembershipRoles.Where(umr => umr.Status == LifecycleStatus.MembershipRole.Active),
+                    m => m.Id,
+                    umr => umr.MembershipId,
+                    (m, umr) => umr)
                 .Join(_userDb.WorkspaceRoleDefinitions.Where(wrd => wrd.Status == LifecycleStatus.RoleDefinition.Active),
                     umr => umr.RoleId,
                     wrd => wrd.Id,
                     (umr, wrd) => wrd.Code)
+                .Distinct()
                 .ToListAsync();
 
             _workspaceContext.UserId = user.Id;
