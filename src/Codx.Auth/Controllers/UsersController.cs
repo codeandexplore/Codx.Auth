@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -110,7 +111,8 @@ namespace Codx.Auth.Controllers
                 Email = model.Email,
                 GivenName = model.FirstName,
                 MiddleName = model.MiddleName,
-                FamilyName = model.LastName
+                FamilyName = model.LastName,
+                Status = LifecycleStatus.User.Active
             };
 
             var result = await _userManager.CreateAsync(record, model.Password).ConfigureAwait(false);

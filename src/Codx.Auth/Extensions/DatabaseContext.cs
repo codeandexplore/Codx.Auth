@@ -1,5 +1,6 @@
 ﻿using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
+using Codx.Auth.Infrastructure.Lifecycle;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -62,7 +63,8 @@ namespace Codx.Auth.Extensions
                     NormalizedUserName = defaultUsername.ToUpper(),
                     Email = defaultUserEmail,
                     NormalizedEmail = defaultUserEmail.ToUpper(),
-                    SecurityStamp = Guid.NewGuid().ToString()
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    Status = LifecycleStatus.User.Active
                 };
 
                 PasswordHasher<ApplicationUser> passwordHasher = new PasswordHasher<ApplicationUser>();
@@ -118,7 +120,8 @@ namespace Codx.Auth.Extensions
                     NormalizedUserName = defaultUsername.ToUpper(),
                     Email = defaultUserEmail,
                     NormalizedEmail = defaultUserEmail.ToUpper(),
-                    SecurityStamp = Guid.NewGuid().ToString()
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    Status = LifecycleStatus.User.Active
                 };
 
                 PasswordHasher<ApplicationUser> passwordHasher = new PasswordHasher<ApplicationUser>();
