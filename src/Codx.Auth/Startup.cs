@@ -49,6 +49,8 @@ namespace Codx.Auth
            services.AddTransient<IFilterService, FilterService>();
             
             services.AddTransient<IAccountService, AccountService>();
+            services.AddTransient<IUserProfileService, ProfileService>();
+            services.AddScoped<IMembershipQueryService, MembershipQueryService>();
 
             // Add Email Services
             services.AddEmailServices(Configuration);
