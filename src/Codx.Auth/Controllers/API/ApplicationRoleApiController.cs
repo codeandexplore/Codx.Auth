@@ -132,6 +132,7 @@ namespace Codx.Auth.Controllers.API
                 CompanyId = request.CompanyId,
                 ApplicationId = appId,
                 RoleId = request.RoleId,
+                Status = LifecycleStatus.RoleAssignment.Active,
                 AssignedAt = DateTime.UtcNow,
                 AssignedByUserId = assignerId
             };

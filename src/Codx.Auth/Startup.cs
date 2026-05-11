@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Codx.Auth.Authorization;
 using Codx.Auth.Configuration;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
@@ -10,6 +11,7 @@ using Codx.Auth.Services.Interfaces;
 using Codx.Auth.Infrastructure;
 using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.Infrastructure.Theming;
+using Microsoft.AspNetCore.Authorization;
 using Duende.IdentityServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -110,6 +112,10 @@ namespace Codx.Auth
             services.AddSingleton<LifecycleTransitionGuard>();
             services.AddScoped<ILifecycleCascadeService, LifecycleCascadeService>();
             services.AddProblemDetails();
+
+            // Workspace users (spec 003-02)
+            services.AddScoped<IWorkspaceUserService, WorkspaceUserService>();
+            services.AddSingleton<IAuthorizationHandler, WorkspaceAdministratorHandler>();
 
             // Configure external authentication providers
             var externalAuthConfig = new ExternalAuthConfiguration();
@@ -216,6 +222,15 @@ namespace Codx.Auth
                               ctx.User.IsInRole("PlatformAdministrator") ||
                               ctx.User.HasClaim("workspace_role", "TENANT_ADMIN") ||
                               ctx.User.HasClaim("workspace_role", "TENANT_OWNER")));
+
+                // Workspace administrator policy — spec 003-02
+                // Requires LocalApi authentication scheme and a qualifying workspace_role claim.
+                options.AddPolicy("WorkspaceAdministratorPolicy", policy =>
+                {
+                    policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
+                    policy.RequireAuthenticatedUser();
+                    policy.AddRequirements(new WorkspaceAdministratorRequirement());
+                });
             });
 
             // Add CORS services
