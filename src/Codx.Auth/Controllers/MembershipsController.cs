@@ -272,6 +272,7 @@ namespace Codx.Auth.Controllers
                 CompanyId = membership.CompanyId.Value,
                 ApplicationId = applicationId,
                 RoleId = roleId,
+                Status = LifecycleStatus.RoleAssignment.Active,
                 AssignedAt = DateTime.UtcNow,
                 AssignedByUserId = actorId
             };

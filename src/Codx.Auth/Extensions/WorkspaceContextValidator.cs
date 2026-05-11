@@ -489,6 +489,7 @@ namespace Codx.Auth.Extensions
                     CompanyId = companyId.Value,
                     ApplicationId = role.ApplicationId,
                     RoleId = role.Id,
+                    Status = LifecycleStatus.RoleAssignment.Active,
                     AssignedAt = now,
                     AssignedByUserId = userId   // self-assigned via default role policy
                 }).ToList();
