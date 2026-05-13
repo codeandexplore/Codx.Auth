@@ -22,5 +22,15 @@ namespace Codx.Auth.Services
             int    pageSize,
             string? email,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Adds an existing Codx.Auth user to the workspace, or dispatches an invitation
+        /// if no account exists for the supplied email. The application_id is resolved
+        /// internally from ClientProperties using <see cref="WorkspaceAddCallerContext.ClientId"/>.
+        /// </summary>
+        Task<AddWorkspaceUserResult> AddOrInviteUserAsync(
+            AddWorkspaceUserRequest request,
+            WorkspaceAddCallerContext callerContext,
+            CancellationToken cancellationToken = default);
     }
 }

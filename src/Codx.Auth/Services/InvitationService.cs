@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -145,6 +146,90 @@ namespace Codx.Auth.Services
             return (true, null);
         }
 
+        // ── Workspace invitation (spec 003-03) ───────────────────────────────────
+
+        public async Task<(bool success, Guid invitationId, string error)>
+            CreateWorkspaceInvitationAsync(
+                string email,
+                Guid tenantId,
+                Guid companyId,
+                string applicationId,
+                IReadOnlyList<string> applicationRoles,
+                string membershipRole,
+                string redirectUri,
+                Guid createdByUserId,
+                CancellationToken cancellationToken = default)
+        {
+            var rawBytes = RandomNumberGenerator.GetBytes(32);
+            var rawToken = Convert.ToBase64String(rawBytes)
+                .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+            var tokenHash = ComputeSha256(rawToken);
+
+            var invitation = new Invitation
+            {
+                Id               = Guid.NewGuid(),
+                Email            = email,
+                TenantId         = tenantId,
+                CompanyId        = companyId,
+                InviteTokenHash  = tokenHash,
+                Status           = "Pending",
+                ExpiresAt        = DateTime.UtcNow.AddDays(_expiryDays),
+                InvitedByUserId  = createdByUserId,
+                CreatedAt        = DateTime.UtcNow,
+                // Workspace-invite fields
+                ApplicationId    = applicationId,
+                ApplicationRoles = JsonSerializer.Serialize(applicationRoles),
+                MembershipRole   = membershipRole,
+                RedirectUri      = redirectUri,
+            };
+
+            await _context.Invitations.AddAsync(invitation, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await _auditService.LogAsync("WorkspaceInvitationCreated",
+                actorUserId: createdByUserId,
+                tenantId:    tenantId,
+                companyId:   companyId,
+                resourceType: "Invitation",
+                resourceId:  invitation.Id.ToString());
+
+            try
+            {
+                var inviteUrl = $"{_baseUrl.TrimEnd('/')}/invite/{rawToken}";
+
+                var inviter = await _userManager.FindByIdAsync(createdByUserId.ToString());
+                var inviterName = inviter is not null
+                    ? $"{inviter.GivenName} {inviter.FamilyName}".Trim()
+                    : string.Empty;
+
+                var renderContext = new EmailTemplateRenderContext(
+                    UserName:       email,
+                    UserEmail:      email,
+                    TenantName:     string.Empty,
+                    CompanyName:    string.Empty,
+                    InvitationLink: inviteUrl,
+                    InviterName:    inviterName);
+
+                var body = await _templateService.GetResolvedBodyAsync(
+                    EmailTemplateType.Invitation, tenantId, renderContext, cancellationToken);
+
+                await _emailService.SendEmailAsync(new EmailMessage
+                {
+                    To      = email,
+                    Subject = "You have been invited",
+                    Body    = body,
+                    IsHtml  = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send workspace invitation email to {Email}", email);
+                // Invitation is created even if email delivery fails
+            }
+
+            return (true, invitation.Id, null);
+        }
+
         public async Task<InvitationValidationResult> ValidateInviteTokenAsync(string rawToken)
         {
             var tokenHash = ComputeSha256(rawToken);
@@ -215,6 +300,42 @@ namespace Codx.Auth.Services
 
                 invitation.Status = "Accepted";
                 await _context.UserMemberships.AddAsync(membership);
+
+                // Workspace-invite path: create UserApplicationRole records when ApplicationRoles is set
+                if (!string.IsNullOrWhiteSpace(invitation.ApplicationRoles)
+                    && !string.IsNullOrWhiteSpace(invitation.ApplicationId))
+                {
+                    var roleNames = JsonSerializer.Deserialize<List<string>>(invitation.ApplicationRoles)
+                        ?? new List<string>();
+
+                    if (roleNames.Count > 0)
+                    {
+                        var roleEntities = await _context.EnterpriseApplicationRoles
+                            .Where(r => r.ApplicationId == invitation.ApplicationId
+                                     && roleNames.Contains(r.Name)
+                                     && r.Status == LifecycleStatus.AppRole.Active)
+                            .Select(r => new { r.Id })
+                            .ToListAsync();
+
+                        var now = DateTime.UtcNow;
+                        foreach (var role in roleEntities)
+                        {
+                            await _context.UserApplicationRoles.AddAsync(new UserApplicationRole
+                            {
+                                Id               = Guid.NewGuid(),
+                                UserId           = userId,
+                                TenantId         = invitation.TenantId,
+                                CompanyId        = invitation.CompanyId!.Value,
+                                ApplicationId    = invitation.ApplicationId,
+                                RoleId           = role.Id,
+                                Status           = LifecycleStatus.RoleAssignment.Active,
+                                AssignedAt       = now,
+                                AssignedByUserId = invitation.InvitedByUserId,
+                            });
+                        }
+                    }
+                }
+
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
 
