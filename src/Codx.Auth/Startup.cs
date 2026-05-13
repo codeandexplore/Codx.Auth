@@ -116,6 +116,8 @@ namespace Codx.Auth
             // Workspace users (spec 003-02)
             services.AddScoped<IWorkspaceUserService, WorkspaceUserService>();
             services.AddSingleton<IAuthorizationHandler, WorkspaceAdministratorHandler>();
+            // Workspace user-add authorization (spec 003-03)
+            services.AddSingleton<IAuthorizationHandler, WorkspaceUserAddHandler>();
 
             // Configure external authentication providers
             var externalAuthConfig = new ExternalAuthConfiguration();
@@ -230,6 +232,15 @@ namespace Codx.Auth
                     policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
                     policy.AddRequirements(new WorkspaceAdministratorRequirement());
+                });
+
+                // Workspace user-add policy — spec 003-03
+                // Qualifying roles: TENANT_OWNER | TENANT_ADMIN | COMPANY_ADMIN
+                options.AddPolicy("WorkspaceUserAddPolicy", policy =>
+                {
+                    policy.AddAuthenticationSchemes(IdentityServerConstants.LocalApi.AuthenticationScheme);
+                    policy.RequireAuthenticatedUser();
+                    policy.AddRequirements(new WorkspaceUserAddRequirement());
                 });
             });
 

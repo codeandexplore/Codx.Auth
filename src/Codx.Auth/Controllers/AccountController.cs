@@ -231,6 +231,11 @@ namespace Codx.Auth.Controllers
                     tenantId: invitation.TenantId, companyId: invitation.CompanyId);
 
                 TempData["RegistrationSuccess"] = "Your account has been created. You can now sign in.";
+
+                // Workspace invite: redirect to client application if RedirectUri is configured
+                if (!string.IsNullOrWhiteSpace(invitation.RedirectUri))
+                    return Redirect(invitation.RedirectUri);
+
                 return RedirectToAction("Login", new { returnUrl = model.ReturnUrl });
             }
             else

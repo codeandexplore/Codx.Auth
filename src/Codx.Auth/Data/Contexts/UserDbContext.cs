@@ -217,6 +217,12 @@ namespace Codx.Auth.Data.Contexts
                 entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
                 entity.Property(e => e.InviteTokenHash).HasMaxLength(64).IsRequired();
                 entity.HasIndex(e => e.InviteTokenHash);
+
+                // Workspace-invite fields (spec 003-03)
+                entity.Property(e => e.ApplicationId).HasMaxLength(100);
+                entity.Property(e => e.ApplicationRoles).HasMaxLength(500);
+                entity.Property(e => e.MembershipRole).HasMaxLength(50);
+                entity.Property(e => e.RedirectUri).HasMaxLength(500);
             });
 
             // --- InvitationRole ---
