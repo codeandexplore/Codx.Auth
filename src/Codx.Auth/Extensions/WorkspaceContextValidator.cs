@@ -103,6 +103,16 @@ namespace Codx.Auth.Extensions
             }
 
             var request = context.Result.ValidatedRequest;
+
+            // Machine-to-machine grants carry no user subject and no workspace context;
+            // workspace validation only applies to user-delegated grants.
+            // NOTE: extend this gate if other machine grants (e.g. RFC 8693 token exchange)
+            // are ever enabled.
+            if (request.GrantType == "client_credentials")
+            {
+                return;
+            }
+
             var raw = request.Raw;
 
             // --- Extract parameters ---
