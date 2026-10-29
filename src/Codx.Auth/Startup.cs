@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Threading.RateLimiting;
 
@@ -306,8 +307,13 @@ namespace Codx.Auth
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
+            var appVersion = typeof(Startup).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? "unknown";
+            logger.LogInformation("Codx.Auth version {Version} starting", appVersion);
+
             app.InitializeDb();
 
             if (env.IsDevelopment())
@@ -366,6 +372,8 @@ namespace Codx.Auth
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapGet("/health", () => new { status = "Healthy", version = appVersion });
             });
         }
 

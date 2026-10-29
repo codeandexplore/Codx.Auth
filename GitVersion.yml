@@ -1,0 +1,3 @@
+# GitVersion configuration for Codx.Auth.
+# Tag-driven SemVer: a vX.Y.Z tag on master is a release.
+mode: ContinuousDelivery
