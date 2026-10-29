@@ -1,0 +1,30 @@
+name: Build
+
+on:
+  push:
+    branches: [development, master]
+  pull_request:
+    branches: [development, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore Codx.Auth.sln
+
+      - name: Build
+        run: dotnet build Codx.Auth.sln --configuration Release --no-restore
+
+      - name: Unit tests
+        run: dotnet test test/Codx.Auth.Unit.Test/Codx.Auth.Unit.Test.csproj --configuration Release --no-build
