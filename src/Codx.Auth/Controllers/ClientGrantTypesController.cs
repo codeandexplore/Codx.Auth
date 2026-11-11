@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.DbContexts;
@@ -17,8 +17,8 @@ namespace Codx.Auth.Controllers
     public class ClientGrantTypesController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ClientGrantTypesController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ClientGrantTypesController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -48,7 +48,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientGrantTypes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientGrantTypeDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToClientGrantTypeDetails(record);
 
             return View(viewmodel);
         }
@@ -70,7 +70,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ClientGrantType>(viewmodel);
+                var record = _mapper.MapToClientGrantType(viewmodel);
                 record.Id = 0;
                 _dbContext.ClientGrantTypes.Add(record);
 
@@ -92,7 +92,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientGrantTypes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientGrantTypeEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientGrantTypeEdit(record);
 
             return View(viewmodel);
         }
@@ -106,7 +106,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientGrantType>(viewmodel);
+                var record = _mapper.MapToClientGrantType(viewmodel);
 
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
@@ -127,7 +127,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientGrantTypes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientGrantTypeEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientGrantTypeEdit(record);
 
             return View(viewmodel);
         }
@@ -140,7 +140,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientGrantType>(viewmodel);
+                var record = _mapper.MapToClientGrantType(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Extensions;
@@ -23,9 +23,9 @@ namespace Codx.Auth.Controllers.API
         protected readonly UserDbContext _userdbcontext;
         private readonly SignInManager<ApplicationUser> _signInManager;
         protected readonly UserManager<ApplicationUser> _userManager;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
 
-        public MyProfileApiController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, UserDbContext userdbcontext, IMapper mapper)
+        public MyProfileApiController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, UserDbContext userdbcontext, ApplicationMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;

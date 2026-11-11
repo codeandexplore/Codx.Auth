@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -15,8 +15,8 @@ namespace Codx.Auth.Controllers
     public class ClientIdpRestrictionsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ClientIdpRestrictionsController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ClientIdpRestrictionsController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -47,7 +47,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientIdPRestrictions.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientIdpRestrictionDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToClientIdpRestrictionDetails(record);
 
             return View(viewmodel);
         }
@@ -69,7 +69,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ClientIdPRestriction>(viewmodel);
+                var record = _mapper.MapToClientIdPRestriction(viewmodel);
                 record.Id = 0;
                 _dbContext.ClientIdPRestrictions.Add(record);
 
@@ -91,7 +91,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientIdPRestrictions.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientIdpRestrictionEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientIdpRestrictionEdit(record);
 
             return View(viewmodel);
         }
@@ -105,7 +105,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientIdPRestriction>(viewmodel);
+                var record = _mapper.MapToClientIdPRestriction(viewmodel);
 
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
@@ -126,7 +126,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientIdPRestrictions.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientIdpRestrictionEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientIdpRestrictionEdit(record);
 
             return View(viewmodel);
         }
@@ -139,7 +139,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientIdPRestriction>(viewmodel);
+                var record = _mapper.MapToClientIdPRestriction(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

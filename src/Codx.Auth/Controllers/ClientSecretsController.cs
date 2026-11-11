@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -15,8 +15,8 @@ namespace Codx.Auth.Controllers
     public class ClientSecretsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ClientSecretsController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ClientSecretsController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -48,7 +48,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientSecrets.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientSecretDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToClientSecretDetails(record);
 
             return View(viewmodel);
         }
@@ -71,7 +71,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ClientSecret>(viewmodel);
+                var record = _mapper.MapToClientSecret(viewmodel);
                 record.Id = 0;
                 record.Value = new Duende.IdentityServer.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
                 _dbContext.ClientSecrets.Add(record);
@@ -94,7 +94,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientSecrets.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientSecretEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientSecretEdit(record);
 
             return View(viewmodel);
         }
@@ -108,7 +108,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientSecret>(viewmodel);
+                var record = _mapper.MapToClientSecret(viewmodel);
                 if (!string.IsNullOrEmpty(viewmodel.NewSecret) && !string.IsNullOrWhiteSpace(viewmodel.NewSecret))
                 {
                     record.Value = new Duende.IdentityServer.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
@@ -133,7 +133,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientSecrets.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientSecretEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientSecretEdit(record);
 
             return View(viewmodel);
         }
@@ -146,7 +146,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientSecret>(viewmodel);
+                var record = _mapper.MapToClientSecret(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

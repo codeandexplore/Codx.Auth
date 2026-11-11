@@ -1,4 +1,4 @@
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
@@ -19,8 +19,8 @@ namespace Codx.Auth.Controllers
     {
         protected readonly UserManager<ApplicationUser> _userManager;
         private readonly UserDbContext _context;
-        protected readonly IMapper _mapper;
-        public CompanyUsersController(UserManager<ApplicationUser> userManager, UserDbContext context, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public CompanyUsersController(UserManager<ApplicationUser> userManager, UserDbContext context, ApplicationMapper mapper)
         {
             _userManager = userManager;
             _context = context;
@@ -32,7 +32,7 @@ namespace Codx.Auth.Controllers
             var query = _context.UserCompanies.Include(o => o.User).Where(o => o.CompanyId == companyid);
             var data = query.OrderBy(o => o.User.UserName).Skip(offset).Take(limit).ToList();
 
-            var viewModel = _mapper.Map<List<CompanyUserDetailsViewModel>>(data);
+            var viewModel = _mapper.MapToCompanyUserDetailsList(data);
 
             return Json(new
             {
@@ -120,7 +120,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _context.UserCompanies.Include(o => o.User).FirstOrDefaultAsync(o => o.CompanyId == companyid && o.UserId == userid);
 
-            var viewModel = _mapper.Map<CompanyUserEditViewModel>(record);
+            var viewModel = _mapper.MapToCompanyUserEdit(record);
 
             return View(viewModel);
         }

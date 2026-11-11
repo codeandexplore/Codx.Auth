@@ -47,7 +47,7 @@ namespace Codx.Auth
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 
-            services.AddAutoMapper(typeof(ApplicationProfile));
+            services.AddSingleton<ApplicationMapper>();
 
             services.AddHttpContextAccessor();
 

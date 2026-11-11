@@ -1,4 +1,4 @@
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
@@ -18,10 +18,10 @@ namespace Codx.Auth.Controllers
     public class CompaniesController : Controller
     {
         private readonly UserDbContext _context;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
         private readonly ILifecycleCascadeService _cascade;
 
-        public CompaniesController(UserDbContext context, IMapper mapper, ILifecycleCascadeService cascade)
+        public CompaniesController(UserDbContext context, ApplicationMapper mapper, ILifecycleCascadeService cascade)
         {
             _context = context;
             _mapper = mapper;
@@ -33,7 +33,7 @@ namespace Codx.Auth.Controllers
             var query = _context.Companies.Where(o => o.Status != LifecycleStatus.Company.Cancelled && o.TenantId == tenantid);
             var data = query.OrderBy(o => o.Name).Skip(offset).Take(limit).ToList();
 
-            var viewModel = _mapper.Map<List<CompanyDetailsViewModel>>(data);
+            var viewModel = _mapper.MapToCompanyDetailsList(data);
 
             return Json(new
             {
@@ -49,7 +49,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<CompanyDetailsViewModel>(record);
+            var viewModel = _mapper.MapToCompanyDetails(record);
 
             return View(viewModel);
         }
@@ -75,7 +75,7 @@ namespace Codx.Auth.Controllers
             {
                 var userId = User.GetUserId();
 
-                var record = _mapper.Map<Company>(viewModel);
+                var record = _mapper.MapToCompany(viewModel);
                 record.Status = LifecycleStatus.Company.Active;
                 record.CreatedBy = userId;
                 record.CreatedAt = DateTime.Now;
@@ -102,7 +102,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<CompanyEditViewModel>(record);
+            var viewModel = _mapper.MapToCompanyEdit(record);
 
             return View(viewModel);
         }
@@ -146,7 +146,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<CompanyEditViewModel>(record);
+            var viewModel = _mapper.MapToCompanyEdit(record);
 
             return View(viewModel);
         }

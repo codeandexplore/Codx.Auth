@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
@@ -19,8 +19,8 @@ namespace Codx.Auth.Controllers
     {
         protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
-        protected readonly IMapper _mapper;
-        public UserClaimsController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public UserClaimsController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, ApplicationMapper mapper)
         {
             _userdbcontext = userdbcontext;
             _userManager = userManager;
@@ -53,7 +53,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _userdbcontext.UserClaims.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<UserClaimDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToUserClaimDetails(record);
 
             return View(viewmodel);
         }
@@ -97,7 +97,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _userdbcontext.UserClaims.FirstOrDefaultAsync(u => u.Id == id);
 
-            var viewmodel = _mapper.Map<UserClaimEditViewModel>(record);
+            var viewmodel = _mapper.MapToUserClaimEdit(record);
 
             return View(viewmodel);
         }
@@ -111,7 +111,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApplicationUserClaim>(viewmodel);
+                var record = _mapper.MapToApplicationUserClaim(viewmodel);
 
                 _userdbcontext.Update(record);
                 var result = await _userdbcontext.SaveChangesAsync();
@@ -133,7 +133,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _userdbcontext.UserClaims.FirstOrDefaultAsync(u => u.Id == id);
 
-            var viewmodel = _mapper.Map<UserClaimEditViewModel>(record);
+            var viewmodel = _mapper.MapToUserClaimEdit(record);
 
             return View(viewmodel);
         }
@@ -145,7 +145,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApplicationUserClaim>(viewmodel);
+                var record = _mapper.MapToApplicationUserClaim(viewmodel);
                 _userdbcontext.Remove(record);
                 var result = await _userdbcontext.SaveChangesAsync();
 

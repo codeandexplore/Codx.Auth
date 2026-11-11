@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
@@ -21,8 +21,8 @@ namespace Codx.Auth.Controllers
         protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly RoleManager<ApplicationRole> _roleManager;
-        protected readonly IMapper _mapper;
-        public UserRolesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public UserRolesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, ApplicationMapper mapper)
         {
             _userdbcontext = userdbcontext;
             _userManager = userManager;

@@ -1,4 +1,4 @@
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -14,8 +14,8 @@ namespace Codx.Auth.Controllers
     public class ApiScopesController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ApiScopesController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ApiScopesController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -49,7 +49,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiScopes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiScopeDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToApiScopeDetails(record);
 
             return View(viewmodel);
         }
@@ -67,7 +67,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ApiScope>(viewModel);
+                var record = _mapper.MapToApiScope(viewModel);
                 record.Enabled = true;
 
                 await _dbContext.AddAsync(record).ConfigureAwait(false);
@@ -89,7 +89,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiScopes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiScopeEditViewModel>(record);
+            var viewmodel = _mapper.MapToApiScopeEdit(record);
 
             return View(viewmodel);
         }
@@ -103,7 +103,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiScope>(viewmodel);
+                var record = _mapper.MapToApiScope(viewmodel);
    
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
@@ -124,7 +124,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiScopes.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiScopeEditViewModel>(record);
+            var viewmodel = _mapper.MapToApiScopeEdit(record);
 
             return View(viewmodel);
         }
@@ -137,7 +137,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiScope>(viewmodel);
+                var record = _mapper.MapToApiScope(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 
