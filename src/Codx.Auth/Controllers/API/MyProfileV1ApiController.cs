@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Data.Entities.Enterprise;
@@ -33,7 +33,7 @@ namespace Codx.Auth.Controllers.API
         protected readonly UserDbContext _userdbcontext;
         private readonly SignInManager<ApplicationUser> _signInManager;
         protected readonly UserManager<ApplicationUser> _userManager;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
         protected readonly IFilterService _filterService;
         private readonly ILogger<MyProfileV1ApiController> _logger;
         private readonly IUserProfileService _profileService;
@@ -42,7 +42,7 @@ namespace Codx.Auth.Controllers.API
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager, 
             UserDbContext userdbcontext, 
-            IMapper mapper,
+            ApplicationMapper mapper,
             IFilterService filterService,
             ILogger<MyProfileV1ApiController> logger,
             IUserProfileService profileService)

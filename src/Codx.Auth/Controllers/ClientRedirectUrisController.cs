@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.DbContexts;
@@ -17,8 +17,8 @@ namespace Codx.Auth.Controllers
     public class ClientRedirectUrisController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ClientRedirectUrisController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ClientRedirectUrisController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -50,7 +50,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientRedirectUris.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientRedirectUriDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToClientRedirectUriDetails(record);
 
             return View(viewmodel);
         }
@@ -72,7 +72,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ClientRedirectUri>(viewmodel);
+                var record = _mapper.MapToClientRedirectUri(viewmodel);
                 record.Id = 0;
                 _dbContext.ClientRedirectUris.Add(record);
 
@@ -94,7 +94,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientRedirectUris.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientRedirectUriEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientRedirectUriEdit(record);
 
             return View(viewmodel);
         }
@@ -108,7 +108,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientRedirectUri>(viewmodel);
+                var record = _mapper.MapToClientRedirectUri(viewmodel);
 
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
@@ -129,7 +129,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientRedirectUris.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientRedirectUriEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientRedirectUriEdit(record);
 
             return View(viewmodel);
         }
@@ -142,7 +142,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientRedirectUri>(viewmodel);
+                var record = _mapper.MapToClientRedirectUri(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

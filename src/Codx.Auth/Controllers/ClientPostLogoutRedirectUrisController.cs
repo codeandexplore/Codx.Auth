@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.DbContexts;
@@ -17,8 +17,8 @@ namespace Codx.Auth.Controllers
     public class ClientPostLogoutRedirectUrisController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ClientPostLogoutRedirectUrisController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ClientPostLogoutRedirectUrisController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -50,7 +50,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientPostLogoutRedirectUris.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientPostLogoutRedirectUriDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToClientPostLogoutRedirectUriDetails(record);
 
             return View(viewmodel);
         }
@@ -72,7 +72,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ClientPostLogoutRedirectUri>(viewmodel);
+                var record = _mapper.MapToClientPostLogoutRedirectUri(viewmodel);
                 record.Id = 0;
                 _dbContext.ClientPostLogoutRedirectUris.Add(record);
 
@@ -94,7 +94,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientPostLogoutRedirectUris.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientPostLogoutRedirectUriEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientPostLogoutRedirectUriEdit(record);
 
             return View(viewmodel);
         }
@@ -108,7 +108,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientPostLogoutRedirectUri>(viewmodel);
+                var record = _mapper.MapToClientPostLogoutRedirectUri(viewmodel);
 
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
@@ -129,7 +129,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientPostLogoutRedirectUris.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientPostLogoutRedirectUriEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientPostLogoutRedirectUriEdit(record);
 
             return View(viewmodel);
         }
@@ -142,7 +142,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientPostLogoutRedirectUri>(viewmodel);
+                var record = _mapper.MapToClientPostLogoutRedirectUri(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

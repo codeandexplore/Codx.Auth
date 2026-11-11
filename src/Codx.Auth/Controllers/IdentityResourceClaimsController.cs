@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.DbContexts;
@@ -17,8 +17,8 @@ namespace Codx.Auth.Controllers
     public class IdentityResourceClaimsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public IdentityResourceClaimsController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public IdentityResourceClaimsController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -49,7 +49,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.IdentityResourceClaims.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<IdentityResourceClaimDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToIdentityResourceClaimDetails(record);
 
             return View(viewmodel);
         }
@@ -71,7 +71,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<IdentityResourceClaim>(viewmodel);
+                var record = _mapper.MapToIdentityResourceClaim(viewmodel);
                 _dbContext.IdentityResourceClaims.Add(record);
 
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -92,7 +92,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.IdentityResourceClaims.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<IdentityResourceClaimEditViewModel>(record);
+            var viewmodel = _mapper.MapToIdentityResourceClaimEdit(record);
 
             return View(viewmodel);
         }
@@ -106,7 +106,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<IdentityResourceClaim>(viewmodel);
+                var record = _mapper.MapToIdentityResourceClaim(viewmodel);
 
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
@@ -127,7 +127,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.IdentityResourceClaims.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<IdentityResourceClaimEditViewModel>(record);
+            var viewmodel = _mapper.MapToIdentityResourceClaimEdit(record);
 
             return View(viewmodel);
         }
@@ -140,7 +140,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<IdentityResourceClaim>(viewmodel);
+                var record = _mapper.MapToIdentityResourceClaim(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

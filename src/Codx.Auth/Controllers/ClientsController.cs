@@ -1,4 +1,4 @@
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Infrastructure.Lifecycle;
 using Codx.Auth.ViewModels;
@@ -16,10 +16,10 @@ namespace Codx.Auth.Controllers
     public class ClientsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
         protected readonly UserDbContext _userDb;
 
-        public ClientsController(IdentityServerDbContext dbContext, IMapper mapper, UserDbContext userDb)
+        public ClientsController(IdentityServerDbContext dbContext, ApplicationMapper mapper, UserDbContext userDb)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -53,7 +53,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.Clients.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToClientDetails(record);
 
             return View(viewmodel);
         }
@@ -127,7 +127,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _dbContext.Clients.FirstOrDefaultAsync(u => u.Id == id);
 
-            var viewmodel = _mapper.Map<ClientEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientEdit(record);
 
             // Load existing ClientProperties
             var props = await _dbContext.ClientProperties
@@ -155,7 +155,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {                
-                var record = _mapper.Map<Client>(viewmodel);
+                var record = _mapper.MapToClient(viewmodel);
 
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -208,7 +208,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.Clients.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientEdit(record);
 
             return View(viewmodel);
         }
@@ -221,7 +221,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<Client>(viewmodel);
+                var record = _mapper.MapToClient(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

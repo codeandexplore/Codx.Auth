@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
@@ -17,8 +17,8 @@ namespace Codx.Auth.Controllers
     {
         protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
-        protected readonly IMapper _mapper;
-        public UserCompaniesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public UserCompaniesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, ApplicationMapper mapper)
         {
             _userdbcontext = userdbcontext;
             _userManager = userManager;
@@ -52,7 +52,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _userdbcontext.UserCompanies.Include(uc => uc.Company).ThenInclude(uc => uc.Tenant).FirstOrDefaultAsync(o => o.CompanyId == companyid && o.UserId == userid);
 
-            var viewModel = _mapper.Map<UserCompanyEditViewModel>(record);
+            var viewModel = _mapper.MapToUserCompanyEdit(record);
 
             return View(viewModel);
         }

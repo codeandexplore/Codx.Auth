@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -16,9 +16,9 @@ namespace Codx.Auth.Controllers
     {
 
         protected readonly RoleManager<ApplicationRole> _roleManager;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
 
-        public RolesController(RoleManager<ApplicationRole> roleManager, IMapper mapper)
+        public RolesController(RoleManager<ApplicationRole> roleManager, ApplicationMapper mapper)
         {
             _roleManager = roleManager;
             _mapper = mapper;
@@ -52,7 +52,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _roleManager.Roles.FirstOrDefault(o => o.Id.ToString() == id);
 
-            var viewmodel = _mapper.Map<RoleDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToRoleDetails(record);
 
             return View(viewmodel);
         }
@@ -72,7 +72,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ApplicationRole>(viewModel);
+                var record = _mapper.MapToApplicationRole(viewModel);
 
                 var result = await _roleManager.CreateAsync(record).ConfigureAwait(false);
 
@@ -96,7 +96,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _roleManager.FindByIdAsync(id);
 
-            var viewmodel = _mapper.Map<RoleEditViewModel>(record);
+            var viewmodel = _mapper.MapToRoleEdit(record);
 
             return View(viewmodel);
         }
@@ -134,7 +134,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _roleManager.FindByIdAsync(id);
 
-            var viewmodel = _mapper.Map<RoleEditViewModel>(record);
+            var viewmodel = _mapper.MapToRoleEdit(record);
 
             return View(viewmodel);
         }

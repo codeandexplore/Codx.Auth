@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Configuration;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
@@ -28,14 +28,14 @@ namespace Codx.Auth.Controllers
         protected readonly UserDbContext _userdbcontext;
         private readonly SignInManager<ApplicationUser> _signInManager;
         protected readonly UserManager<ApplicationUser> _userManager;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
         private readonly IConfiguration _configuration;
 
         public MyProfileController(
             UserManager<ApplicationUser> userManager, 
             SignInManager<ApplicationUser> signInManager, 
             UserDbContext userdbcontext, 
-            IMapper mapper,
+            ApplicationMapper mapper,
             IConfiguration configuration)
         {
             _userManager = userManager;
@@ -49,7 +49,7 @@ namespace Codx.Auth.Controllers
         {
             var user = _userManager.Users.FirstOrDefault(o => o.Id == User.GetUserId());
 
-            var viewModel = _mapper.Map<MyProfileViewModel>(user);
+            var viewModel = _mapper.MapToMyProfile(user);
 
             if(user.DefaultCompanyId.HasValue)
             {
@@ -240,7 +240,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<TenantDetailsViewModel>(record);
+            var viewModel = _mapper.MapToTenantDetails(record);
             viewModel.IsOwner = HasTenantRole(id, "TENANT_OWNER");
 
             return View(viewModel);
@@ -255,7 +255,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<TenantEditViewModel>(record);
+            var viewModel = _mapper.MapToTenantEdit(record);
 
             return View(viewModel);
         }
@@ -272,7 +272,7 @@ namespace Codx.Auth.Controllers
             {
                 var userId = User.GetUserId();
 
-                var record = _mapper.Map<Tenant>(viewModel);
+                var record = _mapper.MapToTenant(viewModel);
                 record.UpdatedAt = DateTime.Now;
                 record.UpdatedBy = userId;
 
@@ -299,7 +299,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<TenantEditViewModel>(record);
+            var viewModel = _mapper.MapToTenantEdit(record);
 
             return View(viewModel);
         }
@@ -401,7 +401,7 @@ namespace Codx.Auth.Controllers
             var query = _userdbcontext.Companies.Where(o => o.Status != LifecycleStatus.Company.Cancelled && o.TenantId == tenantid);
             var data = query.OrderBy(o => o.Name).Skip(offset).Take(limit).ToList();
 
-            var viewModel = _mapper.Map<List<CompanyDetailsViewModel>>(data);
+            var viewModel = _mapper.MapToCompanyDetailsList(data);
 
             return Json(new
             {
@@ -420,7 +420,7 @@ namespace Codx.Auth.Controllers
                 && !HasCompanyRole(record.Id, "COMPANY_ADMIN", "COMPANY_MANAGER", "MEMBER"))
                 return Forbid();
 
-            var viewModel = _mapper.Map<CompanyDetailsViewModel>(record);
+            var viewModel = _mapper.MapToCompanyDetails(record);
 
             return View(viewModel);
         }
@@ -451,7 +451,7 @@ namespace Codx.Auth.Controllers
             {
                 var userId = User.GetUserId();
 
-                var record = _mapper.Map<Company>(viewModel);
+                var record = _mapper.MapToCompany(viewModel);
                 record.Status = LifecycleStatus.Company.Active;
                 record.CreatedBy = userId;
                 record.CreatedAt = DateTime.Now;
@@ -480,7 +480,7 @@ namespace Codx.Auth.Controllers
             if (!HasTenantRole(record.TenantId, "TENANT_OWNER", "TENANT_ADMIN"))
                 return Forbid();
 
-            var viewModel = _mapper.Map<CompanyEditViewModel>(record);
+            var viewModel = _mapper.MapToCompanyEdit(record);
 
             return View(viewModel);
         }
@@ -498,7 +498,7 @@ namespace Codx.Auth.Controllers
             {
                 var userId = User.GetUserId();
 
-                var record = _mapper.Map<Company>(viewModel);
+                var record = _mapper.MapToCompany(viewModel);
                 record.UpdatedAt = DateTime.Now;
                 record.UpdatedBy = userId;
 
@@ -526,7 +526,7 @@ namespace Codx.Auth.Controllers
             if (!HasTenantRole(record.TenantId, "TENANT_OWNER", "TENANT_ADMIN"))
                 return Forbid();
 
-            var viewModel = _mapper.Map<CompanyEditViewModel>(record);
+            var viewModel = _mapper.MapToCompanyEdit(record);
 
             return View(viewModel);
         }
@@ -572,7 +572,7 @@ namespace Codx.Auth.Controllers
             var query = _userdbcontext.UserCompanies.Include(o => o.User).Where(o => o.CompanyId == companyid);
             var data = query.OrderBy(o => o.User.UserName).Skip(offset).Take(limit).ToList();
 
-            var viewModel = _mapper.Map<List<CompanyUserDetailsViewModel>>(data);
+            var viewModel = _mapper.MapToCompanyUserDetailsList(data);
 
             return Json(new
             {
@@ -680,7 +680,7 @@ namespace Codx.Auth.Controllers
 
             var record = await _userdbcontext.UserCompanies.Include(o => o.User).FirstOrDefaultAsync(o => o.CompanyId == companyid && o.UserId == userid);
 
-            var viewModel = _mapper.Map<CompanyUserEditViewModel>(record);
+            var viewModel = _mapper.MapToCompanyUserEdit(record);
 
             return View(viewModel);
         }

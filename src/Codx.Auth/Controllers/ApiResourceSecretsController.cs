@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using IdentityModel;
@@ -17,8 +17,8 @@ namespace Codx.Auth.Controllers
     public class ApiResourceSecretsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ApiResourceSecretsController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ApiResourceSecretsController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -49,7 +49,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiResourceSecrets.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceSecretDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToApiResourceSecretDetails(record);
 
             return View(viewmodel);
         }
@@ -72,7 +72,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ApiResourceSecret>(viewmodel);
+                var record = _mapper.MapToApiResourceSecret(viewmodel);
                 record.Value = new Duende.IdentityServer.Models.Secret(viewmodel.NewSecret.ToSha256()).Value;
                 record.Created = DateTime.UtcNow;
 
@@ -95,7 +95,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiResourceSecrets.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceSecretEditViewModel>(record);
+            var viewmodel = _mapper.MapToApiResourceSecretEdit(record);
 
             return View(viewmodel);
         }
@@ -109,7 +109,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiResourceSecret>(viewmodel);
+                var record = _mapper.MapToApiResourceSecret(viewmodel);
 
                 if (!string.IsNullOrEmpty(viewmodel.NewSecret) && !string.IsNullOrWhiteSpace(viewmodel.NewSecret))         
                 { 
@@ -135,7 +135,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiResourceSecrets.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceSecretEditViewModel>(record);
+            var viewmodel = _mapper.MapToApiResourceSecretEdit(record);
 
             return View(viewmodel);
         }
@@ -148,7 +148,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiResourceSecret>(viewmodel);
+                var record = _mapper.MapToApiResourceSecret(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

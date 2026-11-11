@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
@@ -19,8 +19,8 @@ namespace Codx.Auth.Controllers
     {
         protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
-        protected readonly IMapper _mapper;
-        public TenantManagersController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public TenantManagersController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, ApplicationMapper mapper)
         {
             _userdbcontext = userdbcontext;
             _userManager = userManager;
@@ -33,7 +33,7 @@ namespace Codx.Auth.Controllers
             var query = _userdbcontext.TenantManagers.Include(o => o.Manager).Where(o => o.TenantId == tenantid);
 
             var data = query.OrderBy(o => o.Manager.UserName).Skip(offset).Take(limit).ToList();
-            var viewModel = _mapper.Map<List<TenantManagerDetailsViewModel>>(data);
+            var viewModel = _mapper.MapToTenantManagerDetailsList(data);
 
             return Json(new
             {
@@ -115,7 +115,7 @@ namespace Codx.Auth.Controllers
         {
             var record = await _userdbcontext.TenantManagers.Include(tm => tm.Manager).FirstOrDefaultAsync(o => o.TenantId == tenantid && o.UserId == userid);
 
-            var viewModel = _mapper.Map<TenantManagerEditViewModel>(record);
+            var viewModel = _mapper.MapToTenantManagerEdit(record);
 
             return View(viewModel);
         }

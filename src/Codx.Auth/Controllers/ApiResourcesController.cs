@@ -1,4 +1,4 @@
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -15,8 +15,8 @@ namespace Codx.Auth.Controllers
     public class ApiResourcesController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ApiResourcesController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ApiResourcesController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -49,7 +49,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToApiResourceDetails(record);
 
             return View(viewmodel);
         }
@@ -67,7 +67,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ApiResource>(viewModel);
+                var record = _mapper.MapToApiResource(viewModel);
 
                 record.Enabled = true;
                 record.ShowInDiscoveryDocument = true;
@@ -92,7 +92,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceEditViewModel>(record);
+            var viewmodel = _mapper.MapToApiResourceEdit(record);
 
             return View(viewmodel);
         }
@@ -106,7 +106,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {                
-                var record = _mapper.Map<ApiResource>(viewmodel);
+                var record = _mapper.MapToApiResource(viewmodel);
                 record.Updated = DateTime.UtcNow;
 
                 _dbContext.Update(record);
@@ -128,7 +128,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ApiResources.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ApiResourceEditViewModel>(record);
+            var viewmodel = _mapper.MapToApiResourceEdit(record);
 
             return View(viewmodel);
         }
@@ -141,7 +141,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ApiResource>(viewmodel);
+                var record = _mapper.MapToApiResource(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

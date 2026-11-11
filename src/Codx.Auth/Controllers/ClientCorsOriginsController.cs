@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.ViewModels;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -15,8 +15,8 @@ namespace Codx.Auth.Controllers
     public class ClientCorsOriginsController : Controller
     {
         protected readonly IdentityServerDbContext _dbContext;
-        protected readonly IMapper _mapper;
-        public ClientCorsOriginsController(IdentityServerDbContext dbContext, IMapper mapper)
+        protected readonly ApplicationMapper _mapper;
+        public ClientCorsOriginsController(IdentityServerDbContext dbContext, ApplicationMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -47,7 +47,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientCorsOrigins.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientCorsOriginDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToClientCorsOriginDetails(record);
 
             return View(viewmodel);
         }
@@ -69,7 +69,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
-                var record = _mapper.Map<ClientCorsOrigin>(viewmodel);
+                var record = _mapper.MapToClientCorsOrigin(viewmodel);
                 record.Id = 0;
                 _dbContext.ClientCorsOrigins.Add(record);
 
@@ -91,7 +91,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientCorsOrigins.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientCorsOriginEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientCorsOriginEdit(record);
 
             return View(viewmodel);
         }
@@ -105,7 +105,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientCorsOrigin>(viewmodel);
+                var record = _mapper.MapToClientCorsOrigin(viewmodel);
 
                 _dbContext.Update(record);
                 var result = await _dbContext.SaveChangesAsync();
@@ -126,7 +126,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _dbContext.ClientCorsOrigins.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<ClientCorsOriginEditViewModel>(record);
+            var viewmodel = _mapper.MapToClientCorsOriginEdit(record);
 
             return View(viewmodel);
         }
@@ -139,7 +139,7 @@ namespace Codx.Auth.Controllers
 
             if (ModelState.IsValid && isRecordFound)
             {
-                var record = _mapper.Map<ClientCorsOrigin>(viewmodel);
+                var record = _mapper.MapToClientCorsOrigin(viewmodel);
                 _dbContext.Remove(record);
                 var result = await _dbContext.SaveChangesAsync();
 

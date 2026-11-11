@@ -1,4 +1,4 @@
-using AutoMapper;
+using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.Enterprise;
 using Codx.Auth.Extensions;
@@ -17,10 +17,10 @@ namespace Codx.Auth.Controllers
     public class TenantsController : Controller
     {
         private readonly UserDbContext _context;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
         private readonly ILifecycleCascadeService _cascade;
 
-        public TenantsController(UserDbContext context, IMapper mapper, ILifecycleCascadeService cascade)
+        public TenantsController(UserDbContext context, ApplicationMapper mapper, ILifecycleCascadeService cascade)
         {
             _context = context;
             _mapper = mapper;
@@ -50,7 +50,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<TenantDetailsViewModel>(record);
+            var viewModel = _mapper.MapToTenantDetails(record);
 
             return View(viewModel);
         }
@@ -68,7 +68,7 @@ namespace Codx.Auth.Controllers
             {
                 var userId = User.GetUserId();
 
-                var record = _mapper.Map<Tenant>(viewModel);
+                var record = _mapper.MapToTenant(viewModel);
                 record.Status = LifecycleStatus.Tenant.Active;
                 record.CreatedBy = userId;
                 record.CreatedAt = DateTime.Now;
@@ -95,7 +95,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<TenantEditViewModel>(record);
+            var viewModel = _mapper.MapToTenantEdit(record);
 
             return View(viewModel);
         }
@@ -139,7 +139,7 @@ namespace Codx.Auth.Controllers
 
             if (record == null) return NotFound();
 
-            var viewModel = _mapper.Map<TenantEditViewModel>(record);
+            var viewModel = _mapper.MapToTenantEdit(record);
 
             return View(viewModel);
         }

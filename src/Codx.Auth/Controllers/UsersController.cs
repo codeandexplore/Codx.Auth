@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.Infrastructure.Lifecycle;
@@ -19,9 +19,9 @@ namespace Codx.Auth.Controllers
     {
         protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
-        protected readonly IMapper _mapper;
+        protected readonly ApplicationMapper _mapper;
 
-        public UsersController(UserManager<ApplicationUser> userManager, UserDbContext userdbcontext, IMapper mapper)
+        public UsersController(UserManager<ApplicationUser> userManager, UserDbContext userdbcontext, ApplicationMapper mapper)
         {
             _userManager = userManager;
             _userdbcontext = userdbcontext;
@@ -58,7 +58,7 @@ namespace Codx.Auth.Controllers
         {
             var record = _userManager.Users.FirstOrDefault(o => o.Id == id);
 
-            var viewmodel = _mapper.Map<UserDetailsViewModel>(record);
+            var viewmodel = _mapper.MapToUserDetails(record);
 
             if(record.DefaultCompanyId.HasValue)
             {
