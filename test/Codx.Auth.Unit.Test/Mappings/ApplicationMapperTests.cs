@@ -51,6 +51,29 @@ namespace Codx.Auth.Unit.Test.Mappings
         }
 
         [Fact]
+        public void MapToApplicationUser_MapsFirstAndLastNameToGivenAndFamilyName()
+        {
+            var vm = new UserAddViewModel
+            {
+                UserName = "jsmith",
+                Email = "jsmith@example.com",
+                FirstName = "John",
+                MiddleName = "Q",
+                LastName = "Smith",
+            };
+
+            var user = _mapper.MapToApplicationUser(vm);
+
+            Assert.Equal("John", user.GivenName);
+            Assert.Equal("Smith", user.FamilyName);
+            Assert.Equal("Q", user.MiddleName);
+            Assert.Equal("jsmith", user.UserName);
+            Assert.Equal("jsmith@example.com", user.Email);
+            // Server-owned field: the mapper must not set Status (the controller assigns it).
+            Assert.Null(user.Status);
+        }
+
+        [Fact]
         public void MapToTenantManagerDetails_FlattensManagerEmailAndUserName()
         {
             var manager = new ApplicationUser { Email = "mgr@example.com", UserName = "mgr.user" };

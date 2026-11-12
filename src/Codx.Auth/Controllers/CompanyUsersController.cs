@@ -89,6 +89,7 @@ namespace Codx.Auth.Controllers
                         return View(viewModel);
                     }
 
+                    // Hand-rolled: UserId is resolved by email lookup at runtime; not a VM→entity mapping.
                     var record = new UserCompany();
                     record.CompanyId = viewModel.CompanyId;
                     record.UserId = findByEmail.Id;

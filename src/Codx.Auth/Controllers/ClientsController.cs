@@ -75,6 +75,7 @@ namespace Codx.Auth.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Hand-rolled: the Add form collects a subset of fields, so Duende's Client defaults must govern the rest.
                 var record = new Client
                 {
                     ClientId = viewModel.ClientId,

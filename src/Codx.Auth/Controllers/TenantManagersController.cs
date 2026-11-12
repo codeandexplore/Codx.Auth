@@ -90,6 +90,7 @@ namespace Codx.Auth.Controllers
                         return View(viewModel);
                     }
 
+                    // Hand-rolled: UserId is resolved by email lookup at runtime; not a VM→entity mapping.
                     var record = new TenantManager();
                     record.TenantId = viewModel.TenantId;
                     record.UserId = findByEmail.Id;
