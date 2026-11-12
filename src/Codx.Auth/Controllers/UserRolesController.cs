@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Codx.Auth.Mappings;
 using Codx.Auth.Data.Contexts;
 using Codx.Auth.Data.Entities.AspNet;
 using Codx.Auth.ViewModels;
@@ -21,13 +20,11 @@ namespace Codx.Auth.Controllers
         protected readonly UserDbContext _userdbcontext;
         protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly RoleManager<ApplicationRole> _roleManager;
-        protected readonly ApplicationMapper _mapper;
-        public UserRolesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, ApplicationMapper mapper)
+        public UserRolesController(UserDbContext userdbcontext, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _userdbcontext = userdbcontext;
             _userManager = userManager;
             _roleManager = roleManager;
-            _mapper = mapper;
         }
 
         [HttpGet]

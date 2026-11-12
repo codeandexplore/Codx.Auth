@@ -77,6 +77,7 @@ namespace Codx.Auth.Controllers
             {
                 var user = await _userdbcontext.Users.Include(i => i.UserClaims).FirstOrDefaultAsync(u => u.Id == viewmodel.UserId);
                                
+                // Hand-rolled: AddClaimAsync is the Identity-idiomatic path; no ApplicationUserClaim entity is constructed.
                 var result = await _userManager.AddClaimAsync(user, new Claim(viewmodel.ClaimType, viewmodel.ClaimValue)).ConfigureAwait(false);
 
                 if (result.Succeeded)

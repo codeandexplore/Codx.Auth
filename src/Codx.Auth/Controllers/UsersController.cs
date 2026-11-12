@@ -105,15 +105,8 @@ namespace Codx.Auth.Controllers
                 return View(model);
             }
 
-            var record = new ApplicationUser
-            {
-                UserName = model.UserName,
-                Email = model.Email,
-                GivenName = model.FirstName,
-                MiddleName = model.MiddleName,
-                FamilyName = model.LastName,
-                Status = LifecycleStatus.User.Active
-            };
+            var record = _mapper.MapToApplicationUser(model);
+            record.Status = LifecycleStatus.User.Active;
 
             var result = await _userManager.CreateAsync(record, model.Password).ConfigureAwait(false);
 

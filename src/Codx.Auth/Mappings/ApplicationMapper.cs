@@ -151,6 +151,13 @@ namespace Codx.Auth.Mappings
         [MapperIgnoreTarget(nameof(MyProfileViewModel.CanUseTwoFactor))]
         public partial MyProfileViewModel MapToMyProfile(ApplicationUser source);
 
+        [MapProperty(nameof(UserAddViewModel.FirstName), nameof(ApplicationUser.GivenName))]
+        [MapProperty(nameof(UserAddViewModel.LastName), nameof(ApplicationUser.FamilyName))]
+        [MapperIgnoreTarget(nameof(ApplicationUser.Status))]
+        [MapperIgnoreTarget(nameof(ApplicationUser.StatusChangedAt))]
+        [MapperIgnoreTarget(nameof(ApplicationUser.StatusChangedBy))]
+        public partial ApplicationUser MapToApplicationUser(UserAddViewModel source);
+
         // ── AspNet: User claims ──────────────────────────────────────────────
         public partial UserClaimDetailsViewModel MapToUserClaimDetails(ApplicationUserClaim source);
         public partial UserClaimEditViewModel MapToUserClaimEdit(ApplicationUserClaim source);
